@@ -12,19 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository content
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Fetch latest changes
-        run: git pull origin main
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions Bot"
+          git pull origin main
       - name: Make changes and commit
         run: |
-          git config --global user.email "ton-email@example.com"
-          git config --global user.name "Auto Commit Bot"
+          # Ajoutez ici les commandes pour effectuer les changements souhaités
+          # Par exemple : echo "Automated update $(date)" >> update.log
           git add .
           git diff --quiet && git diff --staged --quiet || git commit -m "Automated commit"
       - name: Push changes back to GitHub
