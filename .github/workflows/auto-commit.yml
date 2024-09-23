@@ -19,15 +19,15 @@ jobs:
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-    - name: Pull latest changes
+    - name: Fetch and merge latest changes
       run: |
-        git pull origin main
+        git fetch origin main
+        git merge origin/main
     - name: Make changes
       run: |
-        # Ajoutez ici les commandes pour effectuer les changements souhaités
-        # Par exemple :
         echo "Dernière mise à jour automatique : $(date)" >> update_log.txt
-    - name: Commit and push if there are changes
+    - name: Commit and push changes
       run: |
         git add .
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Mise à jour automatique - $(date)" && git push)
+        git commit -m "Mise à jour automatique - $(date)" || echo "No changes to commit"
+        git push origin main || git push --force origin main
