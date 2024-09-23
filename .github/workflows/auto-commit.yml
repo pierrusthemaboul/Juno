@@ -1,0 +1,22 @@
+name: Automated Commit and Push
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Exécute toutes les heures
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository content
+      uses: actions/checkout@v2
+
+    - name: Make changes and commit
+      run: |
+        git config --global user.email "pierre.cousin7@gmail.com"
+        git config --global user.name "Pierrot"
+        git add .
+        git commit -m "Automated commit"
+
+    - name: Push changes back to GitHub
+      run: git push origin main
