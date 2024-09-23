@@ -1,0 +1,27 @@
+name: Automated Commit and Push
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Exécute toutes les heures
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Utiliser la version correcte de Node.js, car Node 12 est obsolète
+
+      - name: Make changes and commit
+        run: |
+          git config --global user.email "ton-email@example.com"
+          git config --global user.name "Auto Commit Bot"
+          git add .
+          git commit -m "Automated commit" || echo "No changes to commit"
+
+      - name: Push changes back to GitHub
+        run: git push origin main
