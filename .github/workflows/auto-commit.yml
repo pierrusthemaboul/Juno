@@ -1,28 +1,7 @@
-name: Automated Commit and Push
-
-on:
-  schedule:
-    - cron: '0 */12 * * *' # Toutes les 12 heures
-  workflow_dispatch: # Permet l'exécution manuelle
-
-jobs:
-  auto-commit:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Set up Git
-      run: |
-        git config --global user.name 'GitHub Actions Bot'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-    - name: Fetch and merge latest changes
+- name: Reset to remote state
       run: |
         git fetch origin main
-        git merge origin/main
+        git reset --hard origin/main
     - name: Make changes
       run: |
         echo "Dernière mise à jour automatique : $(date)" >> update_log.txt
@@ -30,4 +9,4 @@ jobs:
       run: |
         git add .
         git commit -m "Mise à jour automatique - $(date)" || echo "No changes to commit"
-        git push origin main || git push --force origin main
+        git push origin main
