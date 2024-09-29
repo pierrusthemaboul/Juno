@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { supabase } from '../../supabaseClients';
+import { useRouter } from 'expo-router';
 
 export default function Vue1() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetchRandomEvent();
@@ -16,14 +18,16 @@ export default function Vue1() {
       let { data: events, error } = await supabase
         .from('evenements')
         .select('*')
-        .order('id', { ascending: false })
-        .limit(1);
+        .order('id', { ascending: false })  // Correction: Nous ordonnons par id de manière décroissante
+        .limit(100);  // Correction: Nous récupérons les 100 derniers événements
 
       if (error) throw error;
 
       if (events && events.length > 0) {
-        console.log('Event fetched:', events[0]); // Pour le débogage
-        setEvent(events[0]);
+        // Correction: Nous sélectionnons un événement au hasard parmi ceux récupérés
+        const randomEvent = events[Math.floor(Math.random() * events.length)];
+        console.log('Event fetched:', randomEvent);
+        setEvent(randomEvent);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de l\'événement:', error);
@@ -41,7 +45,7 @@ export default function Vue1() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>zone infos téléphone batterie etc.</Text>
       </View>
@@ -66,10 +70,23 @@ export default function Vue1() {
         </>
       )}
       
-      <View style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>C'est parti !</Text>
-      </View>
-    </View>
+      <TouchableOpacity 
+  style={styles.buttonContainer}
+  onPress={() => router.push({
+    pathname: '/vue2',
+    params: { initialEvent: JSON.stringify(event) }
+  })}
+>
+  <Text style={styles.buttonText}>C'est parti !</Text>
+</TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.reloadButton}
+        onPress={fetchRandomEvent}
+      >
+        <Text style={styles.reloadButtonText}>Recharger un événement</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
@@ -124,5 +141,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  reloadButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  reloadButtonText: {
+    color: '#333',
+    fontSize: 14,
   },
 });
