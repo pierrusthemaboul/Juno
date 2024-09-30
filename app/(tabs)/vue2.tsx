@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Animated, ImageBackground } from 'react-native';
 import { supabase } from '../../supabaseClients';
 import UserInfo from '../components/UserInfo';
 import Countdown from '../components/Countdown';
@@ -14,36 +14,54 @@ export default function Vue2() {
   const [user, setUser] = useState({ name: 'Joueur 1', points: 100, lives: 3 });
   const [previousEvent, setPreviousEvent] = useState(JSON.parse(initialEvent));
   const [newEvent, setNewEvent] = useState(null);
+  const [allEvents, setAllEvents] = useState([]);
   const [timeLeft, setTimeLeft] = useState(7);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fadeAnim] = useState(new Animated.Value(1));
+  const [feedbackColor, setFeedbackColor] = useState('transparent');
 
   useEffect(() => {
-    fetchNewEvent();
+    fetchAllEvents();
   }, []);
 
-  async function fetchNewEvent() {
+  async function fetchAllEvents() {
     try {
       setLoading(true);
       setError(null);
+      
       let { data: events, error } = await supabase
         .from('evenements')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(100);
+        .select('*');
 
       if (error) throw error;
 
       if (events && events.length > 0) {
-        const filteredEvents = events.filter(event => event.id !== previousEvent.id);
-        const randomEvent = filteredEvents[Math.floor(Math.random() * filteredEvents.length)];
-        setNewEvent(randomEvent);
+        setAllEvents(events);
+        fetchNewEvent(events, JSON.parse(initialEvent));
+      } else {
+        setError('Aucun événement disponible');
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'événement:', error);
-      setError('Impossible de charger l\'événement. Veuillez réessayer.');
+      console.error('Erreur lors de la récupération des événements:', error);
+      setError('Impossible de charger les événements. Veuillez réessayer.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  function fetchNewEvent(events = allEvents, prevEvent = previousEvent) {
+    const availableEvents = events.filter(event => 
+      event.id !== prevEvent.id && 
+      event.titre !== prevEvent.titre &&
+      Math.abs(new Date(event.date).getTime() - new Date(prevEvent.date).getTime()) > 365 * 24 * 60 * 60 * 1000 // Plus d'un an d'écart
+    );
+    
+    if (availableEvents.length > 0) {
+      const randomEvent = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+      setNewEvent(randomEvent);
+    } else {
+      setError('Plus d\'événements disponibles correspondant aux critères');
     }
   }
 
@@ -54,49 +72,59 @@ export default function Vue2() {
                       (choice === 'après' && newDate > previousDate);
 
     if (isCorrect) {
-      Alert.alert("Bravo!", "Vous avez raison!");
       setUser(prevUser => ({...prevUser, points: prevUser.points + 10}));
+      setFeedbackColor('#90EE90'); // Vert clair
     } else {
-      Alert.alert("Dommage!", "Ce n'est pas la bonne réponse.");
       setUser(prevUser => ({...prevUser, lives: prevUser.lives - 1}));
+      setFeedbackColor('#FFB6C1'); // Rose clair (rouge doux)
     }
 
-    setPreviousEvent(newEvent);
-    fetchNewEvent();
-    setTimeLeft(7);
-  }
+    Animated.sequence([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start();
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text>{error}</Text>
-        <TouchableOpacity onPress={fetchNewEvent}>
-          <Text>Réessayer</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
+    setTimeout(() => {
+      setPreviousEvent(newEvent);
+      fetchNewEvent(allEvents, newEvent);
+      setTimeLeft(7);
+      setFeedbackColor('transparent'); // Réinitialiser la couleur
+    }, 1000);
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <UserInfo user={user} />
-        <Countdown timeLeft={timeLeft} />
-      </View>
-      <PreviousEvent event={previousEvent} />
-      <View style={styles.newEventContainer}>
-        <Text style={styles.newEventTitle}>{newEvent?.titre}</Text>
-        <NewEvent event={newEvent} />
-      </View>
-      <ChoiceButtons onChoice={handleChoice} />
-    </SafeAreaView>
+    <ImageBackground 
+      source={require('../../assets/images/bgvue2.webp')} 
+      style={styles.backgroundImage}
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <UserInfo user={user} />
+          <Countdown timeLeft={timeLeft} />
+        </View>
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <Text style={styles.referenceText}>Par rapport à l'événement :</Text>
+          <PreviousEvent event={previousEvent} />
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : (
+            <View style={[styles.newEventContainer, { borderColor: feedbackColor, borderWidth: 2 }]}>
+              <NewEvent event={newEvent} />
+            </View>
+          )}
+          <ChoiceButtons onChoice={handleChoice} />
+        </Animated.View>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
