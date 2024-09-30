@@ -10,18 +10,19 @@ const Countdown = ({ timeLeft }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'red',
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-});
+    container: {
+      backgroundColor: '#FF4081',
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 20,
+    },
+    text: {
+      color: 'white',
+      fontSize: 20,
+      fontWeight: 'bold',
+    },
+  });
 
 export default Countdown;

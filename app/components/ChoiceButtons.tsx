@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { colors } from '../styles/colors';
 
 const ChoiceButtons = ({ onChoice }) => {
   return (
@@ -19,16 +20,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 10,
+    marginTop: 15,
   },
   button: {
-    backgroundColor: '#4a90e2',
+    backgroundColor: colors.lightPink,
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 25,
+    width: '40%',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   buttonText: {
-    color: 'white',
+    color: colors.softGray,
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
