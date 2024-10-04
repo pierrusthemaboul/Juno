@@ -2,19 +2,16 @@ import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import { colors } from '../styles/colors';
 
-const NewEvent = ({ event }) => {
+const NewEvent = ({ event, onImageLoad }) => {
   return (
     <View style={styles.container}>
       <Image
         source={{ uri: event?.illustration_url || 'https://via.placeholder.com/300' }}
         style={styles.image}
         resizeMode="cover"
+        onLoad={onImageLoad}
       />
-      <View style={styles.textContainer}>
-        <Text style={styles.promptText}>l'événement</Text>
-        <Text style={styles.titleText}>{event?.titre || 'Titre de l\'événement'}</Text>
-        <Text style={styles.promptText}>est</Text>
-      </View>
+      <Text style={styles.title}>{event?.titre}</Text>
     </View>
   );
 };
@@ -28,21 +25,12 @@ const styles = StyleSheet.create({
     height: 250,
     borderRadius: 10,
   },
-  textContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  promptText: {
+  title: {
     fontSize: 18,
-    color: colors.darkText,
-    marginVertical: 5,
-  },
-  titleText: {
-    fontSize: 20,
     fontWeight: 'bold',
-    color: colors.accentColor,
+    color: colors.veryDarkText,
+    marginTop: 10,
     textAlign: 'center',
-    marginVertical: 5,
   },
 });
 

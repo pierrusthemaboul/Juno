@@ -1,7 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../styles/colors';
 
-const Countdown = ({ timeLeft }) => {
+interface CountdownProps {
+  timeLeft: number;
+}
+
+const Countdown: React.FC<CountdownProps> = ({ timeLeft }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>{timeLeft}</Text>
@@ -10,19 +15,19 @@ const Countdown = ({ timeLeft }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      backgroundColor: '#FF4081',
-      width: 40,
-      height: 40,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 20,
-    },
-    text: {
-      color: 'white',
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
-  });
+  container: {
+    backgroundColor: colors.accent,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  text: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+});
 
 export default Countdown;

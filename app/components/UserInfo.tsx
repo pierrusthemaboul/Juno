@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../styles/colors';
 
 const UserInfo = ({ user }) => {
   return (
@@ -12,14 +13,16 @@ const UserInfo = ({ user }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '70%',
-    },
-    text: {
-      color: '#E0E0E0',
-      fontSize: 14,
-    },
-  });
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '70%',
+  },
+  text: {
+    color: colors.accent,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+});
+
 export default UserInfo;
