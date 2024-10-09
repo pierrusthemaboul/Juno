@@ -6,37 +6,85 @@ import { useRouter } from 'expo-router';
 export default function Vue1() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [allEvents, setAllEvents] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    fetchRandomEvent();
+    console.log("Vue1: Component mounted");
+    fetchAllEvents();
   }, []);
 
-  async function fetchRandomEvent() {
+  async function fetchAllEvents() {
+    console.log("Vue1: Fetching all events");
     try {
       setLoading(true);
       let { data: events, error } = await supabase
         .from('evenements')
         .select('*')
-        .order('id', { ascending: false })  // Correction: Nous ordonnons par id de manière décroissante
-        .limit(100);  // Correction: Nous récupérons les 100 derniers événements
+        .order('id', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Vue1: Supabase error:", error);
+        throw error;
+      }
+
+      console.log("Vue1: Received data from Supabase");
+      console.log("Vue1: Number of events received:", events ? events.length : 0);
 
       if (events && events.length > 0) {
-        // Correction: Nous sélectionnons un événement au hasard parmi ceux récupérés
-        const randomEvent = events[Math.floor(Math.random() * events.length)];
-        console.log('Event fetched:', randomEvent);
-        setEvent(randomEvent);
+        setAllEvents(events);
+        await findValidEvent(events);
+      } else {
+        console.log("Vue1: No events received or empty events array");
+        setEvent(null);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'événement:', error);
+      console.error('Vue1: Error fetching events:', error);
+      setEvent(null);
     } finally {
       setLoading(false);
     }
   }
 
+  async function findValidEvent(events) {
+    for (let i = 0; i < events.length; i++) {
+      const randomIndex = Math.floor(Math.random() * events.length);
+      const randomEvent = events[randomIndex];
+      if (randomEvent.illustration_url) {
+        const isValid = await checkImageValidity(randomEvent.illustration_url);
+        if (isValid) {
+          console.log("Vue1: Valid event found:", randomEvent);
+          setEvent(randomEvent);
+          return;
+        }
+      }
+    }
+    console.log("Vue1: No valid event found");
+    setEvent(null);
+  }
+
+  function checkImageValidity(url) {
+    return new Promise((resolve) => {
+      Image.prefetch(url)
+        .then(() => {
+          console.log("Vue1: Image prefetch successful");
+          resolve(true);
+        })
+        .catch((error) => {
+          console.log("Vue1: Image prefetch failed:", error);
+          resolve(false);
+        });
+    });
+  }
+
+  function handleReloadEvent() {
+    console.log("Vue1: Reloading event");
+    setLoading(true);
+    findValidEvent(allEvents);
+  }
+
   if (loading) {
+    console.log("Vue1: Rendering loading state");
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -44,13 +92,16 @@ export default function Vue1() {
     );
   }
 
+  console.log("Vue1: Rendering main content");
+  console.log("Vue1: Current event:", event);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>zone infos téléphone batterie etc.</Text>
       </View>
       
-      {event && (
+      {event ? (
         <>
           <View style={styles.imageContainer}>
             <Image 
@@ -68,21 +119,31 @@ export default function Vue1() {
             <Text style={styles.date}>{event.date}</Text>
           </View>
         </>
+      ) : (
+        <Text style={styles.noEventText}>Aucun événement disponible</Text>
       )}
       
       <TouchableOpacity 
-  style={styles.buttonContainer}
-  onPress={() => router.push({
-    pathname: '/vue2',
-    params: { initialEvent: JSON.stringify(event) }
-  })}
->
-  <Text style={styles.buttonText}>C'est parti !</Text>
-</TouchableOpacity>
+        style={styles.buttonContainer}
+        onPress={() => {
+          console.log("Vue1: Navigating to Vue2");
+          if (event) {
+            router.push({
+              pathname: '/vue2',
+              params: { initialEvent: JSON.stringify(event) }
+            });
+          } else {
+            console.log("Vue1: Cannot navigate, no event available");
+          }
+        }}
+        disabled={!event}
+      >
+        <Text style={styles.buttonText}>C'est parti !</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.reloadButton}
-        onPress={fetchRandomEvent}
+        onPress={handleReloadEvent}
       >
         <Text style={styles.reloadButtonText}>Recharger un événement</Text>
       </TouchableOpacity>
@@ -107,9 +168,11 @@ const styles = StyleSheet.create({
   imageContainer: {
     flex: 1,
     margin: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
   },
   image: {
-    flex: 1,
     width: '100%',
     height: '100%',
   },
@@ -129,6 +192,12 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  noEventText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+    color: 'red',
   },
   buttonContainer: {
     margin: 10,

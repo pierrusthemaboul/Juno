@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Animated, ImageBackground, Modal, StyleSheet } from 'react-native';
+import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Animated, ImageBackground, Modal, StyleSheet, Image } from 'react-native';
 import { supabase } from '../../supabaseClients';
 import UserInfo from '../components/UserInfo';
 import Countdown from '../components/Countdown';
@@ -75,7 +75,7 @@ export default function Vue2() {
 
       if (events && events.length > 0) {
         setAllEvents(events);
-        fetchNewEvent(events, JSON.parse(initialEvent));
+        await findValidEvent(events, JSON.parse(initialEvent));
       } else {
         setError('Aucun événement disponible');
       }
@@ -87,23 +87,41 @@ export default function Vue2() {
     }
   };
 
-  const fetchNewEvent = useCallback((events = allEvents, prevEvent = previousEvent) => {
+  const findValidEvent = async (events, prevEvent) => {
     const availableEvents = events.filter(event => 
       event.id !== prevEvent.id && 
       event.titre !== prevEvent.titre &&
-      Math.abs(new Date(event.date).getTime() - new Date(prevEvent.date).getTime()) > 365 * 24 * 60 * 60 * 1000 // Plus d'un an d'écart
+      Math.abs(new Date(event.date).getTime() - new Date(prevEvent.date).getTime()) > 365 * 24 * 60 * 60 * 1000
     );
-    
-    if (availableEvents.length > 0) {
-      const randomEvent = availableEvents[Math.floor(Math.random() * availableEvents.length)];
-      setNewEvent(randomEvent);
-      setTimeLeft(10);
-      setIsImageLoaded(false);
-      setIsCountdownActive(false);
-    } else {
-      setError('Plus d\'événements disponibles correspondant aux critères');
+
+    for (let i = 0; i < availableEvents.length; i++) {
+      const randomIndex = Math.floor(Math.random() * availableEvents.length);
+      const randomEvent = availableEvents[randomIndex];
+      if (randomEvent.illustration_url) {
+        const isValid = await checkImageValidity(randomEvent.illustration_url);
+        if (isValid) {
+          setNewEvent(randomEvent);
+          setTimeLeft(10);
+          setIsImageLoaded(true);
+          setIsCountdownActive(true);
+          return;
+        }
+      }
     }
-  }, [allEvents, previousEvent]);
+    setError('Plus d\'événements disponibles correspondant aux critères');
+  };
+
+  const checkImageValidity = (url) => {
+    return new Promise((resolve) => {
+      Image.prefetch(url)
+        .then(() => {
+          resolve(true);
+        })
+        .catch(() => {
+          resolve(false);
+        });
+    });
+  };
 
   const handleTimeout = () => {
     setUser(prevUser => {
@@ -111,7 +129,7 @@ export default function Vue2() {
       if (newLives <= 0) {
         endGame();
       } else {
-        fetchNewEvent(allEvents, newEvent);
+        findValidEvent(allEvents, newEvent);
       }
       return { ...prevUser, lives: newLives };
     });
@@ -127,10 +145,10 @@ export default function Vue2() {
     if (isCorrect) {
       const pointsEarned = Math.max(0, timeLeft * 100);
       setUser(prevUser => ({...prevUser, points: prevUser.points + pointsEarned}));
-      setFeedbackColor('#90EE90'); // Vert clair
+      setFeedbackColor('#90EE90');
     } else {
       setUser(prevUser => ({...prevUser, lives: prevUser.lives - 1}));
-      setFeedbackColor('#FFB6C1'); // Rose clair (rouge doux)
+      setFeedbackColor('#FFB6C1');
     }
 
     Animated.sequence([
@@ -151,7 +169,7 @@ export default function Vue2() {
         endGame();
       } else {
         setPreviousEvent(newEvent);
-        fetchNewEvent(allEvents, newEvent);
+        findValidEvent(allEvents, newEvent);
       }
     }, 1000);
   };
@@ -186,12 +204,7 @@ export default function Vue2() {
   const restartGame = () => {
     setUser({ name: user.name, points: 0, lives: 3 });
     setIsGameOver(false);
-    fetchNewEvent(allEvents, JSON.parse(initialEvent));
-  };
-
-  const handleImageLoad = () => {
-    setIsImageLoaded(true);
-    setIsCountdownActive(true);
+    findValidEvent(allEvents, JSON.parse(initialEvent));
   };
 
   return (
@@ -213,7 +226,7 @@ export default function Vue2() {
             <Text style={styles.errorText}>{error}</Text>
           ) : (
             <View style={[styles.newEventContainer, { borderColor: feedbackColor, borderWidth: 2 }]}>
-              <NewEvent event={newEvent} onImageLoad={handleImageLoad} />
+              <NewEvent event={newEvent} onImageLoad={() => setIsImageLoaded(true)} />
             </View>
           )}
           <ChoiceButtons onChoice={handleChoice} disabled={!isImageLoaded} />
