@@ -1,36 +1,78 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ImageBackground, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, StatusBar, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../supabaseClients';
 import styles from '../styles/indexStyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Session, User } from '@supabase/supabase-js';
 
 export default function HomeScreen() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     checkUser();
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
+      if (event === 'SIGNED_IN') {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchUserProfile(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setDisplayName('');
+      }
+    });
+
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, []);
 
   async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-    if (user) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('id', user.id)
-        .single();
-      if (data) setDisplayName(data.display_name);
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log("Checking user session:", session?.user?.email);
+    if (session) {
+      setUser(session.user);
+      fetchUserProfile(session.user.id);
+    } else {
+      console.log("No active session found");
     }
   }
 
+  async function fetchUserProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', userId)
+      .single();
+    if (data) setDisplayName(data.display_name);
+    if (error) console.error('Error fetching user profile:', error);
+  }
+
   async function handleLogout() {
-    await supabase.auth.signOut();
-    setUser(null);
-    setDisplayName('');
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Erreur', 'Impossible de se déconnecter');
+    }
+  }
+
+  async function testSession() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error testing session:', error);
+      Alert.alert('Erreur', 'Impossible de vérifier la session');
+    } else if (data.session) {
+      Alert.alert('Session active', `Utilisateur connecté: ${data.session.user.email}`);
+    } else {
+      Alert.alert('Pas de session', 'Aucun utilisateur connecté');
+    }
   }
 
   return (
@@ -71,6 +113,9 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </>
           )}
+          <TouchableOpacity style={styles.testButton} onPress={testSession}>
+            <Text style={styles.testButtonText}>Tester la session</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     </ImageBackground>
