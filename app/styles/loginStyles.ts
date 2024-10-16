@@ -43,4 +43,15 @@ export default StyleSheet.create({
     color: 'red',
     marginBottom: 10,
   },
+  stayConnectedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    width: '100%',
+  },
+  stayConnectedText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
 });

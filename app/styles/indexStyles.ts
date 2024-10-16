@@ -68,4 +68,19 @@ export default StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
   },
+
+  testButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  testButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+
 });

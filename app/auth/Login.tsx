@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Switch } from 'react-native';
 import { supabase } from '../../supabaseClients';
 import { useRouter } from 'expo-router';
 import styles from '../styles/loginStyles';
@@ -8,6 +8,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [stayConnected, setStayConnected] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -22,7 +23,10 @@ const LoginScreen = () => {
         setErrorMessage(error.message);
       } else {
         console.log('Utilisateur connecté:', data);
-        router.push('/');
+        if (stayConnected) {
+          await supabase.auth.setSession(data.session);
+        }
+        router.replace('/');
       }
     } catch (err) {
       console.error('Erreur lors de handleLogin:', err);
@@ -45,7 +49,14 @@ const LoginScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
-      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+      <View style={styles.stayConnectedContainer}>
+        <Switch
+          value={stayConnected}
+          onValueChange={setStayConnected}
+        />
+        <Text style={styles.stayConnectedText}>Rester connecté</Text>
+      </View>
+      {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Se connecter</Text>
       </TouchableOpacity>
