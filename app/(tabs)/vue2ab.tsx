@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SafeAreaView, ImageBackground, StyleSheet, Animated, View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, ImageBackground, StyleSheet, Animated, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useGameLogic } from '../hooks/useGameLogic';
 import GameOverModal from '../components/GameOverModal';
@@ -8,21 +8,39 @@ export default function Vue2ab() {
   const { initialEvent } = useLocalSearchParams();
   const [fadeAnim] = useState(new Animated.Value(1));
   const gameLogic = useGameLogic(initialEvent);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const renderEvent = (event, isPrevious) => (
-    <View style={[styles.eventContainer, isPrevious ? styles.previousEvent : styles.newEvent]}>
-      <Text style={styles.diagonalDate}>{event.date}</Text>
-      <ImageBackground 
-        source={{ uri: event.illustration_url }} 
-        style={styles.eventImage}
-        resizeMode="cover"
-      >
-        <View style={styles.eventOverlay}>
-          <Text style={styles.eventTitle}>{event.titre}</Text>
-        </View>
-      </ImageBackground>
-    </View>
-  );
+  useEffect(() => {
+    if (gameLogic.previousEvent && gameLogic.newEvent) {
+      setIsLoading(false);
+    }
+  }, [gameLogic.previousEvent, gameLogic.newEvent]);
+
+  const renderEvent = (event, isPrevious) => {
+    if (!event) return null;
+    return (
+      <View style={[styles.eventContainer, isPrevious ? styles.previousEvent : styles.newEvent]}>
+        <Text style={styles.diagonalDate}>{event.date}</Text>
+        <ImageBackground 
+          source={{ uri: event.illustration_url }} 
+          style={styles.eventImage}
+          resizeMode="cover"
+        >
+          <View style={styles.eventOverlay}>
+            <Text style={styles.eventTitle}>{event.titre}</Text>
+          </View>
+        </ImageBackground>
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <ImageBackground 
@@ -36,10 +54,18 @@ export default function Vue2ab() {
             {renderEvent(gameLogic.newEvent, false)}
           </View>
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => gameLogic.handleChoice('avant')}>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => gameLogic.handleChoice('avant')}
+              disabled={isLoading}
+            >
               <Text style={styles.buttonText}>Avant</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => gameLogic.handleChoice('après')}>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => gameLogic.handleChoice('après')}
+              disabled={isLoading}
+            >
               <Text style={styles.buttonText}>Après</Text>
             </TouchableOpacity>
           </View>
@@ -120,5 +146,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
 });
