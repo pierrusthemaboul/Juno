@@ -142,6 +142,16 @@ export default function Vue1() {
       </TouchableOpacity>
 
       <TouchableOpacity 
+        style={styles.buttonContainer}
+        onPress={() => {
+          console.log("Vue1: Navigating to Vue3");
+          router.push('/vue3');
+        }}
+      >
+        <Text style={styles.buttonText}>Voir événement transitoire</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
         style={styles.reloadButton}
         onPress={handleReloadEvent}
       >

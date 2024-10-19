@@ -7,7 +7,7 @@ const PreviousEvent = ({ event }) => {
     <View style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{event?.titre || 'Titre de l\'événement précédent'}</Text>
-        <Text style={styles.date}>{event?.date || 'Date de l\'événement précédent'}</Text>
+        <Text style={styles.date}>{event?.date_formatee || 'Date de l\'événement précédent'}</Text>
       </View>
       <Image
         source={{ uri: event?.illustration_url || 'https://via.placeholder.com/100' }}
@@ -21,29 +21,29 @@ const PreviousEvent = ({ event }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 15,
     backgroundColor: colors.lightPink,
     borderRadius: 10,
     alignItems: 'center',
   },
   textContainer: {
     flex: 1,
-    marginRight: 10,
+    marginRight: 15,
   },
   title: {
-    fontSize: 16,
+    fontSize: 20, // Augmenté pour un titre plus gros
     fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 5,
+    color: colors.veryDarkText,
+    marginBottom: 8,
   },
   date: {
-    fontSize: 14,
-    color: 'black',
+    fontSize: 16, // Augmenté pour une date plus grande
+    color: colors.darkText,
   },
   image: {
-    width: 80,  // Augmenté de 60 à 80
-    height: 80, // Augmenté de 60 à 80
-    borderRadius: 5,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
   },
 });
 

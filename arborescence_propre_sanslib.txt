@@ -1,0 +1,125 @@
+.
+├── app
+│   ├── auth
+│   │   ├── _layout.tsx
+│   │   ├── Login.tsx
+│   │   └── signup.tsx
+│   ├── components
+│   │   ├── ChoiceButtons.tsx
+│   │   ├── Countdown.tsx
+│   │   ├── EventContainer.tsx
+│   │   ├── GameContent.tsx
+│   │   ├── GameOverModal.tsx
+│   │   ├── NewEvent.tsx
+│   │   ├── PreviousEvent.tsx
+│   │   └── UserInfo.tsx
+│   ├── hooks
+│   │   └── useGameLogic.ts
+│   ├── +html.tsx
+│   ├── _layout.tsx
+│   ├── +not-found.tsx
+│   ├── styles
+│   │   ├── colors.ts
+│   │   ├── indexStyles.ts
+│   │   ├── loginStyles.ts
+│   │   ├── signupStyles.ts
+│   │   └── vue2styles.ts
+│   └── (tabs)
+│       ├── explore.tsx
+│       ├── index.tsx
+│       ├── _layout.tsx
+│       ├── vue1.tsx
+│       └── vue2.tsx
+├── app.json
+├── arborescence_app_complete.txt
+├── arborescence_app.txt
+├── arborescence_propre_sanslib.txt
+├── arborescence_propre.txt
+├── assets
+│   ├── fonts
+│   │   └── SpaceMono-Regular.ttf
+│   └── images
+│       ├── adaptive-icon.png
+│       ├── bgvue2.webp
+│       ├── default-image.png
+│       ├── e0611baa-f2ff-4066-a1f3-69c4d9beaeeb.pdf
+│       ├── favicon.png
+│       ├── icon.png
+│       ├── images_evenements
+│       │   ├── 1492-10-12_Découverte_de_l_Amérique.webp
+│       │   ├── 1945-08-06_Bombardement_d_Hiroshima.webp
+│       │   └── chute mur berlin.webp
+│       ├── partial-react-logo.png
+│       ├── quipasse.webp
+│       ├── react-logo@2x.png
+│       ├── react-logo@3x.png
+│       ├── react-logo.png
+│       └── splash.png
+├── babel.config.js
+├── components
+│   ├── Collapsible.tsx
+│   ├── ExternalLink.tsx
+│   ├── HelloWave.tsx
+│   ├── navigation
+│   │   └── TabBarIcon.tsx
+│   ├── ParallaxScrollView.tsx
+│   ├── __tests__
+│   │   ├── __snapshots__
+│   │   │   └── ThemedText-test.tsx.snap
+│   │   └── ThemedText-test.tsx
+│   ├── ThemedText.tsx
+│   └── ThemedView.tsx
+├── compress-images.js
+├── constants
+│   └── Colors.ts
+├── envoyer.py
+├── expo-env.d.ts
+├── hooks
+│   ├── useColorScheme.ts
+│   ├── useColorScheme.web.ts
+│   └── useThemeColor.ts
+├── logs
+│   └── event_matching.log
+├── package.json
+├── package-lock.json
+├── README.md
+├── rename_files.py
+├── rename_images.py
+├── scripts
+│   └── reset-project.js
+├── supabaseClients.ts
+├── testimage.py
+├── tsconfig.json
+├── unified_image_processing.py
+├── update_log.txt
+├── upload_update_images.py
+└── venv
+    ├── bin
+    │   ├── activate
+    │   ├── activate.csh
+    │   ├── activate.fish
+    │   ├── Activate.ps1
+    │   ├── f2py
+    │   ├── httpx
+    │   ├── markdown-it
+    │   ├── normalizer
+    │   ├── numpy-config
+    │   ├── pip
+    │   ├── pip3
+    │   ├── pip3.12
+    │   ├── pygmentize
+    │   ├── python -> python3
+    │   ├── python3 -> /usr/bin/python3
+    │   ├── python3.12 -> python3
+    │   ├── spacy
+    │   ├── tests
+    │   ├── tqdm
+    │   ├── typer
+    │   ├── unidecode
+    │   └── weasel
+    ├── include
+    │   └── python3.12
+    ├── lib64 -> lib
+    └── pyvenv.cfg
+
+24 directories, 99 files

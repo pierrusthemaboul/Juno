@@ -10,4 +10,11 @@ export const colors = {
   cardBackground: '#FFFFFF', // Blanc pour le fond des cartes
   buttonBackground: '#FF9966', // Orange pastel pour les boutons
   buttonText: '#FFFFFF', // Blanc pour le texte des boutons
+  primaryButton: '#4A90E2', // Un bleu moderne et attrayant
+  disabledButton: '#B8C3D2',
+  beforeButton: '#FF6B6B', // Un rouge corail vif
+  afterButton: '#4ECDC4', // Un turquoise frais
+  disabledButton: '#95A5A6', // Un gris neutre
+  correctGreen: '#2ECC71', // Un vert vif pour les réponses correctes
+  incorrectRed: '#E74C3C',
 };
