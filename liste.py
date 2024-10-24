@@ -22,7 +22,7 @@ def list_latest_images():
         image_files = [f for f in sorted_files if f['name'].lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
 
         # Prendre les 22 premières images
-        latest_images = image_files[:30]
+        latest_images = image_files[:14]
 
         print(f"Les 21 dernières images uploadées :")
         for file in latest_images:
