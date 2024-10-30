@@ -1,0 +1,93 @@
+{
+  "batch_number": 6,
+  "events": [
+    {
+      "id": "68bbcb98",
+      "date": "1954-11-01",
+      "titre": "Début de la guerre d'Algérie",
+      "titre_anglais": "Beginning of the Algerian War",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "e58ac95f",
+      "date": "1958-10-04",
+      "titre": "Promulgation de la Constitution de la Ve République",
+      "titre_anglais": "Promulgation of the Constitution of the Fifth Republic",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Juridique"
+      ]
+    },
+    {
+      "id": "99b13d43",
+      "date": "1962-03-18",
+      "titre": "Signature des accords d'Évian",
+      "titre_anglais": "Signing of the Évian Accords",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Décolonisation"
+      ]
+    },
+    {
+      "id": "7d4ff5ee",
+      "date": "1969-07-20",
+      "titre": "Premier pas sur la Lune",
+      "titre_anglais": "First Step on the Moon",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Scientifique",
+        "Exploration"
+      ]
+    },
+    {
+      "id": "331bfb0f",
+      "date": "1981-05-10",
+      "titre": "Élection de François Mitterrand",
+      "titre_anglais": "Election of François Mitterrand",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Élection"
+      ]
+    },
+    {
+      "id": "98c06ac8",
+      "date": "1986-12-02",
+      "titre": "Premières manifestations étudiantes contre la loi Devaquet",
+      "titre_anglais": "First Student Protests Against the Devaquet Law",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Social"
+      ]
+    },
+    {
+      "id": "57bba2ab",
+      "date": "1989-11-09",
+      "titre": "Chute du mur de Berlin",
+      "titre_anglais": "Fall of the Berlin Wall",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Historique"
+      ]
+    },
+    {
+      "id": "d0e0de17",
+      "date": "1992-02-07",
+      "titre": "Signature du traité de Maastricht",
+      "titre_anglais": "Signing of the Maastricht Treaty",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Européen"
+      ]
+    }
+  ]
+}

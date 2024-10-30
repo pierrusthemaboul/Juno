@@ -1,0 +1,280 @@
+{
+  "batch_number": 5,
+  "events": [
+    {
+      "id": "6a0345bd",
+      "date": "1794-07-28",
+      "titre": "Chute de Robespierre",
+      "titre_anglais": "Fall of Robespierre",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    },
+    {
+      "id": "a708bb33",
+      "date": "1799-11-09",
+      "titre": "Coup d'État du 18 Brumaire",
+      "titre_anglais": "Coup of 18 Brumaire",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "c4d616cc",
+      "date": "1804-03-21",
+      "titre": "Promulgation du Code civil",
+      "titre_anglais": "Promulgation of the Civil Code",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Juridique",
+        "Politique"
+      ]
+    },
+    {
+      "id": "100e9c71",
+      "date": "1804-12-02",
+      "titre": "Sacre de Napoléon Ier",
+      "titre_anglais": "Coronation of Napoleon",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Société"
+      ]
+    },
+    {
+      "id": "748d2e61",
+      "date": "1810-03-11",
+      "titre": "Mariage de Napoléon et Marie-Louise d'Autriche",
+      "titre_anglais": "Marriage of Napoleon and Marie-Louise of Austria",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatique"
+      ]
+    },
+    {
+      "id": "4edbd8f1",
+      "date": "1814-04-06",
+      "titre": "Abdication de Napoléon Ier",
+      "titre_anglais": "Abdication of Napoleon I",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "30cd6e38",
+      "date": "1815-06-18",
+      "titre": "Bataille de Waterloo",
+      "titre_anglais": "Battle of Waterloo",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "62ef5a64",
+      "date": "1830-07-27",
+      "titre": "Début des Trois Glorieuses",
+      "titre_anglais": "Beginning of the Three Glorious Days",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    },
+    {
+      "id": "a13932f9",
+      "date": "1848-02-24",
+      "titre": "Proclamation de la Deuxième République",
+      "titre_anglais": "Proclamation of the Second Republic",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    },
+    {
+      "id": "668ef528",
+      "date": "1870-09-04",
+      "titre": "Proclamation de la Troisième République",
+      "titre_anglais": "Proclamation of the Third Republic",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Historique"
+      ]
+    },
+    {
+      "id": "c2075df1",
+      "date": "1871-01-18",
+      "titre": "Proclamation de l'Empire allemand à Versailles",
+      "titre_anglais": "Proclamation of the German Empire at Versailles",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "0136b4c3",
+      "date": "1871-05-28",
+      "titre": "Fin de la Commune de Paris",
+      "titre_anglais": "End of the Paris Commune",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Social"
+      ]
+    },
+    {
+      "id": "e501b0ee",
+      "date": "1877-05-16",
+      "titre": "Crise du 16 mai 1877",
+      "titre_anglais": "Crisis of 16 May 1877",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Constitutionnel"
+      ]
+    },
+    {
+      "id": "0ed28429",
+      "date": "1879-07-14",
+      "titre": "Première célébration officielle du 14 juillet",
+      "titre_anglais": "First Official Celebration of Bastille Day",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Culturel"
+      ]
+    },
+    {
+      "id": "65cc01e5",
+      "date": "1889-05-06",
+      "titre": "Inauguration de la Tour Eiffel",
+      "titre_anglais": "Inauguration of the Eiffel Tower",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Culturel",
+        "Technologique"
+      ]
+    },
+    {
+      "id": "bad65dfc",
+      "date": "1894-12-22",
+      "titre": "Début de l'affaire Dreyfus",
+      "titre_anglais": "Beginning of the Dreyfus Affair",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Judiciaire"
+      ]
+    },
+    {
+      "id": "104b5c71",
+      "date": "1898-01-13",
+      "titre": "Publication de \"J'accuse...!\" par Émile Zola",
+      "titre_anglais": "Publication of \"J'accuse...!\" by Émile Zola",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Culturel",
+        "Politique"
+      ]
+    },
+    {
+      "id": "a6eea4bf",
+      "date": "1905-12-09",
+      "titre": "Loi de séparation des Églises et de l'État",
+      "titre_anglais": "Law on the Separation of the Churches and the State",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "969bec60",
+      "date": "1916-02-21",
+      "titre": "Début de la bataille de Verdun",
+      "titre_anglais": "Beginning of the Battle of Verdun",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Historique"
+      ]
+    },
+    {
+      "id": "5512ff1f",
+      "date": "1925-11-30",
+      "titre": "Création de l'Académie Goncourt",
+      "titre_anglais": "Creation of the Académie Goncourt",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Culturel",
+        "Littéraire"
+      ]
+    },
+    {
+      "id": "1b54a1a5",
+      "date": "1936-06-07",
+      "titre": "Signature des accords de Matignon",
+      "titre_anglais": "Signing of the Matignon Agreements",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Social",
+        "Politique"
+      ]
+    },
+    {
+      "id": "ee43752d",
+      "date": "1940-06-18",
+      "titre": "Appel du 18 juin du Général de Gaulle",
+      "titre_anglais": "Appeal of 18 June by General de Gaulle",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "3df714b5",
+      "date": "1945-05-08",
+      "titre": "Fin de la Seconde Guerre mondiale en Europe",
+      "titre_anglais": "End of World War II in Europe",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "fbff8383",
+      "date": "1945-08-06",
+      "titre": "Bombardement d'Hiroshima",
+      "titre_anglais": "Bombing of Hiroshima",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Technologique"
+      ]
+    },
+    {
+      "id": "3fcf8418",
+      "date": "1954-05-07",
+      "titre": "Défaite de Diên Biên Phu",
+      "titre_anglais": "Defeat at Dien Bien Phu",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Militaire",
+        "Décolonisation"
+      ]
+    }
+  ]
+}

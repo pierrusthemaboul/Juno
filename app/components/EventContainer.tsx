@@ -1,8 +1,11 @@
+// EventContainer.tsx
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
 import PreviousEvent from './PreviousEvent';
 import NewEvent from './NewEvent';
 import ChoiceButtons from './ChoiceButtons';
+
+const { width, height } = Dimensions.get('window');
 
 const EventContainer = ({
   previousEvent,
@@ -15,39 +18,57 @@ const EventContainer = ({
   isCorrect
 }) => {
   return (
-    <View style={styles.container}>
-      <PreviousEvent event={previousEvent} />
-      <View style={[styles.newEventContainer, { borderColor: feedbackColor, borderWidth: 2 }]}>
-        <NewEvent 
-          event={newEvent} 
-          onImageLoad={onImageLoad}
-          showDate={showDate}
-          isCorrect={isCorrect}
-        />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.topMargin} />
+        <View style={styles.cardsContainer}>
+          <PreviousEvent event={previousEvent} />
+          <NewEvent 
+            event={newEvent} 
+            onImageLoad={onImageLoad}
+            showDate={showDate}
+            isCorrect={isCorrect}
+          />
+        </View>
+        <View style={styles.referenceSection} />
+        <View style={styles.bottomSection}>
+          <View style={styles.buttonsContainer}>
+            <ChoiceButtons onChoice={onChoice} disabled={!isImageLoaded} />
+          </View>
+        </View>
       </View>
-      <ChoiceButtons onChoice={onChoice} disabled={!isImageLoaded} />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
   },
-  newEventContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 15,
-    marginTop: 15,
-    marginBottom: 15,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  topMargin: {
+    height: height * 0.08, // Espace pour la barre de statut et la barre du haut
   },
+  cardsContainer: {
+    height: height * 0.5, // 50% de la hauteur pour les cartes
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  referenceSection: {
+    height: height * 0.15, // Espace pour le bloc de référence
+  },
+  bottomSection: {
+    height: height * 0.27, // Reste de l'espace pour les boutons
+    justifyContent: 'center',
+    paddingBottom: 20,
+  },
+  buttonsContainer: {
+    width: '100%',
+    alignItems: 'center',
+  }
 });
 
 export default EventContainer;

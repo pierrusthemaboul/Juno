@@ -1,0 +1,280 @@
+{
+  "batch_number": 4,
+  "events": [
+    {
+      "id": "c334dc19",
+      "date": "1643-05-14",
+      "titre": "Début du règne de Louis XIV",
+      "titre_anglais": "Beginning of Louis XIV's Reign",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Monarchie"
+      ]
+    },
+    {
+      "id": "7965c023",
+      "date": "1648-08-26",
+      "titre": "Début de la Fronde",
+      "titre_anglais": "Beginning of the Fronde",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Social"
+      ]
+    },
+    {
+      "id": "34afc209",
+      "date": "1648-10-24",
+      "titre": "Traités de Westphalie",
+      "titre_anglais": "Peace of Westphalia",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatique"
+      ]
+    },
+    {
+      "id": "119",
+      "date": "1649-01-30",
+      "titre": "Exécution de Charles Ier d'Angleterre",
+      "titre_anglais": "Execution of Charles I of England",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Crime"
+      ]
+    },
+    {
+      "id": "daa38f22",
+      "date": "1661-09-01",
+      "titre": "Début du règne personnel de Louis XIV",
+      "titre_anglais": "Beginning of Louis XIV's Personal Rule",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Monarchie"
+      ]
+    },
+    {
+      "id": "4697362a",
+      "date": "1682-06-07",
+      "titre": "Arrivée de la cour à Versailles",
+      "titre_anglais": "Arrival of the Court at Versailles",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Culturel"
+      ]
+    },
+    {
+      "id": "120",
+      "date": "1683-09-12",
+      "titre": "Bataille de Vienne",
+      "titre_anglais": "Battle of Vienna",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "09137079",
+      "date": "1685-10-18",
+      "titre": "Révocation de l'édit de Nantes",
+      "titre_anglais": "Revocation of the Edict of Nantes",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "122",
+      "date": "1687-07-05",
+      "titre": "Publication des Principia de Newton",
+      "titre_anglais": "Publication of Newton's Principia",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Science",
+        "Culture"
+      ]
+    },
+    {
+      "id": "123",
+      "date": "1697-09-20",
+      "titre": "Traité de Ryswick",
+      "titre_anglais": "Treaty of Ryswick",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "e91309cd",
+      "date": "1701-09-16",
+      "titre": "Début de la guerre de Succession d'Espagne",
+      "titre_anglais": "Beginning of the War of Spanish Succession",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "125",
+      "date": "1713-04-11",
+      "titre": "Traité d'Utrecht",
+      "titre_anglais": "Treaty of Utrecht",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "2bcbc926",
+      "date": "1715-09-01",
+      "titre": "Mort de Louis XIV",
+      "titre_anglais": "Death of Louis XIV",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Historique"
+      ]
+    },
+    {
+      "id": "4e927348",
+      "date": "1720-05-25",
+      "titre": "Grande Peste de Marseille",
+      "titre_anglais": "Great Plague of Marseille",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Social",
+        "Médical"
+      ]
+    },
+    {
+      "id": "127",
+      "date": "1733-02-12",
+      "titre": "Fondation de Savannah",
+      "titre_anglais": "Founding of Savannah",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Exploration",
+        "Société"
+      ]
+    },
+    {
+      "id": "128",
+      "date": "1740-10-20",
+      "titre": "Début de la guerre de Succession d'Autriche",
+      "titre_anglais": "Start of War of Austrian Succession",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "747e9348",
+      "date": "1748-10-18",
+      "titre": "Traité d'Aix-la-Chapelle",
+      "titre_anglais": "Treaty of Aix-la-Chapelle",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatique"
+      ]
+    },
+    {
+      "id": "de44c6c1",
+      "date": "1751-06-28",
+      "titre": "Publication du premier volume de l'Encyclopédie",
+      "titre_anglais": "Publication of the First Volume of the Encyclopédie",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Culturel",
+        "Scientifique"
+      ]
+    },
+    {
+      "id": "81b6f7a1",
+      "date": "1763-02-10",
+      "titre": "Traité de Paris (fin de la Guerre de Sept Ans)",
+      "titre_anglais": "Treaty of Paris (End of Seven Years War)",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "11",
+      "date": "1776-07-04",
+      "titre": "Déclaration d'indépendance des États-Unis",
+      "titre_anglais": "United States Declaration of Independence",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    },
+    {
+      "id": "138",
+      "date": "1783-09-03",
+      "titre": "Traité de Paris (Indépendance américaine)",
+      "titre_anglais": "Treaty of Paris (American Independence)",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "140",
+      "date": "1787-09-17",
+      "titre": "Signature de la Constitution américaine",
+      "titre_anglais": "Signing of US Constitution",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Droit"
+      ]
+    },
+    {
+      "id": "44a3c308",
+      "date": "1789-07-14",
+      "titre": "Prise de la Bastille",
+      "titre_anglais": "Storming of the Bastille",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    },
+    {
+      "id": "49",
+      "date": "1789-08-26",
+      "titre": "Déclaration des droits de l'homme",
+      "titre_anglais": "Declaration of the Rights of Man",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Droit"
+      ]
+    },
+    {
+      "id": "cef73605",
+      "date": "1793-01-21",
+      "titre": "Exécution de Louis XVI",
+      "titre_anglais": "Execution of Louis XVI",
+      "epoque": "Époque contemporaine",
+      "types_evenement": [
+        "Politique",
+        "Révolution"
+      ]
+    }
+  ]
+}
