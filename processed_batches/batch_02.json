@@ -1,0 +1,280 @@
+{
+  "batch_number": 2,
+  "events": [
+    {
+      "id": "f16d3b8b",
+      "date": "1214-07-27",
+      "titre": "Bataille de Bouvines",
+      "titre_anglais": "Battle of Bouvines",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "28",
+      "date": "1215-06-15",
+      "titre": "Signature de la Magna Carta",
+      "titre_anglais": "Signing of Magna Carta",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Droit"
+      ]
+    },
+    {
+      "id": "46d10209",
+      "date": "1226-11-08",
+      "titre": "Avènement de Louis IX (Saint Louis)",
+      "titre_anglais": "Accession of Louis IX (Saint Louis)",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "90",
+      "date": "1241-04-11",
+      "titre": "Bataille de Legnica",
+      "titre_anglais": "Battle of Legnica",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "929b4535",
+      "date": "1270-08-25",
+      "titre": "Mort de Saint Louis",
+      "titre_anglais": "Death of Saint Louis",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "88403c44",
+      "date": "1302-03-20",
+      "titre": "Première réunion des États généraux",
+      "titre_anglais": "First Meeting of the Estates General",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Social"
+      ]
+    },
+    {
+      "id": "63fa0b23",
+      "date": "1337-05-24",
+      "titre": "Début de la guerre de Cent Ans",
+      "titre_anglais": "Beginning of the Hundred Years' War",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "37",
+      "date": "1347-01-01",
+      "titre": "Début de la peste noire en Europe",
+      "titre_anglais": "Start of the Black Death in Europe",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Santé",
+        "Société"
+      ]
+    },
+    {
+      "id": "92",
+      "date": "1378-09-20",
+      "titre": "Début du Grand Schisme d'Occident",
+      "titre_anglais": "Start of Western Schism",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Religion",
+        "Politique"
+      ]
+    },
+    {
+      "id": "93",
+      "date": "1415-10-25",
+      "titre": "Bataille d'Azincourt",
+      "titre_anglais": "Battle of Agincourt",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "94",
+      "date": "1429-05-08",
+      "titre": "Libération d'Orléans",
+      "titre_anglais": "Liberation of Orleans",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "f1f318cc",
+      "date": "1429-07-17",
+      "titre": "Sacre de Charles VII à Reims",
+      "titre_anglais": "Coronation of Charles VII in Reims",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "3dafcbff",
+      "date": "1431-05-30",
+      "titre": "Mort de Jeanne d'Arc",
+      "titre_anglais": "Death of Joan of Arc",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "34",
+      "date": "1440-01-01",
+      "titre": "Invention de l'imprimerie par Gutenberg",
+      "titre_anglais": "Gutenberg invents the printing press",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Technologie",
+        "Culture"
+      ]
+    },
+    {
+      "id": "17",
+      "date": "1453-05-29",
+      "titre": "Chute de Constantinople",
+      "titre_anglais": "Fall of Constantinople",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "b3c37fb8",
+      "date": "1453-07-17",
+      "titre": "Fin de la guerre de Cent Ans",
+      "titre_anglais": "End of the Hundred Years' War",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "95",
+      "date": "1455-05-22",
+      "titre": "Première bataille de St. Albans",
+      "titre_anglais": "First Battle of St Albans",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "5e9a271b",
+      "date": "1461-07-22",
+      "titre": "Couronnement de Louis XI",
+      "titre_anglais": "Coronation of Louis XI",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Monarchie"
+      ]
+    },
+    {
+      "id": "5c465a20",
+      "date": "1477-01-05",
+      "titre": "Mort de Charles le Téméraire",
+      "titre_anglais": "Death of Charles the Bold",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "38",
+      "date": "1492-01-02",
+      "titre": "Reconquête de Grenade",
+      "titre_anglais": "Reconquest of Granada",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "96",
+      "date": "1492-03-31",
+      "titre": "Édit de Grenade",
+      "titre_anglais": "Alhambra Decree",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Religion",
+        "Politique"
+      ]
+    },
+    {
+      "id": "209ab199",
+      "date": "1492-10-12",
+      "titre": "Découverte de l'Amérique",
+      "titre_anglais": "Discovery of America",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Exploration",
+        "Historique"
+      ]
+    },
+    {
+      "id": "97",
+      "date": "1494-11-17",
+      "titre": "Traité de Tordesillas",
+      "titre_anglais": "Treaty of Tordesillas",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "98",
+      "date": "1498-05-20",
+      "titre": "Vasco de Gama atteint l'Inde",
+      "titre_anglais": "Vasco da Gama reaches India",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Exploration",
+        "Navigation"
+      ]
+    },
+    {
+      "id": "99",
+      "date": "1513-03-27",
+      "titre": "Ponce de León découvre la Floride",
+      "titre_anglais": "Ponce de León discovers Florida",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Exploration",
+        "Navigation"
+      ]
+    }
+  ]
+}

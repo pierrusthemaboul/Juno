@@ -1,0 +1,280 @@
+{
+  "batch_number": 3,
+  "events": [
+    {
+      "id": "70edf50a",
+      "date": "1515-08-13",
+      "titre": "Naissance de Anne de Montmorency",
+      "titre_anglais": "Birth of Anne de Montmorency",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "670a9bd3",
+      "date": "1515-09-13",
+      "titre": "Bataille de Marignan",
+      "titre_anglais": "Battle of Marignano",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "100",
+      "date": "1517-10-31",
+      "titre": "Affichage des 95 thèses de Luther",
+      "titre_anglais": "Posting of Luther's 95 Theses",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Religion",
+        "Société"
+      ]
+    },
+    {
+      "id": "101",
+      "date": "1519-08-21",
+      "titre": "Début de l'expédition de Magellan",
+      "titre_anglais": "Start of Magellan's expedition",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Exploration",
+        "Navigation"
+      ]
+    },
+    {
+      "id": "102",
+      "date": "1521-08-13",
+      "titre": "Chute de Tenochtitlan",
+      "titre_anglais": "Fall of Tenochtitlan",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Exploration"
+      ]
+    },
+    {
+      "id": "103",
+      "date": "1525-02-24",
+      "titre": "Bataille de Pavie",
+      "titre_anglais": "Battle of Pavia",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "104",
+      "date": "1527-05-06",
+      "titre": "Sac de Rome",
+      "titre_anglais": "Sack of Rome",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "105",
+      "date": "1534-07-18",
+      "titre": "Fondation de la Compagnie de Jésus",
+      "titre_anglais": "Founding of the Jesuit Order",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Religion",
+        "Société"
+      ]
+    },
+    {
+      "id": "817aabc4",
+      "date": "1534-10-18",
+      "titre": "Affaire des Placards",
+      "titre_anglais": "Affair of the Placards",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Religieux",
+        "Politique"
+      ]
+    },
+    {
+      "id": "a8ab40ed",
+      "date": "1539-08-15",
+      "titre": "Ordonnance de Villers-Cotterêts",
+      "titre_anglais": "Ordinance of Villers-Cotterêts",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Politique",
+        "Culturel"
+      ]
+    },
+    {
+      "id": "106",
+      "date": "1543-05-24",
+      "titre": "Publication du De revolutionibus",
+      "titre_anglais": "Publication of De revolutionibus",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Science",
+        "Culture"
+      ]
+    },
+    {
+      "id": "107",
+      "date": "1545-12-13",
+      "titre": "Ouverture du Concile de Trente",
+      "titre_anglais": "Opening of Council of Trent",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Religion",
+        "Politique"
+      ]
+    },
+    {
+      "id": "108",
+      "date": "1556-01-16",
+      "titre": "Charles Quint abdique",
+      "titre_anglais": "Charles V abdicates",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Religion"
+      ]
+    },
+    {
+      "id": "109",
+      "date": "1571-10-07",
+      "titre": "Bataille de Lépante",
+      "titre_anglais": "Battle of Lepanto",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Naval"
+      ]
+    },
+    {
+      "id": "9172663c",
+      "date": "1572-08-24",
+      "titre": "Massacre de la Saint-Barthélemy",
+      "titre_anglais": "St. Bartholomew's Day Massacre",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Religieux",
+        "Politique"
+      ]
+    },
+    {
+      "id": "111",
+      "date": "1582-10-04",
+      "titre": "Adoption du calendrier grégorien",
+      "titre_anglais": "Adoption of Gregorian calendar",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Science",
+        "Religion"
+      ]
+    },
+    {
+      "id": "60",
+      "date": "1588-07-29",
+      "titre": "Défaite de l'Invincible Armada",
+      "titre_anglais": "Defeat of the Spanish Armada",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Naval"
+      ]
+    },
+    {
+      "id": "aa0e58ef",
+      "date": "1593-07-25",
+      "titre": "Abjuration d'Henri IV",
+      "titre_anglais": "Abjuration of Henry IV",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "65c1ca2e",
+      "date": "1598-04-13",
+      "titre": "Édit de Nantes",
+      "titre_anglais": "Edict of Nantes",
+      "epoque": "Renaissance",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "112",
+      "date": "1600-02-17",
+      "titre": "Giordano Bruno est brûlé",
+      "titre_anglais": "Burning of Giordano Bruno",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Religion",
+        "Science"
+      ]
+    },
+    {
+      "id": "113",
+      "date": "1602-03-20",
+      "titre": "Création de la VOC",
+      "titre_anglais": "Creation of Dutch East India Company",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Économie",
+        "Navigation"
+      ]
+    },
+    {
+      "id": "eb351308",
+      "date": "1610-05-14",
+      "titre": "Assassinat d'Henri IV",
+      "titre_anglais": "Assassination of Henry IV",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Historique"
+      ]
+    },
+    {
+      "id": "115",
+      "date": "1620-11-11",
+      "titre": "Signature du Mayflower Compact",
+      "titre_anglais": "Signing of Mayflower Compact",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Politique",
+        "Religion"
+      ]
+    },
+    {
+      "id": "116",
+      "date": "1632-11-16",
+      "titre": "Bataille de Lützen",
+      "titre_anglais": "Battle of Lützen",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    },
+    {
+      "id": "117",
+      "date": "1642-10-23",
+      "titre": "Bataille d'Edgehill",
+      "titre_anglais": "Battle of Edgehill",
+      "epoque": "Époque moderne",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    }
+  ]
+}

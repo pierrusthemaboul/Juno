@@ -1,6 +1,9 @@
+// ChoiceButtons.tsx
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
 import { colors } from '../styles/colors';
+
+const { width } = Dimensions.get('window');
 
 const ChoiceButtons = ({ onChoice, disabled }) => {
   return (
@@ -26,15 +29,17 @@ const ChoiceButtons = ({ onChoice, disabled }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     padding: 10,
     marginTop: 15,
+    width: '90%',
   },
   button: {
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 25,
     elevation: 5,
+    width: '40%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

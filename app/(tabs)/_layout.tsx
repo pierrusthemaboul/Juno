@@ -7,6 +7,7 @@ export default function TabLayout() {
       <Stack.Screen name="vue1" options={{ headerShown: false }} />
       <Stack.Screen name="vue2" options={{ headerShown: false }} />
       <Stack.Screen name="vue2ab" options={{ headerShown: false }} />
+      <Stack.Screen name="vue4" options={{ headerShown: false }} />
     </Stack>
   );
 }

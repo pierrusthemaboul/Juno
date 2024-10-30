@@ -1,0 +1,280 @@
+{
+  "batch_number": 1,
+  "events": [
+    {
+      "id": "27",
+      "date": "-0753-04-21",
+      "titre": "Fondation légendaire de Rome",
+      "titre_anglais": "Legendary founding of Rome",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Politique",
+        "Culture"
+      ]
+    },
+    {
+      "id": "51",
+      "date": "-0480-08-11",
+      "titre": "Bataille des Thermopyles",
+      "titre_anglais": "Battle of Thermopylae",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "2",
+      "date": "-0327-07-01",
+      "titre": "Alexandre le Grand devient roi de Macédoine",
+      "titre_anglais": "Alexander the Great becomes King of Macedon",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Politique",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "81",
+      "date": "-0146-01-01",
+      "titre": "Destruction de Carthage",
+      "titre_anglais": "Destruction of Carthage",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "7",
+      "date": "-0044-03-15",
+      "titre": "Assassinat de Jules César",
+      "titre_anglais": "Assassination of Julius Caesar",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Politique",
+        "Crime"
+      ]
+    },
+    {
+      "id": "82",
+      "date": "-0031-09-02",
+      "titre": "Bataille d'Actium",
+      "titre_anglais": "Battle of Actium",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Militaire",
+        "Naval"
+      ]
+    },
+    {
+      "id": "41",
+      "date": "-0001-01-01",
+      "titre": "Naissance présumée de Jésus-Christ",
+      "titre_anglais": "Presumed birth of Jesus Christ",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Religion",
+        "Culture"
+      ]
+    },
+    {
+      "id": "83",
+      "date": "0476-09-04",
+      "titre": "Chute de l'Empire romain d'Occident",
+      "titre_anglais": "Fall of Western Roman Empire",
+      "epoque": "Antiquité",
+      "types_evenement": [
+        "Politique",
+        "Société"
+      ]
+    },
+    {
+      "id": "36afc758",
+      "date": "0486-06-01",
+      "titre": "Bataille de Soissons",
+      "titre_anglais": "Battle of Soissons",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "8d3cdac9",
+      "date": "0496-12-25",
+      "titre": "Baptême de Clovis",
+      "titre_anglais": "Baptism of Clovis",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "7d22171a",
+      "date": "0507-07-01",
+      "titre": "Bataille de Vouillé",
+      "titre_anglais": "Battle of Vouillé",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "21c42b91",
+      "date": "0732-10-25",
+      "titre": "Bataille de Poitiers",
+      "titre_anglais": "Battle of Tours",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "2464cf98",
+      "date": "0768-08-15",
+      "titre": "Sacre de Charlemagne comme roi des Francs",
+      "titre_anglais": "Coronation of Charlemagne as King of the Franks",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "84",
+      "date": "0800-12-25",
+      "titre": "Sacre de Charlemagne",
+      "titre_anglais": "Coronation of Charlemagne",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religion"
+      ]
+    },
+    {
+      "id": "2541a190",
+      "date": "0843-08-10",
+      "titre": "Traité de Verdun",
+      "titre_anglais": "Treaty of Verdun",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Historique"
+      ]
+    },
+    {
+      "id": "85",
+      "date": "0911-07-10",
+      "titre": "Traité de Saint-Clair-sur-Epte",
+      "titre_anglais": "Treaty of Saint-Clair-sur-Epte",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Diplomatie"
+      ]
+    },
+    {
+      "id": "d8ca4b0e",
+      "date": "0987-07-03",
+      "titre": "Élection d'Hugues Capet, début de la dynastie capétienne",
+      "titre_anglais": "Election of Hugh Capet, Beginning of the Capetian Dynasty",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Monarchie"
+      ]
+    },
+    {
+      "id": "86",
+      "date": "1066-01-05",
+      "titre": "Mort d'Édouard le Confesseur",
+      "titre_anglais": "Death of Edward the Confessor",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Société"
+      ]
+    },
+    {
+      "id": "15",
+      "date": "1066-10-14",
+      "titre": "Bataille de Hastings",
+      "titre_anglais": "Battle of Hastings",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Politique"
+      ]
+    },
+    {
+      "id": "16",
+      "date": "1095-11-27",
+      "titre": "Début de la première croisade",
+      "titre_anglais": "Start of the First Crusade",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Religion",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "87",
+      "date": "1096-08-15",
+      "titre": "Début de la première croisade populaire",
+      "titre_anglais": "Start of the People's Crusade",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Religion",
+        "Militaire"
+      ]
+    },
+    {
+      "id": "ff55ecbc",
+      "date": "1099-07-15",
+      "titre": "Prise de Jérusalem par les croisés",
+      "titre_anglais": "Capture of Jerusalem by the Crusaders",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "c66c35d2",
+      "date": "1124-04-14",
+      "titre": "Fondation de l'abbaye de Clairvaux",
+      "titre_anglais": "Foundation of Clairvaux Abbey",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Religieux",
+        "Culturel"
+      ]
+    },
+    {
+      "id": "3290780c",
+      "date": "1180-09-18",
+      "titre": "Sacre de Philippe Auguste",
+      "titre_anglais": "Coronation of Philip II Augustus",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Politique",
+        "Religieux"
+      ]
+    },
+    {
+      "id": "89",
+      "date": "1204-04-12",
+      "titre": "Sac de Constantinople",
+      "titre_anglais": "Sack of Constantinople",
+      "epoque": "Moyen Âge",
+      "types_evenement": [
+        "Militaire",
+        "Religion"
+      ]
+    }
+  ]
+}

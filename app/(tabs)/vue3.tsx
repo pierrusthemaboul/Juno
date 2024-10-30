@@ -12,15 +12,15 @@ export default function Vue3() {
   const [imageError, setImageError] = useState(null);
 
   useEffect(() => {
-    fetchTransitoireEvents();
+    fetchSasEvents();
   }, []);
 
-  async function fetchTransitoireEvents() {
+  async function fetchSasEvents() {
     try {
       setLoading(true);
-      console.log("Vue3: Fetching transitoire events...");
+      console.log("Vue3: Fetching SAS events...");
       let { data, error } = await supabase
-        .from('transitoire')
+        .from('sas')
         .select('*')
         .order('date', { ascending: false });
 
@@ -30,14 +30,14 @@ export default function Vue3() {
       }
 
       if (data && data.length > 0) {
-        console.log("Vue3: Transitoire events found:", data.length);
+        console.log("Vue3: SAS events found:", data.length);
         setEvents(data);
       } else {
-        console.log("Vue3: No transitoire events found");
+        console.log("Vue3: No SAS events found");
         setEvents([]);
       }
     } catch (error) {
-      console.error('Vue3: Error fetching transitoire events:', error);
+      console.error('Vue3: Error fetching SAS events:', error);
       setEvents([]);
     } finally {
       setLoading(false);
@@ -93,8 +93,6 @@ export default function Vue3() {
               <Text style={styles.errorImageText}>{imageError ? imageError : "No image available"}</Text>
             </View>
           )}
-          <Text style={styles.prompt}>Prompt DALL-E :</Text>
-          <Text style={styles.promptText}>{currentEvent.prompt_dalle}</Text>
         </View>
 
         <View style={styles.navigationContainer}>
@@ -187,17 +185,6 @@ const styles = StyleSheet.create({
   errorImageText: {
     color: '#666',
     marginTop: 10,
-  },
-  prompt: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
-  },
-  promptText: {
-    fontSize: 16,
-    color: '#444',
-    lineHeight: 24,
   },
   navigationContainer: {
     flexDirection: 'row',

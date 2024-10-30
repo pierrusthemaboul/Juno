@@ -1,0 +1,286 @@
+date,titre,description,theme,periode
+-27500101,Premières peintures rupestres connues,"Grotte Chauvet, France",Art,Préhistoire
+-10000101,Révolution néolithique,"Début de l'agriculture et de l'élevage, Croissant Fertile",Société,Néolithique
+-3100701,Développement de l'écriture cunéiforme,Mésopotamie,Technologie,Antiquité
+-3000101,Construction des pyramides d'Égypte,Ancien Empire égyptien,Architecture,Antiquité
+-2600101,Empereur Huang Di (mythique),Chine,Politique,Antiquité
+-1750101,Code de Hammurabi,Empire babylonien,Droit,Antiquité
+-1500101,Civilisation minoenne,Crète,Société,Antiquité
+-1200101,Guerre de Troie,Grèce antique,Militaire,Antiquité
+-1100101,Règne du roi Saül,Israël,Politique,Antiquité
+-900101,Fondation de Carthage,Phénicie/Tunisie,Politique,Antiquité
+-776101,Premiers Jeux Olympiques,Grèce antique,Sport,Antiquité
+-753101,Fondation légendaire de Rome,Royaume de Rome,Politique,Antiquité
+-539101,Prise de Babylone par Cyrus le Grand,Empire perse,Militaire,Antiquité
+-490101,Bataille de Marathon,Guerres médiques,Militaire,Antiquité
+-444101,Apogée d'Athènes sous Périclès,Grèce antique,Politique,Antiquité
+-336101,Avènement d'Alexandre le Grand,Macédoine antique,Politique,Antiquité
+-221101,Unification de la Chine par Qin Shi Huang,"Empire Qin, Chine",Politique,Antiquité
+-206101,Début de la dynastie Han,Chine,Politique,Antiquité
+-44101,Assassinat de Jules César,République romaine,Politique,Antiquité
+-4101,Naissance de Jésus-Christ (date traditionnelle),Judée,Religion,Antiquité
+70101,Destruction du Second Temple de Jérusalem,Judée,Religion,Antiquité
+79101,Éruption du Vésuve et destruction de Pompéi,Empire romain,Catastrophe,Antiquité
+121101,Construction du mur d'Hadrien,Bretagne romaine (Angleterre),Militaire,Antiquité
+220101,Période des Trois Royaumes,Chine,Politique,Antiquité
+285101,Partition de l'Empire romain par Dioclétien,Empire romain,Politique,Antiquité
+325101,Premier concile de Nicée,Asie Mineure,Religion,Antiquité
+410101,Prise de Rome par Alaric Ier,Empire romain d'Occident,Militaire,Antiquité
+455101,Prise de Rome par les Vandales,Empire romain d'Occident,Militaire,Antiquité
+476101,Chute de l'Empire romain d'Occident,Europe,Politique,Antiquité
+530101,Rédaction du Code Justinien,Empire byzantin,Droit,Moyen Âge
+570101,Naissance de Mahomet (date traditionnelle),Arabie,Religion,Moyen Âge
+618101,Début de la dynastie Tang,Chine,Politique,Moyen Âge
+800101,Couronnement de Charlemagne,Empire carolingien,Politique,Moyen Âge
+862101,Fondation de la Rus' de Kiev,Europe de l'Est,Politique,Moyen Âge
+925101,Établissement du califat de Cordoue,Al-Andalus (Espagne),Politique,Moyen Âge
+1054101,Grand Schisme d'Orient,Chrétienté,Religion,Moyen Âge
+1095101,Appel à la Première Croisade,Chrétienté,Religion,Moyen Âge
+1185101,Avènement de Gengis Khan,Empire mongol,Politique,Moyen Âge
+1215101,Magna Carta,Angleterre,Droit,Moyen Âge
+1299101,Fondation de l'Empire ottoman,Anatolie,Politique,Moyen Âge
+1346101,Bataille de Crécy,Guerre de Cent Ans,Militaire,Moyen Âge
+1347101,Arrivée de la Peste noire en Europe,Europe,Santé,Moyen Âge
+1368101,Début de la dynastie Ming,Chine,Politique,Moyen Âge
+1415101,Concile de Constance met fin au Grand Schisme d'Occident,Chrétienté,Religion,Moyen Âge
+1455101,Impression de la Bible de Gutenberg,Saint-Empire romain germanique,Technologie,Moyen Âge
+1485101,Fin de la Guerre des Deux-Roses,Angleterre,Militaire,Moyen Âge
+1498101,Vasco de Gama atteint l'Inde par voie maritime,Portugal,Exploration,Renaissance
+1502101,Premiers esclaves africains arrivés dans le Nouveau Monde,Amérique,Société,Renaissance
+1517101,Publication des 95 thèses de Martin Luther,Saxe (Allemagne),Religion,Renaissance
+1519101,Début de la conquête de l'Empire aztèque par Hernán Cortés,Mexique,Militaire,Renaissance
+1526101,Babur fonde l'Empire moghol,Inde,Politique,Renaissance
+1545101,Ouverture du Concile de Trente,États pontificaux,Religion,Renaissance
+1582101,Réforme grégorienne du calendrier,Chrétienté,Technologie,Renaissance
+1600101,Fondation de la Compagnie anglaise des Indes orientales,Angleterre,Économie,Époque moderne
+1603101,Début de la période Edo,Japon,Politique,Époque moderne
+1620101,Mayflower Compact signé par les Pères pèlerins,Amérique du Nord,Politique,Époque moderne
+1683101,Siège de Vienne par les Ottomans,Europe centrale,Militaire,Époque moderne
+1688101,Glorieuse Révolution,Angleterre,Politique,Époque moderne
+1707101,Acte d'Union entre l'Angleterre et l'Écosse,Royaume-Uni,Politique,Époque moderne
+1765101,Invention de la machine à vapeur par James Watt,Écosse,Technologie,Époque moderne
+1776101,Déclaration d'indépendance des États-Unis,Amérique du Nord,Politique,Époque moderne
+1783101,Traité de Paris met fin à la guerre d'indépendance américaine,Europe/Amérique du Nord,Politique,Époque moderne
+1789101,George Washington devient le premier président des États-Unis,États-Unis,Politique,Époque contemporaine
+1804101,Indépendance d'Haïti,Caraïbes,Politique,Époque contemporaine
+1825101,Indépendance de la Bolivie,Amérique du Sud,Politique,Époque contemporaine
+1833101,Abolition de l'esclavage dans l'Empire britannique,Royaume-Uni,Société,Époque contemporaine
+1839101,Première Guerre de l'opium,Chine/Royaume-Uni,Militaire,Époque contemporaine
+1848101,Publication du Manifeste du Parti communiste,Europe,Politique,Époque contemporaine
+1853101,Expédition du commodore Perry au Japon,Japon/États-Unis,Politique,Époque contemporaine
+1859101,Publication de L'Origine des espèces de Charles Darwin,Royaume-Uni,Science,Époque contemporaine
+1861101,Début de la guerre de Sécession,États-Unis,Militaire,Époque contemporaine
+1869101,Inauguration du canal de Suez,Égypte,Technologie,Époque contemporaine
+1885101,Conférence de Berlin sur le partage de l'Afrique,Europe/Afrique,Politique,Époque contemporaine
+1896101,Premiers Jeux Olympiques modernes,Grèce,Sport,Époque contemporaine
+1903101,Premier vol motorisé des frères Wright,États-Unis,Technologie,Époque contemporaine
+1905101,Théorie de la relativité restreinte d'Albert Einstein,Suisse,Science,Époque contemporaine
+1908101,"Révolution des Jeunes-Turcs, fin de l'Empire ottoman",Empire ottoman,Politique,Époque contemporaine
+1910101,Début de la révolution mexicaine,Mexique,Politique,Époque contemporaine
+1911101,Révolution chinoise de 1911 met fin à la dynastie Qing,Chine,Politique,Époque contemporaine
+1912101,Naufrage du Titanic,Océan Atlantique,Catastrophe,Époque contemporaine
+1917101,Entrée des États-Unis dans la Première Guerre mondiale,Europe/États-Unis,Militaire,Époque contemporaine
+1918101,Fin de la Première Guerre mondiale,Europe,Militaire,Époque contemporaine
+1919101,Fondation du Bauhaus,Allemagne,Art,Époque contemporaine
+1922101,Marche sur Rome de Benito Mussolini,Italie,Politique,Époque contemporaine
+1923101,Fondation de la République de Turquie par Mustafa Kemal Atatürk,Turquie,Politique,Époque contemporaine
+1928101,Découverte de la pénicilline par Alexander Fleming,Royaume-Uni,Science,Époque contemporaine
+1929101,Krach boursier de Wall Street,États-Unis,Économie,Époque contemporaine
+1933101,Adolf Hitler devient chancelier d'Allemagne,Allemagne,Politique,Époque contemporaine
+1936101,Début de la guerre d'Espagne,Espagne,Militaire,Époque contemporaine
+1939101,Pacte germano-soviétique,Europe,Politique,Époque contemporaine
+1940101,Bataille d'Angleterre,Royaume-Uni,Militaire,Époque contemporaine
+1941101,Attaque de Pearl Harbor,Hawaï/États-Unis,Militaire,Époque contemporaine
+1942101,Conférence de Wannsee,Allemagne,Politique,Époque contemporaine
+1943101,Bataille de Stalingrad,Union soviétique,Militaire,Époque contemporaine
+1944101,Débarquement de Normandie,France,Militaire,Époque contemporaine
+1945101,Bombardements atomiques d'Hiroshima et Nagasaki,Japon,Militaire,Époque contemporaine
+1947101,Indépendance de l'Inde et du Pakistan,Asie du Sud,Politique,Époque contemporaine
+1948101,Assassinat de Mahatma Gandhi,Inde,Politique,Époque contemporaine
+1949101,Proclamation de la République populaire de Chine,Chine,Politique,Époque contemporaine
+1950101,Début de la guerre de Corée,Corée,Militaire,Époque contemporaine
+1953101,Mort de Joseph Staline,Union soviétique,Politique,Époque contemporaine
+1955101,Conférence de Bandung,Indonésie,Politique,Époque contemporaine
+1957101,Traité de Rome instituant la Communauté économique européenne,Europe,Politique,Époque contemporaine
+1959101,Révolution cubaine,Cuba,Politique,Époque contemporaine
+1961101,Construction du mur de Berlin,Allemagne,Politique,Époque contemporaine
+1962101,Crise des missiles de Cuba,Cuba/États-Unis,Politique,Époque contemporaine
+1963101,Discours "I have a dream" de Martin Luther King,États-Unis,Société,Époque contemporaine
+1964101,Loi sur les droits civiques aux États-Unis,États-Unis,Société,Époque contemporaine
+1966101,Révolution culturelle en Chine,Chine,Politique,Époque contemporaine
+1967101,Guerre des Six Jours,Moyen-Orient,Militaire,Époque contemporaine
+1968101,Printemps de Prague,Tchécoslovaquie,Politique,Époque contemporaine
+1972101,Visite de Richard Nixon en Chine,Chine/États-Unis,Politique,Époque contemporaine
+1973101,Premier choc pétrolier,Moyen-Orient,Économie,Époque contemporaine
+1975101,Fin de la guerre du Vietnam,Vietnam,Militaire,Époque contemporaine
+1979101,Révolution iranienne,Iran,Politique,Époque contemporaine
+1980101,Grève de Gdańsk et naissance de Solidarność,Pologne,Politique,Époque contemporaine
+1981101,Première mission de la navette spatiale américaine,États-Unis,Technologie,Époque contemporaine
+1985101,Accords du Plaza,États-Unis/Japon/Europe,Économie,Époque contemporaine
+1986101,Catastrophe nucléaire de Tchernobyl,Union soviétique,Catastrophe,Époque contemporaine
+1987101,Krach boursier,États-Unis,Économie,Époque contemporaine
+1989101,Manifestations de la place Tian'anmen,Chine,Politique,Époque contemporaine
+1990101,Réunification allemande,Allemagne,Politique,Époque contemporaine
+1991101,Guerre du Golfe,Moyen-Orient,Militaire,Époque contemporaine
+1991101,Dissolution de l'URSS,Union soviétique,Politique,Époque contemporaine
+1994101,Génocide des Tutsis au Rwanda,Rwanda,Politique,Époque contemporaine
+1997101,Transfert de la souveraineté de Hong Kong,Chine/Royaume-Uni,Politique,Époque contemporaine
+1998101,Accord du Vendredi saint,Irlande du Nord,Politique,Époque contemporaine
+1999101,Introduction de l'euro,Europe,Économie,Époque contemporaine
+2001101,Attentats du 11 septembre,États-Unis,Terrorisme,XXIe siècle
+2003101,Début de la guerre d'Irak,Irak/États-Unis,Militaire,XXIe siècle
+2004101,Tsunami dans l'océan Indien,Asie du Sud/du Sud-Est,Catastrophe,XXIe siècle
+2008101,Élection de Barack Obama,États-Unis,Politique,XXIe siècle
+2008101,Crise financière mondiale,Monde,Économie,XXIe siècle
+2010101,Printemps arabe,Moyen-Orient/Afrique du Nord,Politique,XXIe siècle
+2011101,Mort d'Oussama ben Laden,Pakistan,Terrorisme,XXIe siècle
+2013101,Élection du pape François,Vatican,Religion,XXIe siècle
+
+2014101,Annexion de la Crimée par la Russie,Ukraine/Russie,Politique,XXIe siècle
+2015101,Accord de Paris sur le climat,Monde,Environnement,XXIe siècle
+2016101,Référendum sur le Brexit,Royaume-Uni,Politique,XXIe siècle
+2017101,Crise des rohingyas,Myanmar/Bangladesh,Politique,XXIe siècle
+2018101,Sommet historique entre les deux Corées,Corée du Nord/Corée du Sud,Politique,XXIe siècle
+2019101,Manifestations à Hong Kong,Hong Kong/Chine,Politique,XXIe siècle
+2020101,Pandémie de Covid-19,Monde,Santé,XXIe siècle
+2021101,Prise du Capitole américain,États-Unis,Politique,XXIe siècle
+2022101,Invasion de l'Ukraine par la Russie,Ukraine/Russie,Militaire,XXIe siècle
+-3500101,Développement de l'écriture hiéroglyphique,Égypte,Technologie,Antiquité
+-3000101,Période thinite,Égypte,Politique,Antiquité
+-2500101,Ancien Empire égyptien,Égypte,Politique,Antiquité
+-2300101,Période des dynasties archaïques,Mésopotamie,Politique,Antiquité
+-2000101,Construction de Stonehenge,Angleterre,Architecture,Antiquité
+-1800101,Période paléo-babylonienne,Mésopotamie,Politique,Antiquité
+-1600101,Civilisation mycénienne,Grèce,Société,Antiquité
+-1500101,Nouvel Empire égyptien,Égypte,Politique,Antiquité
+-1200101,Invasion dorienne,Grèce,Militaire,Antiquité
+-1000101,Royaumes d'Israël et de Juda,Israël/Palestine,Politique,Antiquité
+-800101,Période orientalisante,Grèce,Art,Antiquité
+-753101,Fondation légendaire de Rome par Romulus,Italie,Mythologie,Antiquité
+-600101,Période classique,Grèce,Art,Antiquité
+-551101,Confucius,Chine,Philosophie,Antiquité
+-500101,Guerres médiques,Grèce/Perse,Militaire,Antiquité
+-431101,Guerre du Péloponnèse,Grèce,Militaire,Antiquité
+-400101,Apogée de la Perse achéménide,Iran,Politique,Antiquité
+-323101,Mort d'Alexandre le Grand,Macédoine,Politique,Antiquité
+-300101,Construction du phare d'Alexandrie,Égypte,Architecture,Antiquité
+-264101,Première guerre punique,Rome/Carthage,Militaire,Antiquité
+-218101,Deuxième guerre punique,Rome/Carthage,Militaire,Antiquité
+-200101,Dynastie Han,Chine,Politique,Antiquité
+-146101,Destruction de Carthage,Tunisie,Militaire,Antiquité
+-100101,Période hellénistique,Méditerranée orientale,Art,Antiquité
+-27101,Début du principat d'Auguste,Rome,Politique,Antiquité
+180101,Apogée de l'Empire Romain,Rome,Politique,Antiquité
+313101,Édit de Milan,Rome,Religion,Antiquité
+330101,Fondation de Constantinople,Turquie,Politique,Antiquité
+395101,Partition définitive de l'Empire romain,Rome,Politique,Antiquité
+451101,Concile de Chalcédoine,Turquie,Religion,Antiquité
+632101,Mort de Mahomet,Arabie,Religion,Moyen Âge
+711101,Conquête musulmane de l'Espagne,Espagne,Militaire,Moyen Âge
+800101,Début de la période byzantine,Empire byzantin,Art,Moyen Âge
+988101,Christianisation de la Russie kiévienne,Russie,Religion,Moyen Âge
+1000101,Établissement du Royaume de Hongrie,Hongrie,Politique,Moyen Âge
+1066101,Conquête normande de l'Angleterre,Angleterre,Militaire,Moyen Âge
+1096101,Première croisade,Terre sainte,Religion,Moyen Âge
+1204101,Quatrième croisade et sac de Constantinople,Empire byzantin,Militaire,Moyen Âge
+1271101,Voyage de Marco Polo,Chine,Exploration,Moyen Âge
+1337101,Début de la guerre de Cent Ans,France/Angleterre,Militaire,Moyen Âge
+1378101,Grand schisme d'Occident,Chrétienté,Religion,Moyen Âge
+1453101,Prise de Constantinople par les Ottomans,Empire byzantin,Militaire,Moyen Âge
+1492101,Première expédition de Christophe Colomb,Amérique,Exploration,Renaissance
+1503101,Léonard de Vinci peint la Joconde,Italie,Art,Renaissance
+1521101,Excommunication de Luther,Allemagne,Religion,Renaissance
+1532101,Conquête Inca par Francisco Pizarro,Pérou,Militaire,Renaissance
+1543101,Publication de « De Revolutionibus » de Copernic,Pologne,Science,Renaissance
+1588101,Défaite de l'Invincible Armada,Angleterre/Espagne,Militaire,Renaissance
+1602101,Fondation de la Compagnie néerlandaise des Indes orientales,Pays-Bas,Économie,Époque moderne
+1618101,Début de la guerre de Trente Ans,Europe,Militaire,Époque moderne
+1644101,Prise de pouvoir des Qing en Chine,Chine,Politique,Époque moderne
+1689101,Bill of Rights,Angleterre,Droit,Époque moderne
+1721101,Traité de Nystad,Suède/Russie,Politique,Époque moderne
+1769101,James Watt brevète la machine à vapeur,Écosse,Technologie,Époque moderne
+1781101,Découverte d'Uranus par William Herschel,Angleterre,Science,Époque moderne
+1789101,Révolution française,France,Politique,Époque contemporaine
+1815101,Congrès de Vienne,Autriche,Politique,Époque contemporaine
+1830101,Indépendance de la Belgique,Belgique,Politique,Époque contemporaine
+1837101,Début du règne de la reine Victoria,Royaume-Uni,Politique,Époque contemporaine
+1846101,Guerre américano-mexicaine,États-Unis/Mexique,Militaire,Époque contemporaine
+1854101,Guerre de Crimée,Russie/France/Royaume-Uni,Militaire,Époque contemporaine
+1861101,Abolition du servage en Russie,Russie,Société,Époque contemporaine
+1867101,Confédération du Canada,Canada,Politique,Époque contemporaine
+1871101,Unification allemande,Allemagne,Politique,Époque contemporaine
+1876101,Exposition universelle de Philadelphie,États-Unis,Technologie,Époque contemporaine
+1884101,Conférence de Berlin sur l'Afrique,Allemagne,Politique,Époque contemporaine
+1891101,Encyclique Rerum novarum,Vatican,Religion,Époque contemporaine
+1894101,Guerre sino-japonaise,Chine/Japon,Militaire,Époque contemporaine
+1898101,Guerre hispano-américaine,États-Unis/Espagne,Militaire,Époque contemporaine
+1900101,Révolte des Boxers,Chine,Politique,Époque contemporaine
+1902101,Guerre des Boers,Afrique du Sud,Militaire,Époque contemporaine
+1903101,Traité de Hay-Bunau-Varilla,États-Unis/Panama,Politique,Époque contemporaine
+1904101,Entente cordiale,Royaume-Uni/France,Politique,Époque contemporaine
+1908101,Boycott des produits autrichiens par l'Empire ottoman,Empire ottoman/Autriche-Hongrie,Économie,Époque contemporaine
+1913101,Création de la Réserve fédérale des États-Unis,États-Unis,Économie,Époque contemporaine
+1917101,Révolution d'Octobre,Russie,Politique,Époque contemporaine
+1919101,Traité de Versailles,France,Politique,Époque contemporaine
+1920101,Traité de Sèvres,Turquie,Politique,Époque contemporaine
+1922101,Création de l'URSS,URSS,Politique,Époque contemporaine
+1923101,Putsch de la Brasserie,Allemagne,Politique,Époque contemporaine
+1925101,Procès du Singe,États-Unis,Société,Époque contemporaine
+1929101,Jeudi noir,États-Unis,Économie,Époque contemporaine
+1930101,Découverte de Pluton,États-Unis,Science,Époque contemporaine
+1931101,Invasion de la Mandchourie par le Japon,Chine/Japon,Militaire,Époque contemporaine
+1935101,Lois de Nuremberg,Allemagne,Politique,Époque contemporaine
+1938101,Nuit de Cristal,Allemagne,Société,Époque contemporaine
+1946101,Discours de Fulton par Churchill,États-Unis,Politique,Époque contemporaine
+1947101,Plan Marshall,Europe,Économie,Époque contemporaine
+1948101,Blocus de Berlin,Allemagne,Politique,Époque contemporaine
+1952101,Révolution égyptienne,Égypte,Politique,Époque contemporaine
+1954101,Début de la guerre d'Algérie,Algérie,Militaire,Époque contemporaine
+1956101,Crise de Suez,Égypte,Politique,Époque contemporaine
+1958101,Grand Bond en avant,Chine,Politique,Époque contemporaine
+1960101,Indépendance du Congo belge,Congo,Politique,Époque contemporaine
+1965101,Assassination de Malcolm X,États-Unis,Politique,Époque contemporaine
+1969101,Apollo 11 alunit sur la Lune,États-Unis,Technologie,Époque contemporaine
+1970101,Fin de la guerre du Biafra,Nigéria,Militaire,Époque contemporaine
+1971101,Indépendance du Bangladesh,Bangladesh,Politique,Époque contemporaine
+1974101,Révolution des Œillets,Portugal,Politique,Époque contemporaine
+1975101,Accords d'Helsinki,Europe,Politique,Époque contemporaine
+1976101,Mort de Mao Zedong,Chine,Politique,Époque contemporaine
+1977101,Coup d'état en Argentine,Argentine,Politique,Époque contemporaine
+1979101,Prise d'otages à l'ambassade américaine de Téhéran,Iran,Politique,Époque contemporaine
+1982101,Guerre des Malouines,Royaume-Uni/Argentine,Militaire,Époque contemporaine
+1983101,Invasion de la Grenade par les États-Unis,Grenade,Militaire,Époque contemporaine
+1984101,Assassinat d'Indira Gandhi,Inde,Politique,Époque contemporaine
+1988101,Fin de la Guerre Iran-Irak,Iran/Irak,Militaire,Époque contemporaine
+1989101,Massacre de la place Tian'anmen,Chine,Politique,Époque contemporaine
+1989101,Chute du mur de Berlin,Allemagne,Politique,Époque contemporaine
+1990101,Invasion du Koweït par l'Irak,Koweït/Irak,Militaire,Époque contemporaine
+1991101,Indépendance de la Slovénie et de la Croatie,Yougoslavie,Politique,Époque contemporaine
+1992101,Guerre civile en Bosnie-Herzégovine,Bosnie-Herzégovine,Militaire,Époque contemporaine
+1993101,Accords d'Oslo,Israël/Palestine,Politique,Époque contemporaine
+1994101,Fin de l'apartheid en Afrique du Sud,Afrique du Sud,Société,Époque contemporaine
+1995101,Accords de Dayton,Bosnie-Herzégovine,Politique,Époque contemporaine
+1996101,Clonage de la brebis Dolly,Royaume-Uni,Science,Époque contemporaine
+1997101,Crise économique asiatique,Asie du Sud-Est,Économie,Époque contemporaine
+1998101,Scandale Lewinsky,États-Unis,Politique,Époque contemporaine
+2000101,Élection de George W. Bush,États-Unis,Politique,XXIe siècle
+2002101,Création de l'euro,Europe,Économie,XXIe siècle
+2003101,Fin de la guerre civile au Libéria,Libéria,Militaire,XXIe siècle
+2004101,Élargissement de l'Union européenne à 10 nouveaux membres,Europe,Politique,XXIe siècle
+2005101,Ouragan Katrina,États-Unis,Catastrophe,XXIe siècle
+2006101,Exécution de Saddam Hussein,Irak,Politique,XXIe siècle
+2007101,Crise des subprimes,États-Unis,Économie,XXIe siècle
+2009101,Investiture de Barack Obama,États-Unis,Politique,XXIe siècle
+2010101,Tremblement de terre en Haïti,Haïti,Catastrophe,XXIe siècle
+2011101,Révolution égyptienne,Égypte,Politique,XXIe siècle
+2012101,Réélection de Barack Obama,États-Unis,Politique,XXIe siècle
+2013101,Coup d'État en Égypte,Égypte,Politique,XXIe siècle
+2014101,Début de la deuxième guerre civile libyenne,Libye,Militaire,XXIe siècle
+2015101,Crise des réfugiés en Europe,Europe,Société,XXIe siècle
+2016101,Coup d'État manqué en Turquie,Turquie,Politique,XXIe siècle
+2017101,Investiture de Donald Trump,États-Unis,Politique,XXIe siècle
+2018101,Mort de Jamal Khashoggi,Turquie,Politique,XXIe siècle
+2019101,Premier cas de Covid-19,Chine,Santé,XXIe siècle
+2020101,Mort de George Floyd,États-Unis,Société,XXIe siècle
+2021101,Assaut du Capitole,États-Unis,Politique,XXIe siècle
+2022101,Mort d'Elizabeth II,Royaume-Uni,Politique,XXIe siècle
