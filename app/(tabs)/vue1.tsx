@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import { supabase } from '../../supabaseClients';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '../styles/colors';
+import { useAdminStatus } from '../hooks/useAdminStatus';
 
 export default function Vue1() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allEvents, setAllEvents] = useState([]);
   const router = useRouter();
+  const { isAdmin } = useAdminStatus();
+  const [selectedStyle, setSelectedStyle] = useState(null);
 
   useEffect(() => {
     console.log("Vue1: Component mounted");
@@ -27,9 +33,6 @@ export default function Vue1() {
         console.error("Vue1: Supabase error:", error);
         throw error;
       }
-
-      console.log("Vue1: Received data from Supabase");
-      console.log("Vue1: Number of events received:", events ? events.length : 0);
 
       if (events && events.length > 0) {
         setAllEvents(events);
@@ -53,119 +56,108 @@ export default function Vue1() {
       if (randomEvent.illustration_url) {
         const isValid = await checkImageValidity(randomEvent.illustration_url);
         if (isValid) {
-          console.log("Vue1: Valid event found:", randomEvent);
           setEvent(randomEvent);
           return;
         }
       }
     }
-    console.log("Vue1: No valid event found");
     setEvent(null);
   }
 
   function checkImageValidity(url) {
     return new Promise((resolve) => {
       Image.prefetch(url)
-        .then(() => {
-          console.log("Vue1: Image prefetch successful");
-          resolve(true);
-        })
-        .catch((error) => {
-          console.log("Vue1: Image prefetch failed:", error);
-          resolve(false);
-        });
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
     });
   }
 
-  function handleReloadEvent() {
-    console.log("Vue1: Reloading event");
-    setLoading(true);
-    findValidEvent(allEvents);
-  }
+  const AdminButtons = () => {
+    if (!isAdmin) return null;
+
+    return (
+      <View style={styles.adminContainer}>
+        <TouchableOpacity 
+          style={styles.adminButton} 
+          onPress={() => router.push('/vue4')}
+        >
+          <Ionicons name="images-outline" size={24} color={colors.accent} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.adminButton} 
+          onPress={() => router.push('/vue5')}
+        >
+          <Ionicons name="grid-outline" size={24} color={colors.accent} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const handleStyleSelect = (style) => {
+    setSelectedStyle(style);
+  };
+
+  const handleStartGame = () => {
+    if (event && selectedStyle) {
+      router.push({
+        pathname: selectedStyle === 'style1' ? '/vue2a' : '/vue2b',
+        params: { initialEvent: JSON.stringify(event) }
+      });
+    }
+  };
 
   if (loading) {
-    console.log("Vue1: Rendering loading state");
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
-  console.log("Vue1: Rendering main content");
-  console.log("Vue1: Current event:", event);
-
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>zone infos téléphone batterie etc.</Text>
+      <StatusBar translucent backgroundColor="transparent" />
+      <AdminButtons />
+      
+      <Text style={styles.title}>Choisissez votre style de jeu</Text>
+
+      <View style={styles.gameStylesContainer}>
+        <TouchableOpacity
+          style={[
+            styles.styleCard,
+            selectedStyle === 'style1' && styles.selectedCard
+          ]}
+          onPress={() => handleStyleSelect('style1')}
+        >
+          <Text style={styles.styleTitle}>Style Classique</Text>
+          <Text style={styles.styleDescription}>
+            Devinez si l'événement s'est passé avant ou après l'événement de référence
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.styleCard,
+            selectedStyle === 'style2' && styles.selectedCard
+          ]}
+          onPress={() => handleStyleSelect('style2')}
+        >
+          <Text style={styles.styleTitle}>Style Duo</Text>
+          <Text style={styles.styleDescription}>
+            Entre deux événements, sélectionnez le plus récent
+          </Text>
+        </TouchableOpacity>
       </View>
-      
-      {event ? (
-        <>
-          <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: event.illustration_url }}
-              style={styles.image} 
-              resizeMode="cover"
-            />
-          </View>
-          
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>{event.titre}</Text>
-          </View>
-          
-          <View style={styles.dateContainer}>
-            <Text style={styles.date}>{event.date}</Text>
-          </View>
-        </>
-      ) : (
-        <Text style={styles.noEventText}>Aucun événement disponible</Text>
-      )}
-      
-      <TouchableOpacity 
-        style={styles.buttonContainer}
-        onPress={() => {
-          console.log("Vue1: Navigating to Vue2");
-          if (event) {
-            router.push({
-              pathname: '/vue2',
-              params: { initialEvent: JSON.stringify(event) }
-            });
-          } else {
-            console.log("Vue1: Cannot navigate, no event available");
-          }
-        }}
-        disabled={!event}
-      >
-        <Text style={styles.buttonText}>C'est parti !</Text>
-      </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.buttonContainer}
-        onPress={() => {
-          console.log("Vue1: Navigating to Vue3");
-          router.push('/vue3');
-        }}
+      <TouchableOpacity
+        style={[
+          styles.startButton,
+          !selectedStyle && styles.disabledButton
+        ]}
+        onPress={handleStartGame}
+        disabled={!selectedStyle}
       >
-        <Text style={styles.buttonText}>Voir événement transitoire</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-  style={styles.buttonContainer}
-  onPress={() => {
-    console.log("Vue1: Navigating to Vue4");
-    router.push('/vue4');
-  }}
->
-  <Text style={styles.buttonText}>Galerie des événements</Text>
-</TouchableOpacity>
-
-      <TouchableOpacity 
-        style={styles.reloadButton}
-        onPress={handleReloadEvent}
-      >
-        <Text style={styles.reloadButtonText}>Recharger un événement</Text>
+        <Text style={styles.startButtonText}>Commencer</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -174,72 +166,85 @@ export default function Vue1() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f4e4bc',
+    padding: 20,
   },
-  header: {
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
+  adminContainer: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    flexDirection: 'row',
+    gap: 10,
+    zIndex: 1000,
   },
-  headerText: {
-    fontSize: 12,
-  },
-  imageContainer: {
-    flex: 1,
-    margin: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  titleContainer: {
-    padding: 10,
-    backgroundColor: '#e0e0e0',
+  adminButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginTop: 60,
+    marginBottom: 30,
+    color: '#6b4423',
   },
-  dateContainer: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
+  gameStylesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 20,
   },
-  date: {
+  styleCard: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  selectedCard: {
+    backgroundColor: '#ffd700',
+    transform: [{ scale: 1.02 }],
+  },
+  styleTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#6b4423',
+  },
+  styleDescription: {
     fontSize: 16,
-    textAlign: 'center',
+    color: '#666',
+    lineHeight: 22,
   },
-  noEventText: {
-    fontSize: 18,
-    textAlign: 'center',
+  startButton: {
+    backgroundColor: '#6b4423',
+    paddingVertical: 15,
+    borderRadius: 30,
     marginTop: 20,
-    color: 'red',
+    marginBottom: 30,
   },
-  buttonContainer: {
-    margin: 10,
-    padding: 15,
-    backgroundColor: '#4a90e2',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  buttonText: {
+  startButtonText: {
     color: 'white',
+    textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  reloadButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  reloadButtonText: {
-    color: '#333',
-    fontSize: 14,
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
 });

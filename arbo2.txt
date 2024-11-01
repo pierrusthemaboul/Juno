@@ -1,0 +1,161 @@
+pierre@pierre-BOHK-WAX9X:~/Juno$ tree -I 'node_modules|.git|venv'
+.
+├── allez.py
+├── AnimatedEventCard.tsx (
+├── app
+│   ├── auth
+│   │   ├── _layout.tsx
+│   │   ├── Login.tsx
+│   │   └── signup.tsx
+│   ├── components
+│   │   ├── AnimatedEventCard.tsx
+│   │   ├── ChoiceButtonsB.tsx
+│   │   ├── ChoiceButtons.tsx
+│   │   ├── Countdown.tsx
+│   │   ├── EventContainer.tsx
+│   │   ├── GameContentB.tsx
+│   │   ├── GameContent.tsx
+│   │   ├── GameLayoutB.tsx
+│   │   ├── GameOverModal.tsx
+│   │   ├── NewEvent.tsx
+│   │   ├── PreviousEvent.tsx
+│   │   └── UserInfo.tsx
+│   ├── hooks
+│   │   ├── useAdminStatus.ts
+│   │   ├── useGameLogicB.ts
+│   │   └── useGameLogic.ts
+│   ├── +html.tsx
+│   ├── _layout.tsx
+│   ├── +not-found.tsx
+│   ├── styles
+│   │   ├── colors.ts
+│   │   ├── indexStyles.ts
+│   │   ├── loginStyles.ts
+│   │   ├── signupStyles.ts
+│   │   ├── vue2bStyles.ts
+│   │   └── vue2styles.ts
+│   ├── (tabs)
+│   │   ├── explore.tsx
+│   │   ├── index.tsx
+│   │   ├── _layout.tsx
+│   │   ├── vue1.tsx
+│   │   ├── vue2ab.tsx
+│   │   ├── vue2a.tsx
+│   │   ├── vue2b.tsx
+│   │   ├── vue3.tsx
+│   │   ├── vue4.tsx
+│   │   └── vue5.tsx
+│   └── types.ts~#
+├── app.json
+├── arborescence_app_complete.txt
+├── arborescence_app.txt
+├── arborescence_propre_sanslib.txt
+├── arborescence_propre.txt
+├── assets
+│   ├── fonts
+│   │   └── SpaceMono-Regular.ttf
+│   └── images
+│       ├── adaptive-icon.png
+│       ├── bgvue2.webp
+│       ├── default-image.png
+│       ├── e0611baa-f2ff-4066-a1f3-69c4d9beaeeb.pdf
+│       ├── favicon.png
+│       ├── icon.png
+│       ├── images_evenements
+│       │   ├── 1492-10-12_Découverte_de_l_Amérique.webp
+│       │   ├── 1945-08-06_Bombardement_d_Hiroshima.webp
+│       │   └── chute mur berlin.webp
+│       ├── partial-react-logo.png
+│       ├── quipasse.webp
+│       ├── react-logo@2x.png
+│       ├── react-logo@3x.png
+│       ├── react-logo.png
+│       └── splash.png
+├── babel.config.js
+├── combinaison.py
+├── combined_processor.py
+├── components
+│   ├── Collapsible.tsx
+│   ├── ExternalLink.tsx
+│   ├── HelloWave.tsx
+│   ├── navigation
+│   │   └── TabBarIcon.tsx
+│   ├── ParallaxScrollView.tsx
+│   ├── __tests__
+│   │   ├── __snapshots__
+│   │   │   └── ThemedText-test.tsx.snap
+│   │   └── ThemedText-test.tsx
+│   ├── ThemedText.tsx
+│   └── ThemedView.tsx
+├── compress-images.js
+├── constants
+│   └── Colors.ts
+├── dateuni.csv
+├── downloaded_images
+├── english.py
+├── envoyer2.py
+├── envoyerfr.py
+├── envoyer.py
+├── etransi.py
+├── event_processor.py
+├── expo-env.d.ts
+├── hooks
+│   ├── useColorScheme.ts
+│   ├── useColorScheme.web.ts
+│   └── useThemeColor.ts
+├── liste.py
+├── logs
+│   └── dalle_processor_20241028_105307.log
+├── package.json
+├── package-lock.json
+├── principal.py
+├── processed_batches
+│   ├── batch_01.json
+│   ├── batch_02.json
+│   ├── batch_03.json
+│   ├── batch_04.json
+│   ├── batch_05.json
+│   └── batch_06.json
+├── processed_images_20241025_165814.csv
+├── __pycache__
+│   ├── combined_processor.cpython-312.pyc
+│   └── turbo4.cpython-312.pyc
+├── README.md
+├── rename_files.py
+├── rename_images.py
+├── rename.py
+├── reports
+├── requirements.txt
+├── results
+├── scripts
+│   └── reset-project.js
+├── supabaseClients.ts
+├── temp_compressed
+│   ├── 100e9c71_1730109306.webp
+│   ├── 6a0345bd_1730109196.webp
+│   ├── 748d2e61_1730109323.webp
+│   ├── a708bb33_1730109238.webp
+│   └── c4d616cc_1730109286.webp
+├── testcrea.csv
+├── testimage.py
+├── teststable.py
+├── tsconfig.json
+├── turbo2.js
+├── turbo4.py
+├── turbo.py
+├── unified_image_processing.py
+├── univers2.csv
+├── universel.csv
+├── upand.py
+├── update_log.txt
+├── upgo.py
+├── upload
+│   ├── upload_report_2024-10-28T1515.csv
+│   ├── upload_report_2024-10-28T1702.csv
+│   ├── upload_report_2024-10-28T1709.csv
+│   ├── upload_report_2024-10-28T1919.csv
+│   ├── upload_report_2024-10-29T0525.csv
+│   └── upload_report_2024-10-29T0709.csv
+└── validate_events.py
+
+26 directories, 132 files
