@@ -1,26 +1,34 @@
-// ChoiceButtons.tsx
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
-import { colors } from '../styles/colors';
+
+interface ChoiceButtonsProps {
+  onChoice: (choice: 'avant' | 'après') => void;
+  disabled?: boolean;
+}
 
 const { width } = Dimensions.get('window');
 
-const ChoiceButtons = ({ onChoice, disabled }) => {
+const ChoiceButtons: React.FC<ChoiceButtonsProps> = ({ onChoice, disabled = false }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity 
-        style={[styles.button, styles.beforeButton, disabled && styles.disabledButton]} 
+        style={[styles.button, styles.beforeButton, disabled && styles.disabledButton]}
         onPress={() => onChoice('avant')}
         disabled={disabled}
       >
-        <Text style={styles.buttonText}>Avant</Text>
+        <Text style={[styles.buttonText, disabled && styles.disabledText]}>
+          Avant
+        </Text>
       </TouchableOpacity>
+
       <TouchableOpacity 
-        style={[styles.button, styles.afterButton, disabled && styles.disabledButton]} 
+        style={[styles.button, styles.afterButton, disabled && styles.disabledButton]}
         onPress={() => onChoice('après')}
         disabled={disabled}
       >
-        <Text style={styles.buttonText}>Après</Text>
+        <Text style={[styles.buttonText, disabled && styles.disabledText]}>
+          Après
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -28,42 +36,48 @@ const ChoiceButtons = ({ onChoice, disabled }) => {
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    bottom: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
-    marginTop: 15,
-    width: '90%',
+    width: width * 0.9,
+    paddingHorizontal: 20,
   },
   button: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
     borderRadius: 25,
     elevation: 5,
-    width: '40%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    width: width * 0.35,
   },
   beforeButton: {
-    backgroundColor: colors.beforeButton,
+    backgroundColor: '#FF6B6B',
     transform: [{ rotate: '-3deg' }],
   },
   afterButton: {
-    backgroundColor: colors.afterButton,
+    backgroundColor: '#4ECDC4',
     transform: [{ rotate: '3deg' }],
   },
   disabledButton: {
-    backgroundColor: colors.disabledButton,
+    backgroundColor: '#CCCCCC',
     elevation: 0,
-    shadowOpacity: 0,
     transform: [{ rotate: '0deg' }],
   },
   buttonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  disabledText: {
+    color: '#999999',
   },
 });
 

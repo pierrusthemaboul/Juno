@@ -1,186 +1,270 @@
-import React from 'react';
-import { 
-  View, 
-  Image, 
-  Text, 
-  StyleSheet, 
-  Animated, 
-  TouchableOpacity,
-  Dimensions 
-} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Image, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../styles/colors';
 
-interface AnimatedEventCardProps {
+const { width, height } = Dimensions.get('window');
+const CARD_HEIGHT = height * 0.35;
+
+interface AnimatedEventCardAProps {
   event: any;
-  position: 'left' | 'right';
-  onSelect: () => void;
+  position: 'top' | 'bottom';
   onImageLoad?: () => void;
   showDate?: boolean;
   isCorrect?: boolean;
-  isSelected?: boolean;
-  isSelectable: boolean;
+  onChoice?: (choice: string) => void;
+  isSelectable?: boolean;
 }
 
-const AnimatedEventCard: React.FC<AnimatedEventCardProps> = ({
+const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
   event,
   position,
-  onSelect,
   onImageLoad,
-  showDate,
+  showDate = false,
   isCorrect,
-  isSelected,
+  onChoice,
   isSelectable,
 }) => {
-  const slideAnim = React.useRef(new Animated.Value(
-    position === 'left' ? -Dimensions.get('window').width : Dimensions.get('window').width
-  )).current;
+  const dateScale = useRef(new Animated.Value(1)).current;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
+  useEffect(() => {
+    if (position === 'bottom' && showDate) {
+      Animated.sequence([
+        Animated.timing(dateScale, {
+          toValue: 1.2,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dateScale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        })
+      ]).start();
+    }
+  }, [showDate]);
+
+  const getYearFromDate = (dateString: string): string => {
+    try {
+      if (/^\d{4}$/.test(dateString)) return dateString;
+      if (dateString.includes('-')) return dateString.split('-')[0];
+      return dateString;
+    } catch (error) {
+      console.error('Error extracting year from date:', error);
+      return dateString;
+    }
   };
 
-  React.useEffect(() => {
-    console.log('AnimatedEventCard mounted:', {
-      title: event?.titre,
-      position,
-      isSelected,
-      isCorrect,
-      showDate,
-      isSelectable
-    });
+  const renderEventTitle = () => (
+    <View style={[styles.titleWrapper, position === 'top' ? styles.topTitleWrapper : styles.bottomTitleWrapper]}>
+      <Text style={[styles.title, position === 'top' ? styles.titleTop : styles.titleBottom]} numberOfLines={2}>
+        {event?.titre}
+      </Text>
+    </View>
+  );
 
-    Animated.spring(slideAnim, {
-      toValue: 0,
-      useNativeDriver: true,
-      friction: 8,
-      tension: 40
-    }).start();
-  }, [event.id, isSelected, isCorrect, showDate]);
-
-  const getBorderColor = () => {
-    if (!isSelected || !showDate) return 'transparent';
-    return isCorrect ? colors.correctGreen : colors.incorrectRed;
+  const renderButtons = () => {
+    if (position === 'bottom' && !showDate) {
+      return (
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity 
+            style={[styles.button, styles.buttonLeft]}
+            onPress={() => onChoice?.('avant')}
+            disabled={!isSelectable}
+          >
+            <Text style={styles.buttonText}>avant</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.button, styles.buttonRight]}
+            onPress={() => onChoice?.('après')}
+            disabled={!isSelectable}
+          >
+            <Text style={styles.buttonText}>après</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return null;
   };
 
-  const getOverlayStyle = () => {
-    if (!showDate) return styles.overlay;
-    return [
-      styles.overlay,
-      {
-        backgroundColor: isSelected 
-          ? isCorrect 
-            ? 'rgba(39, 174, 96, 0.9)' 
-            : 'rgba(231, 76, 60, 0.9)'
-          : 'rgba(0, 0, 0, 0.7)'
-      }
-    ];
-  };
+  const renderDate = () => {
+    if ((position === 'top' || showDate) && event?.date) {
+      const overlayStyle = [
+        styles.dateOverlay,
+        position === 'top' ? styles.topOverlay : null,
+        position === 'bottom' && isCorrect !== undefined && (
+          isCorrect ? styles.correctOverlay : styles.incorrectOverlay
+        )
+      ];
 
-  console.log('AnimatedEventCard render:', {
-    title: event?.titre,
-    showDate,
-    isCorrect,
-    isSelected,
-    borderColor: getBorderColor()
-  });
+      return (
+        <Animated.View style={overlayStyle}>
+          <Animated.Text 
+            style={[
+              styles.date,
+              { transform: [{ scale: dateScale }] }
+            ]}
+          >
+            {getYearFromDate(event.date)}
+          </Animated.Text>
+        </Animated.View>
+      );
+    }
+    return null;
+  };
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        { transform: [{ translateX: slideAnim }] }
-      ]}
-    >
-      <TouchableOpacity
-        style={[
-          styles.card,
-          { borderColor: getBorderColor() },
-          isSelected && styles.selectedCard,
-          !isSelectable && styles.disabledCard
-        ]}
-        onPress={() => {
-          console.log('Card pressed:', {
-            title: event?.titre,
-            isSelectable,
-            isSelected
-          });
-          onSelect();
-        }}
-        disabled={!isSelectable}
-      >
-        <Image
-          source={{ uri: event?.illustration_url }}
-          style={styles.image}
-          resizeMode="cover"
-          onLoad={onImageLoad}
-        />
-        <View style={getOverlayStyle()}>
-          <Text style={styles.title} numberOfLines={2}>
-            {event?.titre}
-          </Text>
-          {showDate && (
-            <Text style={styles.date}>
-              {formatDate(event?.date)}
-            </Text>
-          )}
+    <View style={styles.container}>
+      {position === 'top' && renderEventTitle()}
+      <View style={[styles.cardFrame, position === 'bottom' && styles.bottomCardFrame]}>
+        <View style={styles.cardContent}>
+          <Image
+            source={{ uri: event?.illustration_url }}
+            style={styles.image}
+            onLoad={onImageLoad}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.gradient}
+          />
+          {renderDate()}
         </View>
-      </TouchableOpacity>
-    </Animated.View>
+      </View>
+      {position === 'bottom' && (
+        <>
+          {renderEventTitle()}
+          {renderButtons()}
+        </>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
+    padding: 8,
   },
-  card: {
-    flex: 1,
-    borderRadius: 15,
-    overflow: 'hidden',
-    backgroundColor: colors.cardBackground,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  cardFrame: {
+    height: CARD_HEIGHT,
+    borderRadius: 20,
     borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  bottomCardFrame: {
+    marginBottom: 60, // Space for buttons
+  },
+  cardContent: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   image: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
   },
-  overlay: {
+  gradient: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    height: '40%',
+  },
+  titleWrapper: {
+    width: '100%',
+    padding: 12,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 10,
+    borderRadius: 10,
+  },
+  topTitleWrapper: {
+    marginBottom: 8,
+  },
+  bottomTitleWrapper: {
+    marginTop: 8,
+    marginBottom: 8,
   },
   title: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: 'white',
     textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  titleTop: {
+    letterSpacing: 0.5,
+  },
+  titleBottom: {
+    letterSpacing: 0,
+  },
+  dateOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  correctOverlay: {
+    backgroundColor: 'rgba(39, 174, 96, 0.8)',
+  },
+  incorrectOverlay: {
+    backgroundColor: 'rgba(231, 76, 60, 0.8)',
   },
   date: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'white',
+    fontSize: 48,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+  },
+  button: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    width: '45%',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  buttonLeft: {
+    transform: [{ rotate: '-2deg' }],
+  },
+  buttonRight: {
+    transform: [{ rotate: '2deg' }],
+  },
+  buttonText: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
     textAlign: 'center',
-    marginTop: 5,
-  },
-  selectedCard: {
-    borderWidth: 3,
-  },
-  disabledCard: {
-    opacity: 0.7,
-  },
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  }
 });
 
-export default AnimatedEventCard;
+export default AnimatedEventCardA;
