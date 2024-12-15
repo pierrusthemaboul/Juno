@@ -1,14 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../styles/colors';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 
 interface CountdownProps {
   timeLeft: number;
 }
 
 const Countdown: React.FC<CountdownProps> = ({ timeLeft }) => {
+  const getColor = () => {
+    if (timeLeft > 14) return '#4ECDC4';
+    if (timeLeft > 7) return '#FFA726';
+    return '#FF5252';
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: getColor() }]}>
       <Text style={styles.text}>{timeLeft}</Text>
     </View>
   );
@@ -16,18 +21,25 @@ const Countdown: React.FC<CountdownProps> = ({ timeLeft }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.accent,
     width: 40,
     height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
   },
   text: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
-  },
+  }
 });
 
 export default Countdown;

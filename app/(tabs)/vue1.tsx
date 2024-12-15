@@ -1,250 +1,343 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
-import { supabase } from '../../supabaseClients';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar,
+  Animated,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../styles/colors';
-import { useAdminStatus } from '../hooks/useAdminStatus';
+import useAdminStatus from '../hooks/useAdminStatus';
+import GeometricBackground from '../components/GeometricBackground';
+import styles from '../styles/vue1styles';
 
-export default function Vue1() {
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [allEvents, setAllEvents] = useState([]);
-  const router = useRouter();
-  const { isAdmin } = useAdminStatus();
-  const [selectedStyle, setSelectedStyle] = useState(null);
+const AnimatedVisual = ({ type, selected }) => {
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    console.log("Vue1: Component mounted");
-    fetchAllEvents();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
-  async function fetchAllEvents() {
-    console.log("Vue1: Fetching all events");
-    try {
-      setLoading(true);
-      let { data: events, error } = await supabase
-        .from('evenements')
-        .select('*')
-        .order('id', { ascending: false });
+  const visualColor = selected ? '#FFFFFF' : '#FF4B2B';
 
-      if (error) {
-        console.error("Vue1: Supabase error:", error);
-        throw error;
-      }
-
-      if (events && events.length > 0) {
-        setAllEvents(events);
-        await findValidEvent(events);
-      } else {
-        console.log("Vue1: No events received or empty events array");
-        setEvent(null);
-      }
-    } catch (error) {
-      console.error('Vue1: Error fetching events:', error);
-      setEvent(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function findValidEvent(events) {
-    for (let i = 0; i < events.length; i++) {
-      const randomIndex = Math.floor(Math.random() * events.length);
-      const randomEvent = events[randomIndex];
-      if (randomEvent.illustration_url) {
-        const isValid = await checkImageValidity(randomEvent.illustration_url);
-        if (isValid) {
-          setEvent(randomEvent);
-          return;
-        }
-      }
-    }
-    setEvent(null);
-  }
-
-  function checkImageValidity(url) {
-    return new Promise((resolve) => {
-      Image.prefetch(url)
-        .then(() => resolve(true))
-        .catch(() => resolve(false));
-    });
-  }
-
-  const AdminButtons = () => {
-    if (!isAdmin) return null;
-
+  if (type === 'chronological') {
     return (
-      <View style={styles.adminContainer}>
-        <TouchableOpacity 
-          style={styles.adminButton} 
-          onPress={() => router.push('/vue4')}
-        >
-          <Ionicons name="images-outline" size={24} color={colors.accent} />
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.adminButton} 
-          onPress={() => router.push('/vue5')}
-        >
-          <Ionicons name="grid-outline" size={24} color={colors.accent} />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const handleStyleSelect = (style) => {
-    setSelectedStyle(style);
-  };
-
-  const handleStartGame = () => {
-    if (event && selectedStyle) {
-      router.push({
-        pathname: selectedStyle === 'style1' ? '/vue2a' : '/vue2b',
-        params: { initialEvent: JSON.stringify(event) }
-      });
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.modeVisual}>
+        <Animated.View style={[
+          styles.timelineDot,
+          { backgroundColor: visualColor },
+          { transform: [{ scale: pulseAnim }] }
+        ]} />
+        <Animated.View style={[
+          styles.timelineArrow,
+          { backgroundColor: visualColor },
+          {
+            transform: [{
+              scaleX: rotateAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 1.2]
+              })
+            }]
+          }
+        ]} />
+        <Animated.View style={[
+          styles.timelineDot,
+          { backgroundColor: visualColor },
+          { transform: [{ scale: pulseAnim }] }
+        ]} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" />
-      <AdminButtons />
-      
-      <Text style={styles.title}>Choisissez votre style de jeu</Text>
+    <View style={styles.comparisonCircles}>
+      <Animated.View style={[
+        styles.circle,
+        { borderColor: visualColor },
+        { transform: [{ scale: pulseAnim }] }
+      ]}>
+        <Text style={[styles.circleText, { color: visualColor }]}>1</Text>
+      </Animated.View>
+      <Animated.View style={{
+        transform: [{
+          rotate: rotateAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0deg', '180deg']
+          })
+        }]
+      }}>
+        <Ionicons name="swap-horizontal" size={28} color={visualColor} />
+      </Animated.View>
+      <Animated.View style={[
+        styles.circle,
+        { borderColor: visualColor },
+        { transform: [{ scale: pulseAnim }] }
+      ]}>
+        <Text style={[styles.circleText, { color: visualColor }]}>2</Text>
+      </Animated.View>
+    </View>
+  );
+};
 
-      <View style={styles.gameStylesContainer}>
-        <TouchableOpacity
-          style={[
-            styles.styleCard,
-            selectedStyle === 'style1' && styles.selectedCard
-          ]}
-          onPress={() => handleStyleSelect('style1')}
-        >
-          <Text style={styles.styleTitle}>Style Classique</Text>
-          <Text style={styles.styleDescription}>
-            Devinez si l'événement s'est passé avant ou après l'événement de référence
-          </Text>
-        </TouchableOpacity>
+const GameModeCard = ({ type, title, description, selected, onSelect, isFirst }) => {
+  const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
 
-        <TouchableOpacity
-          style={[
-            styles.styleCard,
-            selectedStyle === 'style2' && styles.selectedCard
-          ]}
-          onPress={() => handleStyleSelect('style2')}
-        >
-          <Text style={styles.styleTitle}>Style Duo</Text>
-          <Text style={styles.styleDescription}>
-            Entre deux événements, sélectionnez le plus récent
-          </Text>
-        </TouchableOpacity>
-      </View>
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(isFirst ? 100 : 300),
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 20,
+          friction: 7,
+          useNativeDriver: true
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true
+        })
+      ])
+    ]).start();
+  }, []);
 
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.spring(rotateAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 5,
+        useNativeDriver: true
+      }),
+      Animated.spring(rotateAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 5,
+        useNativeDriver: true
+      })
+    ]).start();
+
+    onSelect();
+  };
+
+  return (
+    <Animated.View style={[
+      styles.cardContainer,
+      {
+        opacity: opacityAnim,
+        transform: [
+          { scale: scaleAnim },
+          {
+            rotate: rotateAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['0deg', '3deg']
+            })
+          }
+        ]
+      }
+    ]}>
       <TouchableOpacity
-        style={[
-          styles.startButton,
-          !selectedStyle && styles.disabledButton
-        ]}
-        onPress={handleStartGame}
-        disabled={!selectedStyle}
+        style={[styles.card, selected && styles.selectedCard]}
+        onPress={handlePress}
+        activeOpacity={0.9}
       >
-        <Text style={styles.startButtonText}>Commencer</Text>
+        <LinearGradient
+          colors={selected ? ['#FF4B2B', '#FF416C'] : ['#FFFFFF', '#FFFFFF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
+        >
+          <Text style={[
+            styles.cardTitle,
+            selected && styles.selectedText
+          ]}>{title}</Text>
+          <Text style={[
+            styles.cardDescription,
+            selected && styles.selectedText
+          ]}>{description}</Text>
+          <AnimatedVisual type={type} selected={selected} />
+        </LinearGradient>
       </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+export default function Vue1() {
+  const [selectedMode, setSelectedMode] = useState(null);
+  const buttonAnim = React.useRef(new Animated.Value(0)).current;
+  const titleAnim = React.useRef(new Animated.Value(0)).current;
+  const router = useRouter();
+  const { isAdmin } = useAdminStatus();
+
+  useEffect(() => {
+    Animated.spring(titleAnim, {
+      toValue: 1,
+      tension: 20,
+      friction: 7,
+      useNativeDriver: true
+    }).start();
+  }, []);
+
+  useEffect(() => {
+    Animated.spring(buttonAnim, {
+      toValue: selectedMode ? 1 : 0,
+      tension: 50,
+      friction: 7,
+      useNativeDriver: true
+    }).start();
+  }, [selectedMode]);
+
+  const handleStartGame = () => {
+    if (!selectedMode) return;
+    
+    Animated.parallel([
+      Animated.timing(titleAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true
+      }),
+      Animated.timing(buttonAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true
+      })
+    ]).start(() => {
+      router.push(selectedMode === 'chronological' ? '/vue2a' : '/vue2b');
+    });
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <LinearGradient
+        colors={['#FFE4D6', '#FFF5E6']}
+        style={styles.container}
+      >
+        <GeometricBackground />
+
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={() => router.push('/vue6')}
+          >
+            <Ionicons name="time-outline" size={24} color="#FF4B2B" />
+            <Text style={styles.headerButtonText}>Histoire</Text>
+          </TouchableOpacity>
+
+          {isAdmin && (
+            <>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={() => router.push('/vue4')}
+              >
+                <Ionicons name="images-outline" size={24} color="#FF4B2B" />
+                <Text style={styles.headerButtonText}>Images</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={() => router.push('/vue5')}
+              >
+                <Ionicons name="settings-outline" size={24} color="#FF4B2B" />
+                <Text style={styles.headerButtonText}>Admin</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        <View style={styles.content}>
+          <Animated.View style={[
+            styles.cardsContainer,
+            {
+              transform: [{
+                translateY: titleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0]
+                })
+              }]
+            }
+          ]}>
+            <GameModeCard
+              type="chronological"
+              title="Mode Avant/Après"
+              description="Voyagez dans le temps ! Un événement référence vous est donné, devinez si le nouvel événement s'est passé avant ou après."
+              selected={selectedMode === 'chronological'}
+              onSelect={() => setSelectedMode('chronological')}
+              isFirst
+            />
+
+            <GameModeCard
+              type="comparison"
+              title="Mode Comparaison"
+              description="Défiez votre instinct ! Entre deux événements historiques, identifiez celui qui s'est déroulé le plus récemment."
+              selected={selectedMode === 'comparison'}
+              onSelect={() => setSelectedMode('comparison')}
+            />
+          </Animated.View>
+
+          <Animated.View style={[
+            styles.startButtonContainer,
+            {
+              opacity: buttonAnim,
+              transform: [{
+                translateY: buttonAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0]
+                })
+              }]
+            }
+          ]}>
+            <TouchableOpacity
+              style={[styles.startButton, !selectedMode && styles.startButtonDisabled]}
+              onPress={handleStartGame}
+              disabled={!selectedMode}
+            >
+              <LinearGradient
+                colors={selectedMode ? ['#FF4B2B', '#FF416C'] : ['#CCCCCC', '#BBBBBB']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.startButtonGradient}
+              >
+                <Text style={styles.startButtonText}>Commencer l'aventure</Text>
+                <Ionicons name="arrow-forward" size={24} color="white" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f4e4bc',
-    padding: 20,
-  },
-  adminContainer: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    flexDirection: 'row',
-    gap: 10,
-    zIndex: 1000,
-  },
-  adminButton: {
-    padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 30,
-    color: '#6b4423',
-  },
-  gameStylesContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: 20,
-  },
-  styleCard: {
-    backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  selectedCard: {
-    backgroundColor: '#ffd700',
-    transform: [{ scale: 1.02 }],
-  },
-  styleTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#6b4423',
-  },
-  styleDescription: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
-  },
-  startButton: {
-    backgroundColor: '#6b4423',
-    paddingVertical: 15,
-    borderRadius: 30,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  startButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  disabledButton: {
-    backgroundColor: '#ccc',
-  },
-});

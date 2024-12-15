@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClients';
 
-export const useGameLogic = (initialEvent) => {
+const useGameLogic = (initialEvent) => {
   const [user, setUser] = useState({ name: '', points: 0, lives: 3 });
   const [previousEvent, setPreviousEvent] = useState(JSON.parse(initialEvent));
   const [newEvent, setNewEvent] = useState(null);
@@ -195,3 +195,5 @@ export const useGameLogic = (initialEvent) => {
     restartGame
   };
 };
+
+export default useGameLogic;

@@ -36,7 +36,7 @@ interface UsedEventPair {
   event2Id: string;
 }
 
-export const useGameLogicB = () => {
+const useGameLogicB = () =>{
   // États de base
   const [user, setUser] = useState<User>({ name: '', points: 0, lives: 3, level: 1 });
   const [currentEvents, setCurrentEvents] = useState<EventPair | null>(null);
@@ -324,3 +324,5 @@ export const useGameLogicB = () => {
     restartGame
   };
 };
+
+export default useGameLogicB;

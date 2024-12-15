@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClients';
 
-export const useAdminStatus = () => {
+const useAdminStatus = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -14,6 +14,7 @@ export const useAdminStatus = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setIsAdmin(false);
+        setLoading(false);
         return;
       }
 
@@ -40,3 +41,5 @@ export const useAdminStatus = () => {
 
   return { isAdmin, loading };
 };
+
+export default useAdminStatus;

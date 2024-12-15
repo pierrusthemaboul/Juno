@@ -1,3 +1,4 @@
+import 'react-native-reanimated';  // Ajout de cet import uniquement
 import { Stack } from 'expo-router';
 
 export default function TabLayout() {
@@ -11,6 +12,7 @@ export default function TabLayout() {
       <Stack.Screen name="vue3" />
       <Stack.Screen name="vue4" />
       <Stack.Screen name="vue5" />
+      <Stack.Screen name="vue6" />
     </Stack>
   );
 }
