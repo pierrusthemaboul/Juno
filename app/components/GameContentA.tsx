@@ -1,3 +1,6 @@
+// 1. Configuration et Imports
+// =======================
+// Configuration de base du composant et imports nécessaires
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ActivityIndicator, Animated, StyleSheet, Platform, StatusBar, SafeAreaView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -11,8 +14,14 @@ import { colors } from '../styles/colors';
 import { User, Event, LevelConfig, RewardType } from '../hooks/types';
 import { gameLogger } from '../utils/gameLogger';
 
+// 1.A. Dimensions de l'écran
+// -------------------------
 const { width, height } = Dimensions.get('window');
 
+// 2. Types et Interfaces
+// ====================
+// 2.A. Interface principale des props
+// ---------------------------------
 interface GameContentAProps {
   user: User;
   timeLeft: number;
@@ -49,6 +58,8 @@ interface GameContentAProps {
   };
 }
 
+// 3. Composant Principal
+// ====================
 const GameContentA: React.FC<GameContentAProps> = ({
   user,
   timeLeft,
@@ -76,11 +87,16 @@ const GameContentA: React.FC<GameContentAProps> = ({
   updateRewardPosition,
   leaderboards
 }) => {
+  // 3.A. Hooks et Refs
+  // -----------------
   const router = useRouter();
   const userInfoRef = useRef<UserInfoHandle>(null);
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const [isRewardPositionSet, setIsRewardPositionSet] = useState(false);
 
+  // 3.B. Effets
+  // ----------
+  // 3.B.a. Gestion de la position des récompenses
   useEffect(() => {
     let mounted = true;
     let positionUpdateTimer: NodeJS.Timeout;
@@ -128,6 +144,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     };
   }, [currentReward, width, height]);
 
+  // 3.B.b. Gestion de l'animation du modal de niveau
   useEffect(() => {
     if (showLevelModal) {
       gameLogger.info('Level modal shown. Animating opacity.');
@@ -149,6 +166,8 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
   }, [showLevelModal]);
 
+  // 3.C. Rendu conditionnel
+  // ---------------------
   const renderContent = () => {
     if (loading) {
       return (
@@ -217,10 +236,18 @@ const GameContentA: React.FC<GameContentAProps> = ({
     );
   };
 
+  // 3.D. Rendu principal
+  // ------------------
   return (
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.header}>
+          {console.log('[GameContentA] Rendering with user:', { 
+            name: user.name, 
+            points: user.points,
+            lives: user.lives,
+            level: level
+          })}
           <UserInfo
             ref={userInfoRef}
             name={user.name}
@@ -236,7 +263,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
             />
           </View>
 
-          {/* N'affiche RewardAnimation que lorsque currentReward ET targetPosition sont définis */}
           {currentReward && currentReward.targetPosition && isRewardPositionSet && (
             <RewardAnimation
               type={currentReward.type}
@@ -255,6 +281,8 @@ const GameContentA: React.FC<GameContentAProps> = ({
   );
 };
 
+// 4. Styles
+// ========
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -318,4 +346,6 @@ const styles = StyleSheet.create({
   }
 });
 
+// 5. Exportation
+// =============
 export default GameContentA;

@@ -1,4 +1,6 @@
-// Vue2a.tsx
+// 1. Configuration et initialisation
+// ==================================
+// Vue principale du jeu avec gestion des animations et des états
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -17,18 +19,23 @@ import { Event } from '../types';
 import { gameLogger } from '../utils/gameLogger';
 
 export default function Vue2a() {
-  // Initialisation des animations et de l'état
+  // 1.A. Initialisation des états et animations
+  // -----------------------------------------
+  // 1.A.a. Configuration des animations de base
   const [fadeAnim] = useState(new Animated.Value(1));
   const [isExiting, setIsExiting] = useState(false);
   const router = useRouter();
 
-  // Récupération et parsing sécurisé des paramètres
+  // 1.B. Gestion des paramètres
+  // --------------------------
+  // 1.B.a. Sécurisation et parsing des paramètres d'entrée
   const params = useLocalSearchParams();
   const initialEvent = typeof params.initialEvent === 'string' 
     ? params.initialEvent 
     : JSON.stringify({} as Event);
 
-  // Initialisation de la logique du jeu
+  // 1.C. Configuration de la logique de jeu
+  // -------------------------------------
   const {
     user,
     previousEvent,
@@ -59,7 +66,11 @@ export default function Vue2a() {
     restartGame
   } = useGameLogicA(initialEvent);
 
-  // Gestion du bouton retour Android
+  // 2. Gestion des interactions utilisateur
+  // =====================================
+  // 2.A. Navigation système
+  // ---------------------
+  // 2.A.a. Gestion du bouton retour Android
   useEffect(() => {
     const backAction = () => {
       if (isExiting) return true;
@@ -93,7 +104,9 @@ export default function Vue2a() {
     return () => backHandler.remove();
   }, [isExiting]);
 
-  // Animation de sortie
+  // 2.B. Gestion des transitions
+  // --------------------------
+  // 2.B.a. Animation de sortie de la vue
   const handleExit = () => {
     gameLogger.info('Exiting game view');
     Animated.timing(fadeAnim, {
@@ -105,7 +118,7 @@ export default function Vue2a() {
     });
   };
 
-  // Animation d'entrée au montage
+  // 2.B.b. Animation d'entrée et nettoyage
   useEffect(() => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
@@ -125,6 +138,8 @@ export default function Vue2a() {
     };
   }, []);
 
+  // 3. Rendu de l'interface
+  // =====================
   return (
     <ImageBackground 
       source={require('../../assets/images/bgvue2.webp')} 
@@ -174,6 +189,8 @@ export default function Vue2a() {
   );
 }
 
+// 4. Styles
+// ========
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,

@@ -1,3 +1,8 @@
+// 1. Configuration et Imports
+// ==========================
+// 1.A. Imports de Base
+// -------------------
+// 1.A.a. Imports React et React Native
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,11 +13,26 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+
+// 1.A.b. Imports des dépendances externes
 import { Ionicons } from '@expo/vector-icons';
+
+// 1.A.c. Imports des ressources locales
 import { colors } from '../styles/colors';
+// Fin de la section 1.A. Imports de Base
 
+// 1.B. Configuration initiale
+// -------------------------
+// 1.B.a. Constantes de dimensions
 const { width } = Dimensions.get('window');
+// Fin de la section 1.B. Configuration initiale
+// Fin de la section 1. Configuration et Imports
 
+// 2. Types et Interfaces
+// =====================
+// 2.A. Props du composant modal
+// ---------------------------
+// 2.A.a. Interface principale
 interface ScoreboardModalProps {
   isVisible: boolean;
   currentScore: number;
@@ -24,7 +44,13 @@ interface ScoreboardModalProps {
   monthlyScores?: Array<{name: string, score: number, rank?: number}>;
   allTimeScores?: Array<{name: string, score: number, rank?: number}>;
 }
+// Fin de la section 2.A. Props du composant modal
+// Fin de la section 2. Types et Interfaces
 
+// 3. Composant ScoreboardModal
+// ===========================
+// 3.A. Définition du composant
+// ---------------------------
 const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
   isVisible,
   currentScore,
@@ -36,10 +62,20 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
   monthlyScores = [],
   allTimeScores = []
 }) => {
+  // 3.B. États locaux
+  // ---------------
+  // 3.B.a. Gestion de l'onglet actif
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly' | 'allTime'>('daily');
+  
+  // 3.B.b. Animation d'échelle
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
+  
+  // 3.B.c. État dérivé pour le score
   const isNewHighScore = currentScore > personalBest;
 
+  // 3.C. Effets
+  // ----------
+  // 3.C.a. Animation d'affichage
   useEffect(() => {
     if (isVisible) {
       Animated.spring(scaleAnim, {
@@ -53,6 +89,9 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     }
   }, [isVisible]);
 
+  // 3.D. Fonctions de rendu
+  // ---------------------
+  // 3.D.a. Rendu d'une ligne de score
   const renderScore = (score: { name: string; score: number; rank?: number }, index: number) => {
     const isCurrentPlayer = score.name === playerName;
     
@@ -88,6 +127,7 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     );
   };
 
+  // 3.D.b. Sélection des scores à afficher
   const getCurrentScores = () => {
     switch (activeTab) {
       case 'daily':
@@ -101,6 +141,8 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     }
   };
 
+  // 3.E. Rendu principal
+  // ------------------
   return (
     <Modal
       transparent
@@ -219,7 +261,14 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     </Modal>
   );
 };
+// Fin de la section 3.E. Rendu principal
+// Fin de la section 3. Composant ScoreboardModal
 
+// 4. Styles
+// =========
+// 4.A. Styles de base
+// -----------------
+// 4.A.a. Styles de l'overlay et du conteneur
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -234,6 +283,8 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+
+  // 4.A.b. Styles du titre et du score
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -249,6 +300,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.primary,
   },
+
+  // 4.B. Styles des éléments de score
+  // -------------------------------
+  // 4.B.a. Styles du nouveau record
   newHighScoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,6 +318,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
+
+  // 4.C. Styles des onglets
+  // ---------------------
+  // 4.C.a. Conteneur des onglets
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: colors.transparencies.light,
@@ -271,6 +330,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     width: '100%',
   },
+  
+  // 4.C.b. Styles individuels des onglets
   tab: {
     flex: 1,
     flexDirection: 'row',
@@ -292,6 +353,10 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
   },
+
+  // 4.D. Styles de la liste des scores
+  // -------------------------------
+  // 4.D.a. Conteneur principal
   scoresListContainer: {
     width: '100%',
     marginBottom: 20,
@@ -305,6 +370,8 @@ const styles = StyleSheet.create({
     color: colors.lightText,
     fontSize: 16,
   },
+
+  // 4.D.b. Styles des lignes de score
   scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -343,10 +410,16 @@ const styles = StyleSheet.create({
     color: colors.accent,
     marginLeft: 10,
   },
+
+  // 4.E. Styles des boutons
+  // ---------------------
+  // 4.E.a. Conteneur des boutons
   buttonContainer: {
     flexDirection: 'row',
     gap: 15,
   },
+
+  // 4.E.b. Styles des boutons individuels
   button: {
     backgroundColor: colors.primary,
     paddingVertical: 12,
@@ -364,5 +437,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   }
 });
+// Fin de la section 4.E. Styles des boutons
+// Fin de la section 4. Styles
 
 export default ScoreboardModal;

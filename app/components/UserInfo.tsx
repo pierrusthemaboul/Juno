@@ -1,34 +1,36 @@
-/**
- * @fileoverview Composant d'affichage des informations utilisateur dans le jeu
- * 
- * --- Note pour les interactions avec Claude AI ---
- * FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
- * spécifiques pour les futures modifications avec Claude AI
- * 
- * AI: Points clés pour la maintenance:
- * 1. La mesure des positions est critique pour les animations de récompense
- * 2. Le système de bonus doit rester modulaire et extensible
- * 3. Les animations des vies et points sont synchronisées
- * 4. Le rendu est optimisé pour les performances
- * 
- * AI: Sections principales:
- * - Interfaces et Types (Définition du contrat du composant)
- * - Gestion des Refs (Mesure des positions pour les animations)
- * - Système de Bonus (Affichage des multiplicateurs actifs)
- * - Rendu des Vies (Animation et état des vies)
- * - Interface Utilisateur (Organisation du layout)
- */
+// 1. Introduction
+// ==============
+// 1.A. Description générale
+// ------------------------
+// Composant d'affichage des informations utilisateur dans le jeu de chronologie historique
 
+// 1.B. Configuration IA
+// --------------------
+// FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
+// spécifiques pour les futures modifications avec Claude AI
+
+// 1.C. Points clés de maintenance
+// -----------------------------
+// - La mesure des positions est critique pour les animations de récompense
+// - Le système de bonus doit rester modulaire et extensible
+// - Les animations des vies et points sont synchronisées
+// - Le rendu est optimisé pour les performances
+// Fin de la section "1.C. Points clés de maintenance"
+
+// 2. Imports et Types
+// ==================
+// 2.A. Imports de base
+// ------------------
 import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles/colors';
 import { MAX_LIVES, ActiveBonus, BonusType } from '../hooks/types';
+// Fin de la section "2.A. Imports de base"
 
-/**
- * AI: Interfaces du composant
- * Définition des types pour les props et les refs
- */
+// 2.B. Définition des interfaces
+// ---------------------------
+// 2.B.a. Interface des props
 interface UserInfoProps {
   name: string;
   points: number;
@@ -37,30 +39,32 @@ interface UserInfoProps {
   streak: number;
   activeBonus?: ActiveBonus[];
 }
+// Fin de la section "2.B.a. Interface des props"
 
+// 2.B.b. Interface des méthodes exposées
 export interface UserInfoHandle {
   getPointsPosition: () => Promise<{ x: number; y: number }>;
   getLifePosition: () => Promise<{ x: number; y: number }>;
 }
+// Fin de la section "2.B.b. Interface des méthodes exposées"
+// Fin de la section "2.B. Définition des interfaces"
+// Fin de la section "2. Imports et Types"
 
-/**
- * Composant UserInfo
- * AI: Point d'entrée du composant avec gestion des refs pour les animations
- */
+// 3. Implémentation du composant
+// ============================
+// 3.A. Définition du composant
+// --------------------------
 const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
   ({ name, points, lives, level, streak, activeBonus = [] }, ref) => {
-    /**
-     * AI: Refs et animations
-     * Gestion des positions et des animations de bounce
-     */
+    // 3.B. Gestion des refs
+    // -------------------
+    // 3.B.a. Refs pour les éléments UI
     const pointsRef = React.useRef<View>(null);
     const livesRef = React.useRef<View>(null);
     const bounceAnim = React.useRef(new Animated.Value(1)).current;
+    // Fin de la section "3.B.a. Refs pour les éléments UI"
 
-    /**
-     * AI: Animation des points
-     * Effet de bounce lors du changement de score
-     */
+    // 3.B.b. Animation des points
     useEffect(() => {
       Animated.sequence([
         Animated.spring(bounceAnim, {
@@ -76,19 +80,20 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
         }),
       ]).start();
     }, [points]);
+    // Fin de la section "3.B.b. Animation des points"
+    // Fin de la section "3.B. Gestion des refs"
 
-    /**
-     * AI: Mesure des positions
-     * Expose les méthodes de mesure pour les animations de récompense
-     */
+    // 3.C. Gestion des positions
+    // ------------------------
+    // 3.C.a. Mesure des positions pour les animations
     useImperativeHandle(ref, () => ({
       getPointsPosition: () =>
         new Promise((resolve) => {
-          debugLogs.positions.pointsRequested(); // Ajout du log
+          debugLogs.positions.pointsRequested();
           
           if (!pointsRef.current) {
-            debugLogs.refs.pointsRefMissing(); // Ajout du log
-            debugLogs.positions.pointsDefaulted(); // Ajout du log
+            debugLogs.refs.pointsRefMissing();
+            debugLogs.positions.pointsDefaulted();
             resolve({ x: 0, y: 0 });
             return;
           }
@@ -99,47 +104,48 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
                 x: pageX + (width || 0) / 2, 
                 y: pageY + (height || 0) / 2 
               };
-              debugLogs.positions.pointsCalculated(position); // Ajout du log
+              debugLogs.positions.pointsCalculated(position);
               resolve(position);
             } else {
-              debugLogs.refs.measureFailed('points'); // Ajout du log
-              debugLogs.positions.pointsDefaulted(); // Ajout du log
+              debugLogs.refs.measureFailed('points');
+              debugLogs.positions.pointsDefaulted();
               resolve({ x: 0, y: 0 });
             }
           });
         }),
-        getLifePosition: () =>
-          new Promise((resolve) => {
-            debugLogs.positions.livesRequested(); // Log correct pour les vies
-            
-            if (!livesRef.current) {
-              debugLogs.refs.livesRefMissing(); // Log correct pour les vies
-              debugLogs.positions.livesDefaulted(); // Log correct pour les vies
+      getLifePosition: () =>
+        new Promise((resolve) => {
+          debugLogs.positions.livesRequested();
+          
+          if (!livesRef.current) {
+            debugLogs.refs.livesRefMissing();
+            debugLogs.positions.livesDefaulted();
+            resolve({ x: 0, y: 0 });
+            return;
+          }
+      
+          livesRef.current.measure((x, y, width, height, pageX, pageY) => {
+            if (typeof pageX === 'number' && typeof pageY === 'number') {
+              const position = { 
+                x: pageX + (width || 0) / 2, 
+                y: pageY + (height || 0) / 2 
+              };
+              debugLogs.positions.livesCalculated(position);
+              resolve(position);
+            } else {
+              debugLogs.refs.measureFailed('lives');
+              debugLogs.positions.livesDefaulted();
               resolve({ x: 0, y: 0 });
-              return;
             }
-        
-            livesRef.current.measure((x, y, width, height, pageX, pageY) => {
-              if (typeof pageX === 'number' && typeof pageY === 'number') {
-                const position = { 
-                  x: pageX + (width || 0) / 2, 
-                  y: pageY + (height || 0) / 2 
-                };
-                debugLogs.positions.livesCalculated(position); // Log correct pour les vies
-                resolve(position);
-              } else {
-                debugLogs.refs.measureFailed('lives'); // Mention 'lives' au lieu de 'points'
-                debugLogs.positions.livesDefaulted(); // Log correct pour les vies
-                resolve({ x: 0, y: 0 });
-              }
-            });
-          }),
+          });
+        }),
     }));
+    // Fin de la section "3.C.a. Mesure des positions pour les animations"
+    // Fin de la section "3.C. Gestion des positions"
 
-    /**
-     * AI: Calcul des couleurs
-     * Attribution des couleurs selon le type de bonus
-     */
+    // 3.D. Utilitaires de rendu
+    // ------------------------
+    // 3.D.a. Gestion des couleurs de bonus
     const getBonusColor = (type: BonusType) => {
       switch (type) {
         case BonusType.TIME:
@@ -156,11 +162,9 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
           return colors.primary;
       }
     };
+    // Fin de la section "3.D.a. Gestion des couleurs de bonus"
 
-    /**
-     * AI: Calcul des icônes
-     * Attribution des icônes selon le type de bonus
-     */
+    // 3.D.b. Gestion des icônes de bonus
     const getBonusIcon = (type: BonusType): string => {
       switch (type) {
         case BonusType.TIME:
@@ -177,11 +181,12 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
           return 'star-outline';
       }
     };
+    // Fin de la section "3.D.b. Gestion des icônes de bonus"
+    // Fin de la section "3.D. Utilitaires de rendu"
 
-    /**
-     * AI: Rendu des bonus actifs
-     * Affichage des multiplicateurs et de leur progression
-     */
+    // 3.E. Composants de rendu
+    // ----------------------
+    // 3.E.a. Rendu des indicateurs de bonus
     const renderBonusIndicators = () => {
       const currentTime = Date.now();
       const activeMultipliers = activeBonus.filter(
@@ -220,11 +225,9 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
         </View>
       );
     };
+    // Fin de la section "3.E.a. Rendu des indicateurs de bonus"
 
-    /**
-     * AI: Rendu des vies
-     * Affichage animé des cœurs représentant les vies
-     */
+    // 3.E.b. Rendu des vies
     const renderLives = () => (
       <View ref={livesRef} style={styles.livesContainer}>
         {Array(MAX_LIVES)
@@ -249,23 +252,38 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
           ))}
       </View>
     );
+    // Fin de la section "3.E.b. Rendu des vies"
 
-    /**
-     * AI: Couleur du niveau
-     * Calcul de la couleur selon la progression
-     */
+    // 3.E.c. Gestion du streak
+    <View style={styles.streakContainer}>
+      <Text style={[
+        styles.streakText,
+        streak >= 20 ? styles.streakUltra :
+        streak >= 15 ? styles.streakMaster : 
+        streak >= 10 ? styles.streakExpert :
+        streak >= 5 ? styles.streakPro : null
+      ]}>
+        {streak > 0 ? `×${streak}` : ''}
+      </Text>
+    </View>
+    // Fin de la section "3.E.c. Gestion du streak"
+
+    // 3.E.d. Gestion des couleurs de niveau
     const getLevelColor = (level: number): string => {
       if (level <= 5) return colors.primary;
       if (level <= 10) return colors.accent;
       if (level <= 15) return colors.warningYellow;
       return colors.incorrectRed;
     };
+    // Fin de la section "3.E.d. Gestion des couleurs de niveau"
 
+    // 3.E.e. Rendu principal
     return (
       <View style={styles.container}>
         <View style={styles.mainSection}>
+          {console.log('[UserInfo] Rendering with name:', name)}
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{name}</Text>
+            <Text style={styles.userName}>{name || ''}</Text>
             <View ref={pointsRef}>
               <Text style={styles.score}>{points}</Text>
             </View>
@@ -280,9 +298,18 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
         </View>
       </View>
     );
+    
+    // Fin de la section "3.E.e. Rendu principal"
+    // Fin de la section "3.E. Composants de rendu"
   }
 );
+// Fin de la section "3.A. Définition du composant"
+// Fin de la section "3. Implémentation du composant"
 
+// 4. Styles et Configuration
+// ========================
+// 4.A. Styles du composant
+// ----------------------
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -306,12 +333,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 8,
+    // Ajout de log pour les dimensions
+    onLayout: ({ nativeEvent }) => {
+      console.log('userInfo layout:', nativeEvent.layout);
+    }
   },
   userName: {
     fontSize: 14,
     fontWeight: 'bold',
     color: colors.darkText,
     marginRight: 6,
+    // Ajout de log pour vérifier le style
+    onLayout: ({ nativeEvent }) => {
+      console.log('userName style dimensions:', nativeEvent.layout);
+    }
   },
   score: {
     fontSize: 14,
@@ -335,8 +370,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+// Fin de la section "4.A. Styles du composant"
 
-// Après les styles et avant l'export
+// 4.B. Configuration des logs de débogage
+// -----------------------------------
 const debugLogs = {
   positions: {
     pointsRequested: () => {
@@ -370,7 +407,46 @@ const debugLogs = {
     }
   }
 };
+// Fin de la section "4.B. Configuration des logs de débogage"
 
+// 4.C. Styles spécifiques au streak
+// ----------------------------
+// 4.C.a. Conteneur du streak
+const streakStyles = StyleSheet.create({
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 30,
+  },
+  // 4.C.b. Texte de base du streak
+  streakText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.darkText,
+  },
+  // 4.C.c. Variations de style selon le niveau
+  streakPro: {
+    color: colors.primary,
+    fontSize: 15,
+  },
+  streakExpert: {
+    color: colors.accent,
+    fontSize: 16,
+  },
+  streakMaster: {
+    color: colors.warningYellow,
+    fontSize: 17,
+  },
+  streakUltra: {
+    color: colors.incorrectRed,
+    fontSize: 18,
+  },
+});
+// Fin de la section "4.C. Styles spécifiques au streak"
+// Fin de la section "4. Styles et Configuration"
+
+// 5. Export du composant
+// ====================
 export default UserInfo;
-
-
+// Fin de la section "5. Export du composant"

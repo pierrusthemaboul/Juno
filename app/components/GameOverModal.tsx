@@ -1,3 +1,9 @@
+// 1. Configuration et imports
+// =========================
+// Cette section définit les dépendances et la configuration de base du composant
+
+// 1.A. Imports React et Native
+// --------------------------
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -8,12 +14,25 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+// Fin 1.A. Imports React et Native
+
+// 1.B. Imports navigation et UI
+// ---------------------------
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles/colors';
+// Fin 1.B. Imports navigation et UI
 
+// 1.C. Configuration dimensions
+// --------------------------
 const { width } = Dimensions.get('window');
+// Fin 1.C. Configuration dimensions
+// Fin 1. Configuration et imports
 
+// 2. Types et interfaces
+// ====================
+// 2.A. Interface principale
+// ----------------------
 interface GameOverModalProps {
   isVisible: boolean;
   score: number;
@@ -28,7 +47,13 @@ interface GameOverModalProps {
     allTime: Array<{ name: string; score: number; rank: number }>;
   };
 }
+// Fin 2.A. Interface principale
+// Fin 2. Types et interfaces
 
+// 3. Composant Modal
+// ================
+// 3.A. Définition du composant
+// --------------------------
 const GameOverModal: React.FC<GameOverModalProps> = ({
   isVisible,
   score,
@@ -37,11 +62,15 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   level,
   leaderboards,
 }) => {
+  // 3.A.a. Hooks et états
   const router = useRouter();
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly' | 'allTime'>('daily');
   const isNewHighScore = score > highScore;
+  // Fin 3.A.a. Hooks et états
 
+  // 3.B. Effets et animations
+  // -----------------------
   useEffect(() => {
     if (isVisible) {
       Animated.spring(scaleAnim, {
@@ -54,7 +83,11 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
       scaleAnim.setValue(0);
     }
   }, [isVisible]);
+  // Fin 3.B. Effets et animations
 
+  // 3.C. Fonctions de rendu
+  // ---------------------
+  // 3.C.a. Rendu score individuel
   const renderScore = (score: number, name: string, rank: number) => (
     <View key={rank} style={styles.scoreRow}>
       <View style={styles.rankContainer}>
@@ -66,7 +99,9 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
       <Text style={styles.scoreValue}>{score.toLocaleString()}</Text>
     </View>
   );
+  // Fin 3.C.a. Rendu score individuel
 
+  // 3.C.b. Rendu liste des scores
   const renderScores = () => {
     if (!leaderboards) {
       return (
@@ -89,7 +124,11 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
       renderScore(score.score, score.name, score.rank)
     );
   };
+  // Fin 3.C.b. Rendu liste des scores
+  // Fin 3.C. Fonctions de rendu
 
+  // 3.D. Rendu principal
+  // ------------------
   return (
     <Modal animationType="none" transparent={true} visible={isVisible}>
       <View style={styles.overlay}>
@@ -154,8 +193,15 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
     </Modal>
   );
 };
+// Fin 3.D. Rendu principal
+// Fin 3. Composant Modal
 
+// 4. Styles
+// ========
+// 4.A. Styles de base
+// -----------------
 const styles = StyleSheet.create({
+  // 4.A.a. Styles conteneur
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -169,6 +215,9 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  // Fin 4.A.a. Styles conteneur
+
+  // 4.A.b. Styles titre et score
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -184,6 +233,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.primary,
   },
+  // Fin 4.A.b. Styles titre et score
+
+  // 4.A.c. Styles nouveau record
   newHighScoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,6 +250,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 5,
   },
+  // Fin 4.A.c. Styles nouveau record
+
+  // 4.A.d. Styles onglets
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: colors.transparencies.light,
@@ -223,6 +278,9 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
   },
+  // Fin 4.A.d. Styles onglets
+
+  // 4.A.e. Styles liste des scores
   scoresList: {
     width: '100%',
     marginBottom: 20,
@@ -269,6 +327,9 @@ const styles = StyleSheet.create({
     color: colors.accent,
     marginLeft: 10,
   },
+  // Fin 4.A.e. Styles liste des scores
+
+  // 4.A.f. Styles boutons
   buttonContainer: {
     flexDirection: 'row',
     gap: 15,
@@ -289,6 +350,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   }
+  // Fin 4.A.f. Styles boutons
 });
+// Fin 4.A. Styles de base
+// Fin 4. Styles
 
 export default GameOverModal;

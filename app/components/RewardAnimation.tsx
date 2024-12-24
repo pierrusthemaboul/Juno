@@ -1,29 +1,40 @@
-// Based on your issue, the main problem lies in the `RewardAnimation` component and its `targetPosition`. This position might be undefined or improperly passed. Here's an approach to fix it:
+// 1. Configuration du Composant RewardAnimation
+// =====================================
+// Composant principal gérant l'animation des récompenses dans l'interface
 
+// 1.A. Imports et Dépendances
+// ---------------------------
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-// Add validation for RewardType to ensure correct values
-import { RewardType } from '../hooks/types'; // Adjust import if necessary
+import { RewardType } from '../hooks/types';
 import { colors } from '../styles/colors';
 
+// 1.B. Interface et Types
+// ----------------------
+// 1.B.a. Définition des props du composant
 interface RewardAnimationProps {
   type: RewardType;
   amount: number;
-  targetPosition?: { x: number; y: number }; // Make targetPosition optional
-  onComplete?: () => void; // onComplete should be optional
+  targetPosition?: { x: number; y: number };
+  onComplete?: () => void;
 }
 
+// 2. Implémentation du Composant
+// =============================
 const RewardAnimation: React.FC<RewardAnimationProps> = ({
   type,
   amount,
-  targetPosition = { x: 0, y: 0 }, // Default to (0, 0) if not provided
+  targetPosition = { x: 0, y: 0 },
   onComplete,
 }) => {
+  // 2.A. Gestion de l'Animation
+  // --------------------------
+  // 2.A.a. Initialisation des valeurs animées
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
 
+  // 2.A.b. Configuration et exécution de l'animation
   useEffect(() => {
     if (!targetPosition) {
       console.warn('Target position is undefined. Using default position {x: 0, y: 0}.');
@@ -35,6 +46,7 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
       targetPosition,
     });
 
+    // 2.A.c. Séquences d'animation
     const fadeIn = Animated.timing(opacity, {
       toValue: 1,
       duration: 200,
@@ -62,6 +74,9 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
     });
   }, [targetPosition, onComplete, opacity, translateY]);
 
+  // 2.B. Configuration Visuelle
+  // -------------------------
+  // 2.B.a. Gestion des types de récompenses
   const getConfig = () => {
     switch (type) {
       case RewardType.POINTS:
@@ -90,6 +105,8 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
 
   const config = getConfig();
 
+  // 2.C. Rendu du Composant
+  // ----------------------
   return (
     <Animated.View
       style={[
@@ -110,6 +127,8 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
   );
 };
 
+// 3. Styles
+// ========
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -151,5 +170,49 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
 });
+
+// 4. Système de Logs
+// ================
+// 4.A. Configuration des Logs de Récompenses
+// ---------------------------------------
+const rewardLogs = {
+  // 4.A.a. Logs d'Animation
+  animation: {
+    start: (props: { type: RewardType, amount: number, targetPosition?: Position }) => {
+      console.log('[RewardAnimation] Démarrage animation:', {
+        type: props.type,
+        amount: props.amount,
+        targetPosition: props.targetPosition 
+      });
+    },
+    complete: () => {
+      console.log('[RewardAnimation] Animation terminée');
+    },
+    error: (context: string, error: any) => {
+      console.error(`[RewardAnimation] Erreur dans ${context}:`, error);
+    }
+  },
+  // 4.A.b. Logs de Séries
+  streak: {
+    update: (current: number, isIncrease: boolean) => {
+      console.log(`[Streak] ${isIncrease ? 'Augmentation' : 'Réinitialisation'} à ${current}`);
+    },
+    bonus: (value: number) => {
+      console.log(`[Streak] Bonus de points: ${value}`); 
+    }
+  },
+  // 4.A.c. Logs de Récompenses
+  rewards: {
+    points: (amount: number, reason: string) => {
+      console.log('[Reward] Points gagnés:', { amount, reason });
+    },
+    life: (current: number) => {
+      console.log('[Reward] Vie bonus, total:', current);
+    },
+    level: (newLevel: number) => {
+      console.log('[Reward] Passage niveau:', newLevel);
+    }
+  }
+};
 
 export default RewardAnimation;

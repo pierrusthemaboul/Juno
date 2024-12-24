@@ -1,18 +1,32 @@
-/**
- * @fileoverview Modal de transition et présentation des niveaux
- * 
- * --- Note pour les interactions avec Claude AI ---
- * FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
- * spécifiques pour les futures modifications avec Claude AI
- * 
- * AI: Points clés pour la maintenance:
- * 1. Les animations de transition sont critiques pour l'expérience utilisateur
- * 2. Le système de stats doit être robuste face aux valeurs manquantes
- * 3. Les animations de récompenses doivent être synchronisées
- * 4. L'interface doit rester réactive et fluide
- * 5. Les données de performance doivent être clairement présentées
- */
+// 1. Introduction
+// ==============
+// 1.A. Présentation
+// ----------------
+// Modal de transition et présentation des niveaux
 
+// 1.B. Notes pour l'IA
+// -------------------
+// FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
+// spécifiques pour les futures modifications avec Claude AI
+
+// 1.C. Points clés de maintenance
+// -----------------------------
+// 1.C.a. Animations
+// Gestion critique des transitions visuelles
+// 1.C.b. Statistiques 
+// Robustesse face aux données manquantes
+// 1.C.c. Récompenses
+// Synchronisation des animations de gains
+// 1.C.d. Performance
+// Maintien de la fluidité de l'interface
+// 1.C.e. Données
+// Clarté de la présentation des performances
+// Fin de la section Introduction
+
+// 2. Imports et Configuration
+// =========================
+// 2.A. Imports React Native
+// -----------------------
 import React, { useEffect, useRef } from 'react';
 import { 
   Modal, 
@@ -25,8 +39,14 @@ import {
   TouchableOpacity,
   ScrollView 
 } from 'react-native';
+
+// 2.B. Imports externes
+// -------------------
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// 2.C. Imports internes
+// -------------------
 import { colors } from '../styles/colors';
 import { 
   LevelConfig, 
@@ -34,12 +54,16 @@ import {
   RewardType
 } from '../hooks/types';
 
+// 2.D. Configuration dimensions
+// --------------------------
 const { width, height } = Dimensions.get('window');
+// Fin de la section Imports et Configuration
 
-/**
- * AI: Interface des Props
- * Définition claire des propriétés attendues par le composant
- */
+// 3. Interfaces et Constantes
+// =========================
+// 3.A. Interface Props
+// ------------------
+// 3.A.a. Définition des props du composant
 interface LevelModalProps {
   visible: boolean;
   level: number;
@@ -66,10 +90,9 @@ interface LevelModalProps {
   streakInfo?: { current: number; best: number };
 }
 
-/**
- * AI: Configuration par défaut
- * Valeurs de secours pour les données manquantes
- */
+// 3.B. Valeurs par défaut
+// ----------------------
+// 3.B.a. Configuration des stats par défaut
 const DEFAULT_STATS = {
   performanceStats: {
     typeSuccess: {},
@@ -82,11 +105,12 @@ const DEFAULT_STATS = {
   activeBonus: [],
   streakInfo: { current: 0, best: 0 }
 };
+// Fin de la section Interfaces et Constantes
 
-/**
- * AI: Composant Modal de niveau
- * Gère l'affichage des transitions et statistiques de niveau
- */
+// 4. Composant Principal
+// ====================
+// 4.A. Définition du composant
+// --------------------------
 const LevelUpModal: React.FC<LevelModalProps> = ({
   visible,
   level,
@@ -104,10 +128,10 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   activeBonus = DEFAULT_STATS.activeBonus,
   streakInfo = DEFAULT_STATS.streakInfo
 }) => {
-  /**
-   * AI: Références d'animation
-   * Gestion des états d'animation du modal
-   */
+
+  // 4.B. Références d'animation
+  // -------------------------
+  // 4.B.a. Initialisation des animations
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
@@ -116,10 +140,9 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   const contentTranslateY = useRef(new Animated.Value(50)).current;
   const statsProgressAnim = useRef(new Animated.Value(0)).current;
 
-  /**
-   * AI: Effet d'animation principal
-   * Gère la séquence complète d'animation à l'apparition
-   */
+  // 4.C. Effets
+  // ----------
+  // 4.C.a. Animation d'entrée
   useEffect(() => {
     let isMounted = true;
   
@@ -139,14 +162,12 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   
       // Séquence d'animation principale
       Animated.sequence([
-        // 1. Fade in du background
         Animated.timing(backgroundOpacityAnim, {
           toValue: 1,
           duration: 400,
           useNativeDriver: true,
           easing: Easing.ease
         }),
-        // 2. Animations parallèles du contenu
         Animated.parallel([
           Animated.spring(scaleAnim, {
             toValue: 1,
@@ -185,10 +206,9 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     };
   }, [visible]);
 
-  /**
-   * AI: Animation du bouton
-   * Effet de pulsation continue sur le bouton de démarrage
-   */
+  // 4.D. Fonctions d'animation
+  // ------------------------
+  // 4.D.a. Animation du bouton
   const startButtonAnimation = () => {
     Animated.loop(
       Animated.sequence([
@@ -206,10 +226,9 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     ).start();
   };
 
-  /**
-   * AI: Utilitaires de rendu
-   * Fonctions auxiliaires pour le calcul des couleurs et styles
-   */
+  // 4.E. Utilitaires
+  // --------------
+  // 4.E.a. Calcul des couleurs
   const getMasteryColor = (level: number) => {
     if (level >= 5) return colors.warningYellow;
     if (level >= 4) return colors.primary;
@@ -217,6 +236,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     return colors.lightText;
   };
 
+  // 4.E.b. Icônes de maîtrise
   const getMasteryIcon = (level: number) => {
     if (level >= 5) return 'trophy';
     if (level >= 4) return 'star';
@@ -224,16 +244,16 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     return 'ribbon';
   };
 
+  // 4.E.c. Couleurs de précision
   const getAccuracyColor = (accuracy: number) => {
     if (accuracy >= 0.8) return colors.correctGreen;
     if (accuracy >= 0.6) return colors.warningYellow;
     return colors.incorrectRed;
   };
 
-  /**
-   * AI: Composants de rendu
-   * Sections de l'interface utilisateur
-   */
+  // 4.F. Composants de rendu
+  // ----------------------
+  // 4.F.a. Bannière niveau supérieur
   const renderLevelUpBanner = () => {
     if (!previousLevel || !isNewLevel) return null;
 
@@ -265,6 +285,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
+  // 4.F.b. Badges de maîtrise
   const renderMasteryBadges = () => {
     const sortedCategories = Object.entries(categoryMastery)
       .filter(([_, stats]) => stats.masteryLevel >= 3)
@@ -311,6 +332,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
+  // 4.F.c. Statistiques par période
   const renderPeriodStats = () => {
     return (
       <View style={styles.periodStatsContainer}>
@@ -352,6 +374,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
+  // 4.F.d. Règles spéciales
   const renderSpecialRules = () => {
     if (!specialRules?.length) return null;
 
@@ -375,6 +398,8 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
+  // 4.G. Rendu principal
+  // ------------------
   if (!visible) return null;
 
   return (
@@ -455,12 +480,14 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     </Modal>
   );
 };
+// Fin de la section Composant Principal
 
-/**
- * AI: Styles
- * Organisation des styles par section logique
- */
+// 5. Styles
+// =========
+// 5.A. Configuration globale
+// ------------------------
 const styles = StyleSheet.create({
+  // 5.A.a. Styles du modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -484,6 +511,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
   },
+
+  // 5.B. Styles de la bannière
+  // ------------------------
   scrollView: {
     paddingHorizontal: 20,
   },
@@ -510,6 +540,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
   },
+
+  // 5.C. Styles du contenu niveau
+  // ---------------------------
   levelContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -537,6 +570,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 24,
   },
+
+  // 5.D. Styles des règles
+  // --------------------
   rulesContainer: {
     marginBottom: 20,
     padding: 15,
@@ -562,6 +598,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
   },
+
+  // 5.E. Styles de maîtrise
+  // ---------------------
   masteryContainer: {
     marginBottom: 20,
   },
@@ -597,6 +636,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 5,
   },
+
+  // 5.F. Styles des statistiques
+  // --------------------------
   periodStatsContainer: {
     marginBottom: 20,
   },
@@ -629,6 +671,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'right',
   },
+
+  // 5.G. Styles du bouton
+  // -------------------
   eventsInfo: {
     fontSize: 16,
     color: colors.lightText,
@@ -660,5 +705,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 });
+// Fin de la section Styles
 
 export default LevelUpModal;
