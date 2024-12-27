@@ -45,6 +45,22 @@ export interface PerformanceStats {
     averageResponseTime: number;
 }
 // Fin de 1.C. Interface Statistiques de Performance
+
+// 1.D. Interface resume evenements
+// ------------------------------
+// Définit la structure du résumé des événements d'un niveau
+export interface LevelEventSummary {
+    id: string;
+    titre: string;
+    date: string;
+    date_formatee: string;
+    illustration_url: string;
+    wasCorrect: boolean;
+    responseTime?: number;
+}
+// Fin de 1.D. Interface resume evenements
+
+
 // Fin de 1. Interfaces Principales du Jeu
 
 // 2. Systèmes de Jeu
@@ -120,6 +136,7 @@ export interface LevelConfig {
     };
     specialRules?: SpecialRules[];
     pointsReward?: number;
+    eventsSummary?: LevelEventSummary[];
 }
 
 // Mise à jour des configurations par défaut

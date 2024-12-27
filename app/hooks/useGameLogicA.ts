@@ -230,6 +230,10 @@ const [difficultyModifiers, setDifficultyModifiers] = useState<DifficultyModifie
   eventDifficultyModifier: 1,
   scoringModifier: 1
 });
+
+// 4.M. États de suivi des événements du niveau
+// ---------------------------------------
+const [currentLevelEvents, setCurrentLevelEvents] = useState<LevelEventSummary[]>([]);
   
 
   
@@ -786,6 +790,17 @@ const handleChoice = useCallback((choice: 'avant' | 'après') => {
       currentType
     );
 
+    // Ajout de l'événement au résumé
+setCurrentLevelEvents(prev => [...prev, {
+  id: newEvent.id,
+  titre: newEvent.titre,
+  date: newEvent.date,
+  date_formatee: newEvent.date_formatee || newEvent.date,
+  illustration_url: newEvent.illustration_url,
+  wasCorrect: true,
+  responseTime: 20 - timeLeft
+}]);
+
     // 10.B.c. Mise à jour des points et progression
     if (Number.isFinite(calculatedPoints) && calculatedPoints > 0) {
       setUser(prev => {
@@ -877,6 +892,8 @@ const handleChoice = useCallback((choice: 'avant' | 'après') => {
     setShowLevelModal(true);
     setIsLevelPaused(true);
     setIsCountdownActive(false);
+    config.eventsSummary = currentLevelEvents;
+setCurrentLevelEvents([]); // Réinitialiser pour le prochain niveau;
 
     // 11.A.b. Attribution récompense
     const reward = {
@@ -945,61 +962,59 @@ const handleChoice = useCallback((choice: 'avant' | 'après') => {
   };
 
   // 12.C. Fin de partie
-  // ----------------
-  const endGame = async () => {
-    // 12.C.a. Initialisation fin de partie
-    setIsGameOver(true);
-    playGameOverSound();
-    setLeaderboardsReady(false);
+// ----------------
+const endGame = async () => {
+  // 12.C.a. Initialisation fin de partie
+  setIsGameOver(true);
+  playGameOverSound();
+  setLeaderboardsReady(false);
 
-    console.log('[endGame] Game over triggered');
+  console.log('[endGame] Game over triggered');
 
-    try {
-      // 12.C.b. Vérification utilisateur
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser?.id) {
-        console.error('[endGame] No authenticated user found.');
-        return;
-      }
+  try {
+    // 12.C.b. Vérification utilisateur
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser?.id) {
+      console.error('[endGame] No authenticated user found.');
+      return;
+    }
 
-      console.log('[endGame] User state before processing:', user);
+    console.log('[endGame] User state before processing:', user);
 
-      // 12.C.c. Enregistrement score final
-      await supabase.from('game_scores').insert({
-        user_id: authUser.id,
-        display_name: user.name,
-        score: user.points,
-        created_at: new Date().toISOString()
-      });
+    // Définition des dates pour les requêtes
+    const today = new Date().toISOString().split('T')[0];
+    const firstDayOfMonth = `${today.substring(0, 7)}-01`;
 
-      // 12.C.d. Récupération scores journaliers
-      const today = new Date().toISOString().split('T')[0];
-      const { data: dailyScores } = await supabase
-        .from('game_scores')
-        .select('display_name, score')
-        .gte('created_at', today)
-        .order('score', { ascending: false })
-        .limit(10);
+    // 12.C.c. Enregistrement score final
+    await supabase.from('game_scores').insert({
+      user_id: authUser.id,
+      display_name: user.name,
+      score: user.points,
+      created_at: new Date().toISOString()
+    });
 
-      console.log('[endGame] Daily scores fetched:', dailyScores);
+    // 12.C.d. Récupération scores journaliers
+    const { data: dailyScores } = await supabase
+      .from('game_scores')
+      .select('display_name, score')
+      .gte('created_at', today)
+      .order('score', { ascending: false })
+      .limit(5);
 
-      // 12.C.e. Récupération scores mensuels
-      const firstDayOfMonth = `${today.substring(0, 7)}-01T00:00:00.000Z`;
-      const { data: monthlyScores } = await supabase
-        .from('game_scores')
-        .select('display_name, score')
-        .gte('created_at', firstDayOfMonth)
-        .order('score', { ascending: false })
-        .limit(10);
+    // 12.C.e. Récupération scores mensuels
+    const { data: monthlyScores } = await supabase
+      .from('game_scores')
+      .select('display_name, score')
+      .gte('created_at', firstDayOfMonth)
+      .order('score', { ascending: false })
+      .limit(5);
 
-      console.log('[endGame] Monthly scores fetched:', monthlyScores);
-
-      // 12.C.f. Récupération meilleurs scores
-      const { data: allTimeScores } = await supabase
-        .from('profiles')
-        .select('display_name, high_score')
-        .order('high_score', { ascending: false })
-        .limit(10);
+    // 12.C.f. Récupération meilleurs scores
+    const { data: allTimeScores } = await supabase
+      .from('profiles')
+      .select('display_name, high_score')
+      .order('high_score', { ascending: false })
+      .limit(5);
 
       console.log('[endGame] All time scores fetched:', allTimeScores);
 
@@ -1061,15 +1076,43 @@ const handleChoice = useCallback((choice: 'avant' | 'après') => {
     setIsLevelPaused(true);
     setIsCountdownActive(false);
     setCurrentLevelConfig(LEVEL_CONFIGS[1]);
+    setCurrentLevelEvents([]);
     
     // 13.A.c. Configuration événement initial
     if (allEvents.length > 0) {
-      const startEvent = allEvents.find(event => 
+      // Filtrer pour obtenir les événements faciles
+      const easyEvents = allEvents.filter(event => 
         event.niveau_difficulte <= 2 && 
         event.universel
       );
 
-      if (startEvent) {
+      if (easyEvents.length >= 2) {
+        // Trier tous les événements faciles par date
+        const sortedEvents = [...easyEvents].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        // Choisir un index aléatoire pour le premier événement
+        const randomIndex = Math.floor(Math.random() * (sortedEvents.length - 1));
+        
+        // Définir le premier événement (plus ancien) et le second (plus récent)
+        setPreviousEvent(sortedEvents[randomIndex]);
+        setNewEvent(sortedEvents[randomIndex + 1]);
+
+        // Mettre à jour les événements utilisés
+        setUsedEvents(new Set([
+          sortedEvents[randomIndex].id,
+          sortedEvents[randomIndex + 1].id
+        ]));
+
+        // Réinitialiser les états visuels
+        setShowDates(false);
+        setIsImageLoaded(false);
+        setIsCorrect(undefined);
+      } else {
+        // Fallback si pas assez d'événements faciles
+        console.warn('Not enough easy events available for restart');
+        const startEvent = easyEvents[0] || allEvents[0];
         setPreviousEvent(startEvent);
         setUsedEvents(new Set([startEvent.id]));
         selectNewEvent(allEvents, startEvent);

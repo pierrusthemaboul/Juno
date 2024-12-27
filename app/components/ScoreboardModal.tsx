@@ -127,19 +127,22 @@ const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     );
   };
 
-  // 3.D.b. Sélection des scores à afficher
-  const getCurrentScores = () => {
-    switch (activeTab) {
-      case 'daily':
-        return dailyScores;
-      case 'monthly':
-        return monthlyScores;
-      case 'allTime':
-        return allTimeScores;
-      default:
-        return [];
-    }
-  };
+ // 3.D.b. Sélection des scores à afficher
+const getCurrentScores = () => {
+  switch (activeTab) {
+    case 'daily':
+      // Limite à 5 scores pour les scores journaliers
+      return dailyScores.slice(0, 5);
+    case 'monthly':
+      // Limite à 5 scores pour les scores mensuels
+      return monthlyScores.slice(0, 5);
+    case 'allTime':
+      // Limite à 5 scores pour les scores de tous les temps
+      return allTimeScores.slice(0, 5);
+    default:
+      return [];
+  }
+};
 
   // 3.E. Rendu principal
   // ------------------

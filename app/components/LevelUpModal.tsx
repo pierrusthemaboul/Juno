@@ -2,7 +2,7 @@
 // ==============
 // 1.A. Présentation
 // ----------------
-// Modal de transition et présentation des niveaux
+// Modal de transition et présentation des niveaux avec récapitulatif des événements
 
 // 1.B. Notes pour l'IA
 // -------------------
@@ -37,7 +37,8 @@ import {
   Easing,
   Dimensions, 
   TouchableOpacity,
-  ScrollView 
+  ScrollView,
+  Image 
 } from 'react-native';
 
 // 2.B. Imports externes
@@ -57,13 +58,40 @@ import {
 // 2.D. Configuration dimensions
 // --------------------------
 const { width, height } = Dimensions.get('window');
-// Fin de la section Imports et Configuration
+
+// 2.E. Configuration des logs
+// ------------------------
+const modalLogs = {
+  render: {
+    eventSummary: (eventCount: number) => {
+      console.log(`[LevelUpModal] Rendering event summary with ${eventCount} events`);
+    },
+    noEvents: () => {
+      console.log('[LevelUpModal] No events to display in summary');
+    },
+    configMissing: () => {
+      console.warn('[LevelUpModal] Level configuration is missing');
+    }
+  },
+  animation: {
+    start: () => {
+      console.log('[LevelUpModal] Starting modal animations');
+    },
+    complete: () => {
+      console.log('[LevelUpModal] Modal animations completed');
+    }
+  },
+  interaction: {
+    startLevel: () => {
+      console.log('[LevelUpModal] User started new level');
+    }
+  }
+};
 
 // 3. Interfaces et Constantes
 // =========================
 // 3.A. Interface Props
 // ------------------
-// 3.A.a. Définition des props du composant
 interface LevelModalProps {
   visible: boolean;
   level: number;
@@ -78,39 +106,11 @@ interface LevelModalProps {
     type: RewardType;
     value: number;
   };
-  performanceStats?: {
-    typeSuccess: Record<string, number>;
-    periodSuccess: Record<string, number>;
-    overallAccuracy: number;
-    averageResponseTime: number;
-  };
-  categoryMastery?: Record<string, { masteryLevel: number }>;
-  periodStats?: Record<string, { accuracy: number }>;
-  activeBonus?: string[];
-  streakInfo?: { current: number; best: number };
+  currentLevelConfig: LevelConfig | undefined; // Maintenant explicitement optionnel
 }
-
-// 3.B. Valeurs par défaut
-// ----------------------
-// 3.B.a. Configuration des stats par défaut
-const DEFAULT_STATS = {
-  performanceStats: {
-    typeSuccess: {},
-    periodSuccess: {},
-    overallAccuracy: 0,
-    averageResponseTime: 0
-  },
-  categoryMastery: {},
-  periodStats: {},
-  activeBonus: [],
-  streakInfo: { current: 0, best: 0 }
-};
-// Fin de la section Interfaces et Constantes
 
 // 4. Composant Principal
 // ====================
-// 4.A. Définition du composant
-// --------------------------
 const LevelUpModal: React.FC<LevelModalProps> = ({
   visible,
   level,
@@ -122,16 +122,17 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   previousLevel,
   isNewLevel,
   transitionReward,
-  performanceStats = DEFAULT_STATS.performanceStats,
-  categoryMastery = DEFAULT_STATS.categoryMastery,
-  periodStats = DEFAULT_STATS.periodStats,
-  activeBonus = DEFAULT_STATS.activeBonus,
-  streakInfo = DEFAULT_STATS.streakInfo
+  currentLevelConfig
 }) => {
-
+  // 4.A. Vérification de sécurité initiale
+  // ---------------------------------
+  if (!currentLevelConfig) {
+    modalLogs.render.configMissing();
+    // On peut continuer le rendu sans le résumé des événements
+  }
+  
   // 4.B. Références d'animation
   // -------------------------
-  // 4.B.a. Initialisation des animations
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
@@ -140,14 +141,14 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   const contentTranslateY = useRef(new Animated.Value(50)).current;
   const statsProgressAnim = useRef(new Animated.Value(0)).current;
 
-  // 4.C. Effets
+  // 4.B. Effets
   // ----------
-  // 4.C.a. Animation d'entrée
   useEffect(() => {
     let isMounted = true;
-  
+
     if (visible) {
-      // Reset des animations
+      modalLogs.animation.start();
+      
       const resetAnimations = () => {
         scaleAnim.setValue(0.3);
         opacityAnim.setValue(0);
@@ -157,10 +158,9 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
         buttonScaleAnim.setValue(1);
         statsProgressAnim.setValue(0);
       };
-  
+
       resetAnimations();
-  
-      // Séquence d'animation principale
+
       Animated.sequence([
         Animated.timing(backgroundOpacityAnim, {
           toValue: 1,
@@ -197,18 +197,18 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
       ]).start(() => {
         if (isMounted) {
           startButtonAnimation();
+          modalLogs.animation.complete();
         }
       });
     }
-  
+
     return () => {
       isMounted = false;
     };
   }, [visible]);
 
-  // 4.D. Fonctions d'animation
-  // ------------------------
-  // 4.D.a. Animation du bouton
+  // 4.C. Animations
+  // -------------
   const startButtonAnimation = () => {
     Animated.loop(
       Animated.sequence([
@@ -226,34 +226,15 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     ).start();
   };
 
-  // 4.E. Utilitaires
-  // --------------
-  // 4.E.a. Calcul des couleurs
-  const getMasteryColor = (level: number) => {
-    if (level >= 5) return colors.warningYellow;
-    if (level >= 4) return colors.primary;
-    if (level >= 3) return colors.accent;
-    return colors.lightText;
+  // 4.D. Gestionnaires d'événements
+  // -----------------------------
+  const handleStart = () => {
+    modalLogs.interaction.startLevel();
+    onStart();
   };
 
-  // 4.E.b. Icônes de maîtrise
-  const getMasteryIcon = (level: number) => {
-    if (level >= 5) return 'trophy';
-    if (level >= 4) return 'star';
-    if (level >= 3) return 'medal';
-    return 'ribbon';
-  };
-
-  // 4.E.c. Couleurs de précision
-  const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 0.8) return colors.correctGreen;
-    if (accuracy >= 0.6) return colors.warningYellow;
-    return colors.incorrectRed;
-  };
-
-  // 4.F. Composants de rendu
-  // ----------------------
-  // 4.F.a. Bannière niveau supérieur
+  // 4.E. Fonctions de rendu
+  // ---------------------
   const renderLevelUpBanner = () => {
     if (!previousLevel || !isNewLevel) return null;
 
@@ -276,7 +257,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
           style={styles.bannerGradient}
         >
           <Ionicons name="trophy" size={32} color="white" />
-          <Text style={styles.levelUpText}>NIVEAU SUPÉRIEUR !</Text>
+          <Text style={styles.levelUpText}>NIVEAU TERMINÉ</Text>
           <Text style={styles.previousLevel}>
             {previousLevel} → {level}
           </Text>
@@ -285,121 +266,61 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
-  // 4.F.b. Badges de maîtrise
-  const renderMasteryBadges = () => {
-    const sortedCategories = Object.entries(categoryMastery)
-      .filter(([_, stats]) => stats.masteryLevel >= 3)
-      .sort((a, b) => b[1].masteryLevel - a[1].masteryLevel);
+  // 4.F. Récapitulatif des événements
+  // ------------------------------
+  const renderEventsSummary = () => {
+    // Vérification de sécurité explicite avec log détaillé
+    if (!currentLevelConfig || !currentLevelConfig.eventsSummary?.length) {
+      modalLogs.render.noEvents();
+      console.log('[LevelUpModal] Current config state:', {
+        hasConfig: !!currentLevelConfig,
+        summary: currentLevelConfig?.eventsSummary,
+        level
+      });
+      return null;
+    }
 
-    if (sortedCategories.length === 0) return null;
+    modalLogs.render.eventSummary(currentLevelConfig.eventsSummary.length);
 
     return (
-      <View style={styles.masteryContainer}>
-        <Text style={styles.sectionTitle}>Spécialités</Text>
-        <View style={styles.badgesGrid}>
-          {sortedCategories.map(([category, stats]) => (
-            <Animated.View 
-              key={category}
-              style={[
-                styles.masteryBadge,
-                {
-                  opacity: statsProgressAnim,
-                  transform: [{
-                    scale: statsProgressAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.5, 1]
-                    })
-                  }]
-                }
-              ]}
-            >
-              <Ionicons 
-                name={getMasteryIcon(stats.masteryLevel)}
-                size={24}
-                color={getMasteryColor(stats.masteryLevel)}
+      <View style={styles.eventsSummaryContainer}>
+        <Text style={styles.sectionTitle}>Événements du niveau</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {currentLevelConfig.eventsSummary.map((event, index) => (
+            <View key={event.id} style={styles.eventCard}>
+              <Image 
+                source={{ uri: event.illustration_url }}
+                style={styles.eventImage}
+                resizeMode="cover"
               />
-              <Text style={styles.masteryCategory}>{category}</Text>
-              <Text style={[
-                styles.masteryLevel,
-                { color: getMasteryColor(stats.masteryLevel) }
-              ]}>
-                Niveau {stats.masteryLevel}
-              </Text>
-            </Animated.View>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
-  // 4.F.c. Statistiques par période
-  const renderPeriodStats = () => {
-    return (
-      <View style={styles.periodStatsContainer}>
-        <Text style={styles.sectionTitle}>Périodes Historiques</Text>
-        {Object.entries(periodStats).map(([period, stats]) => (
-          <Animated.View 
-            key={period}
-            style={[styles.periodRow, {
-              opacity: statsProgressAnim,
-              transform: [{
-                translateX: statsProgressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-50, 0]
-                })
-              }]
-            }]}
-          >
-            <Text style={styles.periodName}>{period}</Text>
-            <View style={styles.accuracyBar}>
-              <Animated.View 
-                style={[
-                  styles.accuracyFill,
-                  { 
-                    width: statsProgressAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0%', `${stats.accuracy * 100}%`]
-                    }),
-                    backgroundColor: getAccuracyColor(stats.accuracy)
-                  }
-                ]} 
-              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                style={styles.eventGradient}
+              >
+                <Text style={styles.eventDate}>{event.date_formatee}</Text>
+                <Text style={styles.eventTitle} numberOfLines={2}>
+                  {event.titre}
+                </Text>
+                <View style={[
+                  styles.responseIndicator,
+                  { backgroundColor: event.wasCorrect ? colors.correctGreen : colors.incorrectRed }
+                ]}>
+                  <Ionicons 
+                    name={event.wasCorrect ? "checkmark" : "close"} 
+                    size={20} 
+                    color="white" 
+                  />
+                </View>
+              </LinearGradient>
             </View>
-            <Text style={styles.accuracyText}>
-              {Math.round(stats.accuracy * 100)}%
-            </Text>
-          </Animated.View>
-        ))}
-      </View>
-    );
-  };
-
-  // 4.F.d. Règles spéciales
-  const renderSpecialRules = () => {
-    if (!specialRules?.length) return null;
-
-    return (
-      <View style={styles.rulesContainer}>
-        <Text style={styles.rulesTitle}>Règles spéciales :</Text>
-        {specialRules.map((rule, index) => (
-          <View key={index} style={styles.ruleItem}>
-            <Ionicons 
-              name="star" 
-              size={16} 
-              color={colors.primary} 
-              style={styles.ruleIcon} 
-            />
-            <Text style={styles.ruleText}>
-              {rule}
-            </Text>
-          </View>
-        ))}
+          ))}
+        </ScrollView>
       </View>
     );
   };
 
   // 4.G. Rendu principal
-  // ------------------
+  // -----------------
   if (!visible) return null;
 
   return (
@@ -445,13 +366,13 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
               </Animated.Text>
               <Text style={styles.levelName}>{name}</Text>
             </View>
-            <Text style={styles.description}>{description}</Text>
-            {renderSpecialRules()}
-            {renderMasteryBadges()}
-            {renderPeriodStats()}
+
+            {renderEventsSummary()}
+
             <Text style={styles.eventsInfo}>
               Objectif : {requiredEvents} événements
             </Text>
+
             <Animated.View
               style={[
                 styles.startButtonContainer,
@@ -460,7 +381,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
             >
               <TouchableOpacity
                 style={styles.startButton}
-                onPress={onStart}
+                onPress={handleStart}
                 activeOpacity={0.8}
               >
                 <LinearGradient
@@ -480,14 +401,12 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     </Modal>
   );
 };
-// Fin de la section Composant Principal
 
 // 5. Styles
-// =========
-// 5.A. Configuration globale
-// ------------------------
+// ========
 const styles = StyleSheet.create({
-  // 5.A.a. Styles du modal
+  // 5.A. Base du modal
+  // ----------------
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -511,29 +430,34 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
   },
-
-  // 5.B. Styles de la bannière
-  // ------------------------
   scrollView: {
     paddingHorizontal: 20,
   },
+
+  // 5.B. Bannière de niveau
+  // ---------------------
   levelUpBanner: {
     width: '100%',
     marginBottom: 20,
     borderRadius: 10,
     overflow: 'hidden',
+    minHeight: 60,
   },
   bannerGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 15,
+    paddingHorizontal: 20,
+    minHeight: 60,
   },
   levelUpText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     marginHorizontal: 10,
+    textAlign: 'center',
+    flexShrink: 1,
   },
   previousLevel: {
     color: 'white',
@@ -541,8 +465,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // 5.C. Styles du contenu niveau
-  // ---------------------------
+  // 5.C. Container de niveau
+  // ---------------------
   levelContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -563,123 +487,18 @@ const styles = StyleSheet.create({
     color: colors.accent,
     textAlign: 'center',
   },
-  description: {
-    fontSize: 18,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
 
-  // 5.D. Styles des règles
-  // --------------------
-  rulesContainer: {
-    marginBottom: 20,
-    padding: 15,
-    backgroundColor: colors.lightBackground,
-    borderRadius: 10,
-  },
-  rulesTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 10,
-  },
-  ruleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  ruleIcon: {
-    marginRight: 8,
-  },
-  ruleText: {
-    fontSize: 16,
-    color: colors.text,
-    flex: 1,
-  },
-
-  // 5.E. Styles de maîtrise
-  // ---------------------
-  masteryContainer: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  badgesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  masteryBadge: {
-    backgroundColor: colors.lightBackground,
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: width * 0.25,
-    aspectRatio: 0.8,
-  },
-  masteryCategory: {
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'center',
-    marginTop: 5,
-  },
-  masteryLevel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 5,
-  },
-
-  // 5.F. Styles des statistiques
-  // --------------------------
-  periodStatsContainer: {
-    marginBottom: 20,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 5,
-  },
-  periodName: {
-    width: '30%',
-    fontSize: 14,
-    color: colors.text,
-  },
-  accuracyBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: colors.lightBackground,
-    borderRadius: 4,
-    marginHorizontal: 10,
-    overflow: 'hidden',
-  },
-  accuracyFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  accuracyText: {
-    width: '15%',
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'right',
-  },
-
-  // 5.G. Styles du bouton
-  // -------------------
+  // 5.D. Informations sur les événements
+  // ---------------------------------
   eventsInfo: {
     fontSize: 16,
     color: colors.lightText,
     textAlign: 'center',
-    marginBottom: 25,
+    marginVertical: 15,
   },
+
+  // 5.E. Bouton de démarrage
+  // ----------------------
   startButtonContainer: {
     width: '100%',
     alignItems: 'center',
@@ -704,7 +523,85 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     letterSpacing: 2,
   },
+
+  // 5.F. Sections communes
+  // -------------------
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+
+  // 5.G. Conteneur des événements
+  // --------------------------
+  eventsSummaryContainer: {
+    marginVertical: 20,
+    width: '100%',
+  },
+  eventCard: {
+    width: 200,
+    height: 150,
+    marginRight: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: colors.cardBackground,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 10,
+    height: '60%',
+  },
+  eventDate: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  eventTitle: {
+    color: 'white',
+    fontSize: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  responseIndicator: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
 });
-// Fin de la section Styles
 
 export default LevelUpModal;
