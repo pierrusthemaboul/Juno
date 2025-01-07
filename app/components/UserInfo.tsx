@@ -281,7 +281,7 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
     return (
       <View style={styles.container}>
         <View style={styles.mainSection}>
-          {console.log('[UserInfo] Rendering with name:', name)}
+         
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{name || ''}</Text>
             <View ref={pointsRef}>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     // Ajout de log pour les dimensions
     onLayout: ({ nativeEvent }) => {
-      console.log('userInfo layout:', nativeEvent.layout);
+      
     }
   },
   userName: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
     // Ajout de log pour vérifier le style
     onLayout: ({ nativeEvent }) => {
-      console.log('userName style dimensions:', nativeEvent.layout);
+      
     }
   },
   score: {
@@ -377,33 +377,33 @@ const styles = StyleSheet.create({
 const debugLogs = {
   positions: {
     pointsRequested: () => {
-      console.log('[UserInfo] Points position requested');
+    
     },
     pointsCalculated: (position: { x: number; y: number }) => {
-      console.log('[UserInfo] Points position calculated:', position);
+      
     },
     pointsDefaulted: () => {
-      console.warn('[UserInfo] Points position defaulted to center');
+      
     },
     livesRequested: () => {
-      console.log('[UserInfo] Lives position requested');
+      
     },
     livesCalculated: (position: { x: number; y: number }) => {
-      console.log('[UserInfo] Lives position calculated:', position);
+    
     },
     livesDefaulted: () => {
-      console.warn('[UserInfo] Lives position defaulted to center');
+      
     },
   },
   refs: {
     pointsRefMissing: () => {
-      console.warn('[UserInfo] Points ref not available');
+      
     },
     livesRefMissing: () => {
-      console.warn('[UserInfo] Lives ref not available');
+     
     },
     measureFailed: (context: string) => {
-      console.error(`[UserInfo] Measure failed for ${context}`);
+     
     }
   }
 };

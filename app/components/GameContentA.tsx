@@ -99,7 +99,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     if (currentReward && userInfoRef.current) {
       const updateRewardPositionSafely = async () => {
         try {
-          gameLogger.info('[GameContentA] Updating reward position');
           const defaultPosition = { x: width / 2, y: height / 2 };
 
           const position = currentReward.type === RewardType.EXTRA_LIFE
@@ -109,16 +108,13 @@ const GameContentA: React.FC<GameContentAProps> = ({
           if (!mounted) return;
 
           if (position && typeof position.x === 'number' && typeof position.y === 'number') {
-            gameLogger.info('[GameContentA] Valid position received:', position);
             updateRewardPosition(position);
             setIsRewardPositionSet(true);
           } else {
-            gameLogger.warn('[GameContentA] Invalid position received, using default:', defaultPosition);
             updateRewardPosition(defaultPosition);
             setIsRewardPositionSet(true);
           }
         } catch (error) {
-          gameLogger.error('[GameContentA] Error updating reward position:', error);
           if (mounted) {
             updateRewardPosition({ x: width / 2, y: height / 2 });
             setIsRewardPositionSet(true);
@@ -142,7 +138,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
   // 4.D.3. Effet : animation quand le level modal apparaît
   useEffect(() => {
     if (showLevelModal) {
-      gameLogger.info('Level modal shown. Animating opacity.');
       Animated.sequence([
         Animated.timing(contentOpacity, {
           toValue: 0.3,
@@ -155,9 +150,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
           delay: 1000,
           useNativeDriver: true
         })
-      ]).start(() => {
-        gameLogger.info('Level modal animation complete.');
-      });
+      ]).start();
     }
   }, [showLevelModal]);
 
@@ -235,12 +228,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.header}>
-          {console.log('[GameContentA] Rendering with user:', { 
-            name: user.name, 
-            points: user.points,
-            lives: user.lives,
-            level: level
-          })}
           <UserInfo
             ref={userInfoRef}
             name={user.name}

@@ -1,32 +1,24 @@
-// 1. Introduction
-// ==============
-// 1.A. Présentation
-// ----------------
-// Modal de transition et présentation des niveaux avec récapitulatif des événements
+/************************************************************************************
+ * 4. COMPOSANT : LevelUpModal
+ *
+ * 4.A. Description
+ *     Modal de transition et présentation des niveaux avec récapitulatif des événements.
+ *
+ * 4.B. Props
+ *     @interface LevelModalProps
+ *     @property {boolean} visible - Contrôle la visibilité du modal.
+ *     @property {number} level - Niveau actuel.
+ *     @property {() => void} onStart - Fonction appelée pour démarrer le niveau.
+ *     @property {string} name - Nom du niveau.
+ *     @property {string} description - Description du niveau.
+ *     @property {number} requiredEvents - Nombre d'événements requis pour le niveau.
+ *     @property {SpecialRules[]} [specialRules] - Règles spéciales du niveau.
+ *     @property {number} [previousLevel] - Niveau précédent (si applicable).
+ *     @property {boolean} isNewLevel - Indique si c'est un nouveau niveau.
+ *     @property {LevelConfig | undefined} currentLevelConfig - Configuration actuelle du niveau.
+ ************************************************************************************/
 
-// 1.B. Notes pour l'IA
-// -------------------
-// FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
-// spécifiques pour les futures modifications avec Claude AI
-
-// 1.C. Points clés de maintenance
-// -----------------------------
-// 1.C.a. Animations
-// Gestion critique des transitions visuelles
-// 1.C.b. Statistiques 
-// Robustesse face aux données manquantes
-// 1.C.c. Récompenses
-// Synchronisation des animations de gains
-// 1.C.d. Performance
-// Maintien de la fluidité de l'interface
-// 1.C.e. Données
-// Clarté de la présentation des performances
-// Fin de la section Introduction
-
-// 2. Imports et Configuration
-// =========================
-// 2.A. Imports React Native
-// -----------------------
+// 4.C. Imports
 import React, { useEffect, useRef } from 'react';
 import { 
   Modal, 
@@ -40,14 +32,8 @@ import {
   ScrollView,
   Image 
 } from 'react-native';
-
-// 2.B. Imports externes
-// -------------------
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
-// 2.C. Imports internes
-// -------------------
 import { colors } from '../styles/colors';
 import { 
   LevelConfig, 
@@ -55,43 +41,12 @@ import {
   RewardType
 } from '../hooks/types';
 
-// 2.D. Configuration dimensions
-// --------------------------
+// 4.D. Configuration dimensions
 const { width, height } = Dimensions.get('window');
 
-// 2.E. Configuration des logs
-// ------------------------
-const modalLogs = {
-  render: {
-    eventSummary: (eventCount: number) => {
-      console.log(`[LevelUpModal] Rendering event summary with ${eventCount} events`);
-    },
-    noEvents: () => {
-      console.log('[LevelUpModal] No events to display in summary');
-    },
-    configMissing: () => {
-      console.warn('[LevelUpModal] Level configuration is missing');
-    }
-  },
-  animation: {
-    start: () => {
-      console.log('[LevelUpModal] Starting modal animations');
-    },
-    complete: () => {
-      console.log('[LevelUpModal] Modal animations completed');
-    }
-  },
-  interaction: {
-    startLevel: () => {
-      console.log('[LevelUpModal] User started new level');
-    }
-  }
-};
-
-// 3. Interfaces et Constantes
-// =========================
-// 3.A. Interface Props
-// ------------------
+/************************************************************************************
+ * 4.E. Interface des Props
+ ************************************************************************************/
 interface LevelModalProps {
   visible: boolean;
   level: number;
@@ -109,8 +64,9 @@ interface LevelModalProps {
   currentLevelConfig: LevelConfig | undefined; // Maintenant explicitement optionnel
 }
 
-// 4. Composant Principal
-// ====================
+/************************************************************************************
+ * 4.F. Composant Principal LevelUpModal
+ ************************************************************************************/
 const LevelUpModal: React.FC<LevelModalProps> = ({
   visible,
   level,
@@ -124,15 +80,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   transitionReward,
   currentLevelConfig
 }) => {
-  // 4.A. Vérification de sécurité initiale
-  // ---------------------------------
-  if (!currentLevelConfig) {
-    modalLogs.render.configMissing();
-    // On peut continuer le rendu sans le résumé des événements
-  }
-  
-  // 4.B. Références d'animation
-  // -------------------------
+  // 4.F.1. Références d'animation
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
@@ -141,14 +89,12 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   const contentTranslateY = useRef(new Animated.Value(50)).current;
   const statsProgressAnim = useRef(new Animated.Value(0)).current;
 
-  // 4.B. Effets
-  // ----------
+  // 4.F.2. Effets d'animation lors de l'apparition du modal
   useEffect(() => {
     let isMounted = true;
 
     if (visible) {
-      modalLogs.animation.start();
-      
+      // Réinitialisation des animations
       const resetAnimations = () => {
         scaleAnim.setValue(0.3);
         opacityAnim.setValue(0);
@@ -161,6 +107,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
 
       resetAnimations();
 
+      // Séquence d'animations
       Animated.sequence([
         Animated.timing(backgroundOpacityAnim, {
           toValue: 1,
@@ -197,7 +144,6 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
       ]).start(() => {
         if (isMounted) {
           startButtonAnimation();
-          modalLogs.animation.complete();
         }
       });
     }
@@ -207,8 +153,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     };
   }, [visible]);
 
-  // 4.C. Animations
-  // -------------
+  // 4.F.3. Animation du bouton de démarrage
   const startButtonAnimation = () => {
     Animated.loop(
       Animated.sequence([
@@ -226,15 +171,12 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     ).start();
   };
 
-  // 4.D. Gestionnaires d'événements
-  // -----------------------------
+  // 4.F.4. Gestionnaire d'événement pour démarrer le niveau
   const handleStart = () => {
-    modalLogs.interaction.startLevel();
     onStart();
   };
 
-  // 4.E. Fonctions de rendu
-  // ---------------------
+  // 4.F.5. Rendu du bandeau de fin de niveau
   const renderLevelUpBanner = () => {
     if (!previousLevel || !isNewLevel) return null;
 
@@ -266,21 +208,11 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
-  // 4.F. Récapitulatif des événements
-  // ------------------------------
+  // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummary = () => {
-    // Vérification de sécurité explicite avec log détaillé
     if (!currentLevelConfig || !currentLevelConfig.eventsSummary?.length) {
-      modalLogs.render.noEvents();
-      console.log('[LevelUpModal] Current config state:', {
-        hasConfig: !!currentLevelConfig,
-        summary: currentLevelConfig?.eventsSummary,
-        level
-      });
       return null;
     }
-
-    modalLogs.render.eventSummary(currentLevelConfig.eventsSummary.length);
 
     return (
       <View style={styles.eventsSummaryContainer}>
@@ -319,8 +251,61 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
-  // 4.G. Rendu principal
-  // -----------------
+  // 4.F.7. Rendu conditionnel du contenu du modal
+  const renderModalContent = () => {
+    return (
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderLevelUpBanner()}
+        <View style={styles.levelContainer}>
+          <Animated.Text
+            style={[
+              styles.levelLabel,
+              {
+                transform: [{ scale: levelNumberAnim }]
+              }
+            ]}
+          >
+            NIVEAU {level}
+          </Animated.Text>
+          <Text style={styles.levelName}>{name}</Text>
+        </View>
+
+        {renderEventsSummary()}
+
+        <Text style={styles.eventsInfo}>
+          Objectif : {requiredEvents} événements
+        </Text>
+
+        <Animated.View
+          style={[
+            styles.startButtonContainer,
+            { transform: [{ scale: buttonScaleAnim }] }
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={handleStart}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[colors.primary, colors.accent]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <Ionicons name="play" size={30} color="white" />
+              <Text style={styles.startButtonText}>GO !</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </ScrollView>
+    );
+  };
+
+  // 4.F.8. Rendu principal du composant
   if (!visible) return null;
 
   return (
@@ -348,65 +333,18 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
             }
           ]}
         >
-          <ScrollView
-            style={styles.scrollView}
-            showsVerticalScrollIndicator={false}
-          >
-            {renderLevelUpBanner()}
-            <View style={styles.levelContainer}>
-              <Animated.Text
-                style={[
-                  styles.levelLabel,
-                  {
-                    transform: [{ scale: levelNumberAnim }]
-                  }
-                ]}
-              >
-                NIVEAU {level}
-              </Animated.Text>
-              <Text style={styles.levelName}>{name}</Text>
-            </View>
-
-            {renderEventsSummary()}
-
-            <Text style={styles.eventsInfo}>
-              Objectif : {requiredEvents} événements
-            </Text>
-
-            <Animated.View
-              style={[
-                styles.startButtonContainer,
-                { transform: [{ scale: buttonScaleAnim }] }
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.startButton}
-                onPress={handleStart}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={[colors.primary, colors.accent]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.buttonGradient}
-                >
-                  <Ionicons name="play" size={30} color="white" />
-                  <Text style={styles.startButtonText}>GO !</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
-          </ScrollView>
+          {renderModalContent()}
         </Animated.View>
       </Animated.View>
     </Modal>
   );
 };
 
-// 5. Styles
-// ========
+/************************************************************************************
+ * 5. Styles
+ ************************************************************************************/
 const styles = StyleSheet.create({
   // 5.A. Base du modal
-  // ----------------
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -435,7 +373,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.B. Bannière de niveau
-  // ---------------------
   levelUpBanner: {
     width: '100%',
     marginBottom: 20,
@@ -466,7 +403,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.C. Container de niveau
-  // ---------------------
   levelContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -489,7 +425,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.D. Informations sur les événements
-  // ---------------------------------
   eventsInfo: {
     fontSize: 16,
     color: colors.lightText,
@@ -498,7 +433,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.E. Bouton de démarrage
-  // ----------------------
   startButtonContainer: {
     width: '100%',
     alignItems: 'center',
@@ -525,7 +459,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.F. Sections communes
-  // -------------------
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
@@ -535,7 +468,6 @@ const styles = StyleSheet.create({
   },
 
   // 5.G. Conteneur des événements
-  // --------------------------
   eventsSummaryContainer: {
     marginVertical: 20,
     width: '100%',
@@ -604,4 +536,7 @@ const styles = StyleSheet.create({
   },
 });
 
+/************************************************************************************
+ * 6. Exportation
+ ************************************************************************************/
 export default LevelUpModal;

@@ -45,8 +45,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   level,
   isLevelPaused
 }) => {
-  console.log('EventLayoutA => RENDER => previousEvent:', previousEvent?.id, ' newEvent:', newEvent?.id);
-  console.log('EventLayoutA => RENDER => showDate:', showDate, ' isCorrect:', isCorrect, ' isImageLoaded:', isImageLoaded);
+ 
 
   // 3.C.1. États locaux
   const [transitioning, setTransitioning] = useState(false);
@@ -61,7 +60,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   // 3.C.3. useEffect => Sur changement de newEvent
   useEffect(() => {
     if (newEvent && (!currentBottom || newEvent.id !== currentBottom.id)) {
-      console.log('EventLayoutA => useEffect => newEvent détecté => startTransition()');
+   
       startTransition();
     }
   }, [newEvent]);
@@ -69,10 +68,10 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   // 3.C.4. startTransition
   const startTransition = () => {
     if (transitioning) {
-      console.log('EventLayoutA => startTransition => transition déjà en cours, on ignore');
+      
       return;
     }
-    console.log('EventLayoutA => startTransition => Lancement de la transition');
+    
     setTransitioning(true);
 
     const moveDistance = -(height * 0.42);
@@ -94,8 +93,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
         useNativeDriver: true,
       })
     ]).start(() => {
-      console.log('EventLayoutA => startTransition => Animation terminée');
-      console.log('EventLayoutA => startTransition => Mise à jour des states (currentTop, currentBottom)');
+      
 
       setCurrentTop(currentBottom);
       setCurrentBottom(newEvent);
@@ -110,12 +108,12 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
 
   // 3.C.5. handleChoice
   const handleChoice = (choice: string) => {
-    console.log('EventLayoutA => handleChoice => choix:', choice);
+
     if (!transitioning) {
-      console.log('EventLayoutA => handleChoice => onChoice() appelé');
+
       onChoice(choice);
     } else {
-      console.log('EventLayoutA => handleChoice => transition en cours, choix ignoré');
+   
     }
   };
 
