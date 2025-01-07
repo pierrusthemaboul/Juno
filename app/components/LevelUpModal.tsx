@@ -1,4 +1,5 @@
-/************************************************************************************
+
+  /************************************************************************************
  * 4. COMPOSANT : LevelUpModal
  *
  * 4.A. Description
@@ -19,25 +20,25 @@
  ************************************************************************************/
 
 // 4.C. Imports
-import React, { useEffect, useRef } from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  StyleSheet, 
+import React, { useEffect, useRef, useState } from 'react'; // Ajout de useState
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
   Animated,
   Easing,
-  Dimensions, 
+  Dimensions,
   TouchableOpacity,
   ScrollView,
-  Image 
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../styles/colors';
-import { 
-  LevelConfig, 
-  SpecialRules, 
+import {
+  LevelConfig,
+  SpecialRules,
   RewardType
 } from '../hooks/types';
 
@@ -208,48 +209,61 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
+  // ******* MODIFICATION *******
   // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummary = () => {
+    console.log("renderEventsSummary => currentLevelConfig:", currentLevelConfig); // LOG
     if (!currentLevelConfig || !currentLevelConfig.eventsSummary?.length) {
-      return null;
+        console.log("renderEventsSummary => no eventsSummary or empty"); // LOG
+        return null;
     }
 
     return (
-      <View style={styles.eventsSummaryContainer}>
-        <Text style={styles.sectionTitle}>Événements du niveau</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {currentLevelConfig.eventsSummary.map((event, index) => (
-            <View key={event.id} style={styles.eventCard}>
-              <Image 
-                source={{ uri: event.illustration_url }}
-                style={styles.eventImage}
-                resizeMode="cover"
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.8)']}
-                style={styles.eventGradient}
-              >
-                <Text style={styles.eventDate}>{event.date_formatee}</Text>
-                <Text style={styles.eventTitle} numberOfLines={2}>
-                  {event.titre}
-                </Text>
-                <View style={[
-                  styles.responseIndicator,
-                  { backgroundColor: event.wasCorrect ? colors.correctGreen : colors.incorrectRed }
-                ]}>
-                  <Ionicons 
-                    name={event.wasCorrect ? "checkmark" : "close"} 
-                    size={20} 
-                    color="white" 
-                  />
-                </View>
-              </LinearGradient>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+        <View style={styles.eventsSummaryContainer}>
+            <Text style={styles.sectionTitle}>Événements du niveau</Text>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                key={currentLevelConfig.level} // Utilisation du niveau comme clé
+            >
+                {currentLevelConfig.eventsSummary.map((event) => (
+                    <View key={event.id} style={styles.eventCard}>
+                        <Image
+                            source={{ uri: event.illustration_url }}
+                            style={styles.eventImage}
+                            resizeMode="cover"
+                        />
+                        <LinearGradient
+                            colors={['transparent', 'rgba(0,0,0,0.8)']}
+                            style={styles.eventGradient}
+                        >
+                            <Text style={styles.eventDate}>{event.date_formatee}</Text>
+                            <Text style={styles.eventTitle} numberOfLines={2}>
+                                {event.titre}
+                            </Text>
+                            <View
+                                style={[
+                                    styles.responseIndicator,
+                                    {
+                                        backgroundColor: event.wasCorrect
+                                            ? colors.correctGreen
+                                            : colors.incorrectRed,
+                                    },
+                                ]}
+                            >
+                                <Ionicons
+                                    name={event.wasCorrect ? "checkmark" : "close"}
+                                    size={20}
+                                    color="white"
+                                />
+                            </View>
+                        </LinearGradient>
+                    </View>
+                ))}
+            </ScrollView>
+        </View>
     );
-  };
+};
 
   // 4.F.7. Rendu conditionnel du contenu du modal
   const renderModalContent = () => {
@@ -492,6 +506,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  
   eventGradient: {
     position: 'absolute',
     bottom: 0,

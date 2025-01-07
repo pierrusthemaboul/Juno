@@ -700,8 +700,7 @@ export function useGameLogicA(initialEvent: string) {
       selectNewEvent(allEvents, newEvent);
     }
   }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
-
-  // 1.H.9. handleChoice
+// 1.H.9. handleChoice
   /**
    * 1.H.9. Gère la réponse de l’utilisateur : "avant" ou "après"
    * @function handleChoice
@@ -710,10 +709,10 @@ export function useGameLogicA(initialEvent: string) {
    */
   const handleChoice = useCallback(
     (choice: 'avant' | 'après') => {
-     
+      console.log('handleChoice => called with choice:', choice); // LOG
 
       if (!previousEvent || !newEvent || isLevelPaused) {
-  
+        console.log('handleChoice => conditions not met (no previousEvent, no newEvent, or level paused)'); // LOG
         return;
       }
 
@@ -726,6 +725,8 @@ export function useGameLogicA(initialEvent: string) {
       const isAnswerCorrect =
         (choice === 'avant' && newBeforePrevious) ||
         (choice === 'après' && newAfterPrevious);
+
+      console.log('handleChoice => isAnswerCorrect:', isAnswerCorrect); // LOG
 
       setIsCorrect(isAnswerCorrect);
       setShowDates(true);
@@ -740,8 +741,9 @@ export function useGameLogicA(initialEvent: string) {
         responseTime: 20 - timeLeft
       };
 
+      console.log('handleChoice => eventSummaryItem:', eventSummaryItem); // LOG
+
       if (isAnswerCorrect) {
-       
         playCorrectSound();
         const newStreak = streak + 1;
         setStreak(newStreak);
@@ -765,6 +767,9 @@ export function useGameLogicA(initialEvent: string) {
           'default'
         );
 
+        console.log('handleChoice => points calculated:', pts); // LOG
+
+        // MISE A JOUR ICI
         setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
 
         if (Number.isFinite(pts) && pts > 0) {
@@ -780,23 +785,38 @@ export function useGameLogicA(initialEvent: string) {
               eventsCompletedInLevel: prev.eventsCompletedInLevel + 1
             };
 
+            console.log('handleChoice => updatedUser:', updatedUser); // LOG
+
             if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
               const nextLevel = prev.level + 1;
               updatedUser.level = nextLevel;
               updatedUser.eventsCompletedInLevel = 0;
 
               setPreviousEvent(newEvent);
+
+              // MISE A JOUR ICI
+              console.log('handleChoice => level up, updating currentLevelConfig'); // LOG
               setCurrentLevelConfig((prevConf) => ({
                 ...prevConf,
-                eventsSummary: [...currentLevelEvents, eventSummaryItem]
+                eventsSummary: [...(prevConf?.eventsSummary || []), ...currentLevelEvents, eventSummaryItem] // Conserve les résumés précédents et ajoute le résumé du niveau terminé
               }));
-              setCurrentLevelEvents([]);
+
+              setCurrentLevelEvents([]); // On réinitialise les événements du niveau
               setShowLevelModal(true);
               setIsLevelPaused(true);
               playLevelUpSound();
 
               checkRewards({ type: 'level', value: nextLevel }, updatedUser);
             } else {
+              // MISE A JOUR ICI (dans le cas où le niveau n'est pas terminé)
+              console.log('handleChoice => not level up, updating currentLevelConfig'); // LOG
+              setCurrentLevelConfig((prevConf) => ({
+                ...prevConf,
+                eventsSummary: [...(prevConf?.eventsSummary || []), eventSummaryItem] // Ajoute le résumé de l'événement actuel
+              }));
+              // MISE A JOUR DE currentLevelEvents
+              
+
               setTimeout(() => {
                 if (!isGameOver && !showLevelModal) {
                   setPreviousEvent(newEvent);
@@ -808,7 +828,6 @@ export function useGameLogicA(initialEvent: string) {
           });
         }
       } else {
-     
         playIncorrectSound();
         setStreak(0);
 
@@ -818,7 +837,8 @@ export function useGameLogicA(initialEvent: string) {
           useNativeDriver: false
         }).start();
 
-        setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+        // MISE A JOUR ICI (ajouter le résumé en cas de mauvaise réponse aussi)
+       
 
         updatePerformanceStats(
           newEvent.types_evenement?.[0] || 'default',
@@ -838,6 +858,13 @@ export function useGameLogicA(initialEvent: string) {
           };
         });
 
+        // MISE A JOUR ICI
+        setCurrentLevelConfig((prevConf) => ({
+          ...prevConf,
+          eventsSummary: [...(prevConf?.eventsSummary || []), eventSummaryItem] // Ajoute le résumé de l'événement actuel
+        }));
+         setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+
         setTimeout(() => {
           if (!isGameOver && !showLevelModal) {
             setPreviousEvent(newEvent);
@@ -845,7 +872,6 @@ export function useGameLogicA(initialEvent: string) {
           }
         }, 2000);
       }
-
     },
     [
       previousEvent,
@@ -861,7 +887,7 @@ export function useGameLogicA(initialEvent: string) {
       playIncorrectSound,
       checkRewards,
       selectNewEvent,
-      currentLevelEvents,
+      currentLevelEvents, // Ajouté aux dépendances
       endGame,
       updatePerformanceStats,
       allEvents,
@@ -1083,27 +1109,29 @@ export function useGameLogicA(initialEvent: string) {
       }
     }
   };
-
-  // 1.H.15. startLevel
+// 1.H.15. startLevel
   /**
    * 1.H.15. Lance le niveau (ferme le modal et relance la sélection d’événements)
    * @function startLevel
    * @returns {void}
    */
   const startLevel = useCallback(() => {
+    console.log('startLevel => called'); // LOG
+
     setShowLevelModal(false);
     setIsLevelPaused(false);
     setIsCountdownActive(true);
     setTimeLeft(20);
 
+    setCurrentLevelEvents([]); // Réinitialisation des événements du niveau
+
     if (previousEvent) {
-     
+      console.log('startLevel => selecting new event based on previousEvent:', previousEvent.id); // LOG
       selectNewEvent(allEvents, previousEvent);
     } else {
-
+      console.log('startLevel => no previousEvent'); // LOG
     }
-  }, [allEvents, previousEvent, selectNewEvent]);
-
+  }, [allEvents, previousEvent, selectNewEvent]); // setCurrentLevelEvents supprimé des dépendances
   // 1.I. Retour du hook
   return {
     user,
