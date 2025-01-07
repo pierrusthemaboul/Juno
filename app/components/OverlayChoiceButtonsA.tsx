@@ -3,12 +3,11 @@
  *
  * 5.A. Description
  *     Affiche deux boutons "avant"/"après" superposés. Gère leur opacité en fonction
- *     du statut "disabled" ou "isLevelPaused".
+ *     du statut "isLevelPaused".
  *
  * 5.B. Props
  *     @interface OverlayChoiceButtonsAProps
  *     @property {(choice: string) => void} onChoice
- *     @property {boolean} disabled
  *     @property {boolean} isLevelPaused
  ************************************************************************************/
 
@@ -23,14 +22,13 @@ import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native
  */
 const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   onChoice,
-  disabled,
   isLevelPaused
 }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // 5.C.1. useEffect => Animation d’opacité
   useEffect(() => {
-    if (disabled || isLevelPaused) {
+    if (isLevelPaused) {
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
@@ -39,12 +37,11 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
     } else {
       fadeAnim.setValue(1);
     }
-  }, [disabled, isLevelPaused]);
+  }, [isLevelPaused]);
 
   // 5.C.2. handlePress
   const handlePress = (choice: string) => {
-    if (!disabled && !isLevelPaused) {
-      console.log('Choix:', choice);
+    if (!isLevelPaused) {
       onChoice(choice);
     }
   };
@@ -53,12 +50,12 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   return (
     <Animated.View
       style={[styles.container, { opacity: fadeAnim }]}
-      pointerEvents={!disabled && !isLevelPaused ? 'auto' : 'none'}
+      pointerEvents={!isLevelPaused ? 'auto' : 'none'}
     >
       <TouchableOpacity
         style={[styles.button, styles.buttonLeft]}
         onPress={() => handlePress('avant')}
-        disabled={disabled || isLevelPaused}
+        // disabled est supprimé ici aussi
         activeOpacity={0.7}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       >
@@ -70,7 +67,7 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
       <TouchableOpacity
         style={[styles.button, styles.buttonRight]}
         onPress={() => handlePress('après')}
-        disabled={disabled || isLevelPaused}
+        // disabled est supprimé ici aussi
         activeOpacity={0.7}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       >
@@ -124,5 +121,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
 });
+
 
 export default OverlayChoiceButtonsA;

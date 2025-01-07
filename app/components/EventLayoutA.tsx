@@ -163,11 +163,10 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
             level={level}
           />
           <View style={styles.buttonsContainer}>
-            <OverlayChoiceButtonsA
-              onChoice={handleChoice}
-              disabled={!isImageLoaded || transitioning || showDate || isLevelPaused}
-              isLevelPaused={isLevelPaused}
-            />
+          <OverlayChoiceButtonsA
+  onChoice={handleChoice}
+  isLevelPaused={isLevelPaused}
+/>
           </View>
         </View>
       </Animated.View>
