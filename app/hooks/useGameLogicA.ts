@@ -1,261 +1,141 @@
-// 1. Introduction
-// ==============
-// 1.A. Description générale
-// ------------------------
-// Ce fichier contient la logique principale du jeu de chronologie historique.
+// useGameLogicA.ts
 
-// 1.B. Configuration IA
-// --------------------
-// FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention
-// spécifiques pour les futures modifications avec Claude AI
-
-// 1.C. Points clés de maintenance
-// -----------------------------
-// - La sélection des événements est critique et utilise des fallbacks progressifs
-// - Les niveaux sont basés sur les écarts temporels et la difficulté
-// - Le système de points et de récompenses est modulaire
-// - Les logs détaillés aident au debugging
-
-// 2. Imports
-// =========
-// 2.A. Imports React
-// ----------------
 import { useState, useEffect, useCallback } from 'react';
-
-// 2.B. Imports Services
-// -------------------
 import { supabase } from '../../supabaseClients';
-import { useRewards } from './useRewards';
-import { useAudio } from './useAudio';
-
-// 2.C. Imports Types et Constantes
-// ------------------------------
-import { 
-  Event, 
-  User, 
-  LEVEL_CONFIGS, 
-  LevelConfig, 
+import useRewards from './useRewards';
+import useAudio from './useAudio';
+import {
+  Event,
+  User,
+  LevelConfig,
   RewardType,
-  GamePhase,
   MAX_LIVES,
-  LIFE_BONUS_THRESHOLD,
-  BASE_POINTS,
-  MAX_TIME_MULTIPLIER,
-  MAX_STREAK_MULTIPLIER,
-  STREAK_BONUS_BASE,
-  LEVEL_UP_LIFE_BONUS,
-  MAX_BONUS_STACKS,
-  MAX_MASTERY_MULTIPLIER,
-  MAX_PERIOD_MULTIPLIER,
-  MAX_COMBO_MULTIPLIER,
-  BONUS_DURATION,
-  BonusType,
   HistoricalPeriod,
-  HistoricalPeriodStats,
-  ActiveBonus,
-  BonusStack,
+  LevelEventSummary,
   CategoryMastery,
-  PerformanceStats,
+  HistoricalPeriodStats,
   LevelPerformance,
-  DifficultyModifiers,
+  ActiveBonus
 } from '../hooks/types';
+import { LEVEL_CONFIGS } from '../hooks/levelConfigs';
+import { Animated } from 'react-native';
 
-// 2.D. Imports Utilitaires
-// ----------------------
-import { gameLogger } from '../utils/gameLogger';
-
-// 3. Hook Principal
-// ===============
-// 3.A. Définition du hook
-// ----------------------
 export function useGameLogicA(initialEvent: string) {
+  console.log('useGameLogicA => (RENDER OR INIT) => initialEvent:', initialEvent);
 
-  // 3.B. Hooks système
-  // ----------------
-  // 3.B.a. Hook de récompenses
-  const { 
-    currentReward, 
-    checkRewards, 
-    completeRewardAnimation, 
-    updateRewardPosition 
+  // Récompenses (système)
+  const {
+    currentReward,
+    checkRewards,
+    completeRewardAnimation,
+    updateRewardPosition
   } = useRewards({
     onRewardEarned: (reward) => {
-      console.log('Reward earned:', reward);
       applyReward(reward);
     }
   });
 
-  // 3.B.b. Hook audio
-  const { 
-    playCorrectSound, 
-    playIncorrectSound, 
+  // Audio (sons)
+  const {
+    playCorrectSound,
+    playIncorrectSound,
     playLevelUpSound,
     playCountdownSound,
     playGameOverSound,
-    toggleBackgroundMusic,
-    setMusicVolume,
-    setSoundVolume
   } = useAudio();
 
+  // Profil utilisateur de base
+  const [user, setUser] = useState<User>({
+    name: '',
+    points: 0,
+    lives: MAX_LIVES,
+    level: 1,
+    eventsCompletedInLevel: 0,
+    totalEventsCompleted: 0,
+    streak: 0,
+    maxStreak: 0,
+    performanceStats: {
+      typeSuccess: {},
+      periodSuccess: {},
+      overallAccuracy: 0,
+      averageResponseTime: 0
+    }
+  });
 
-// 4. États du jeu
-// ==============
-
-// 4.0. Définitions d'énumération
-// ---------------------------
-// 4.0.a. Phases de jeu
-enum GamePhase {
-  LEARNING = 'LEARNING',
-  INTERMEDIATE = 'INTERMEDIATE',
-  ADVANCED = 'ADVANCED',
-  EXPERT = 'EXPERT',
-  LEGENDARY = 'LEGENDARY'
-}
-
-// 4.A. États des séries et récompenses
-// ----------------------------------
-const [streakAlerts, setStreakAlerts] = useState<string[]>([]);
-const [lastLevelWithReward, setLastLevelWithReward] = useState(0);
-const [showingReward, setShowingReward] = useState(false);
-
-// 4.B. États utilisateur
-// --------------------
-const [user, setUser] = useState<User>({
-  name: '',
-  points: 0,
-  lives: MAX_LIVES,
-  level: 1,
-  eventsCompletedInLevel: 0,
-  totalEventsCompleted: 0,
-  streak: 0,
-  maxStreak: 0,
-  performanceStats: {
+  // Quelques états du jeu
+  const [activeBonus, setActiveBonus] = useState<ActiveBonus[]>([]);
+  const [periodStats, setPeriodStats] = useState<Record<HistoricalPeriod, HistoricalPeriodStats>>({});
+  const [categoryMastery, setCategoryMastery] = useState<Record<string, CategoryMastery>>({});
+  const [eventHistory, setEventHistory] = useState<{ type: string; period: string; success: boolean; }[]>([]);
+  const [performanceStats, setPerformanceStats] = useState<{
+    typeSuccess: Record<string, number>;
+    periodSuccess: Record<string, number>;
+    overallAccuracy: number;
+  }>({
     typeSuccess: {},
     periodSuccess: {},
-    overallAccuracy: 0,
-    averageResponseTime: 0
-  }
-});
+    overallAccuracy: 0
+  });
 
-// 4.C. États bonus
-// --------------
-const [activeBonus, setActiveBonus] = useState<ActiveBonus[]>([]);
-const [bonusStack, setBonusStack] = useState<BonusStack>({
-  currentMultiplier: 1,
-  activeStacks: [],
-  maxStacks: MAX_BONUS_STACKS
-});
+  // Événements
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [previousEvent, setPreviousEvent] = useState<Event | null>(null);
+  const [newEvent, setNewEvent] = useState<Event | null>(null);
+  const [usedEvents, setUsedEvents] = useState<Set<string>>(new Set());
 
-// 4.D. États performances
-// ---------------------
-const [previousEventTypes, setPreviousEventTypes] = useState<string[]>([]);
-const [periodStats, setPeriodStats] = useState<Record<HistoricalPeriod, HistoricalPeriodStats>>({});
-const [categoryMastery, setCategoryMastery] = useState<Record<string, CategoryMastery>>({});
+  // Interface utilisateur
+  const [timeLeft, setTimeLeft] = useState(20);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isGameOver, setIsGameOver] = useState(false);
 
-// 4.E. États historique
-// -------------------
-const [eventHistory, setEventHistory] = useState<{
-  type: string;
-  period: string;
-  success: boolean;
-}[]>([]);
+  // **Cette variable** détermine si l'image est chargée ou non.
+  // Si elle reste "false", les boutons restent "disabled".
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-// 4.F. États statistiques
-// ---------------------
-const [performanceStats, setPerformanceStats] = useState<{
-  typeSuccess: Record<string, number>;
-  periodSuccess: Record<string, number>;
-  overallAccuracy: number;
-}>({
-  typeSuccess: {},
-  periodSuccess: {},
-  overallAccuracy: 0
-});
+  const [showDates, setShowDates] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | undefined>(undefined);
 
-// 4.G. États événements
-// -------------------
-const [allEvents, setAllEvents] = useState<Event[]>([]);
-const [previousEvent, setPreviousEvent] = useState<Event | null>(null);
-const [newEvent, setNewEvent] = useState<Event | null>(null);
-const [usedEvents, setUsedEvents] = useState<Set<string>>(new Set());
+  // Progression
+  const [streak, setStreak] = useState(0);
+  const [highScore, setHighScore] = useState(0);
 
-// 4.H. États interface
-// ------------------
-const [timeLeft, setTimeLeft] = useState(20);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState<string | null>(null);
-const [isGameOver, setIsGameOver] = useState(false);
-const [isImageLoaded, setIsImageLoaded] = useState(false);
-const [showDates, setShowDates] = useState(false);
-const [isCorrect, setIsCorrect] = useState<boolean | undefined>(undefined);
+  // Contrôle du jeu
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
+  const [showLevelModal, setShowLevelModal] = useState(false);
+  const [isLevelPaused, setIsLevelPaused] = useState(true);
+  const [currentLevelConfig, setCurrentLevelConfig] = useState<LevelConfig>(LEVEL_CONFIGS[1]);
+  const [leaderboardsReady, setLeaderboardsReady] = useState(false);
 
-// 4.I. États progression
-// --------------------
-const [streak, setStreak] = useState(0);
-const [highScore, setHighScore] = useState(0);
+  // Classement (leaderboards)
+  const [leaderboards, setLeaderboards] = useState({ daily: [], monthly: [], allTime: [] });
 
-// 4.J. États contrôle
-// -----------------
-const [isCountdownActive, setIsCountdownActive] = useState(false);
-const [showLevelModal, setShowLevelModal] = useState(true);
-const [isLevelPaused, setIsLevelPaused] = useState(true);
-const [currentLevelConfig, setCurrentLevelConfig] = useState<LevelConfig>(LEVEL_CONFIGS[1]);
-const [leaderboardsReady, setLeaderboardsReady] = useState(false);
+  // Événements de niveau
+  const [currentLevelEvents, setCurrentLevelEvents] = useState<LevelEventSummary[]>([]);
 
-// 4.K. États classement
-// -------------------
-const [leaderboards, setLeaderboards] = useState({
-  daily: [],
-  monthly: [],
-  allTime: []
-});
+  // Fallback countdown
+  const [fallbackCountdown, setFallbackCountdown] = useState<number>(() => {
+    return Math.floor(Math.random() * (25 - 12 + 1)) + 12;
+  });
 
-// 4.L. États de progression
-// -----------------
-// 4.L.a. Phase de jeu
-const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.LEARNING);
+  // Animation (streak bar)
+  const [progressAnim] = useState(() => new Animated.Value(0));
 
-// 4.L.b. Performance
-const [performance, setPerformance] = useState<LevelPerformance>({
-  accuracy: 0,
-  averageTime: 0,
-  streakLength: 0,
-  perfectRounds: 0,
-  specialEventsCompleted: 0
-});
-
-// 4.L.c. Modificateurs de difficulté
-const [difficultyModifiers, setDifficultyModifiers] = useState<DifficultyModifiers>({
-  timeGapModifier: 1,
-  eventDifficultyModifier: 1,
-  scoringModifier: 1
-});
-
-// 4.M. États de suivi des événements du niveau
-// ---------------------------------------
-const [currentLevelEvents, setCurrentLevelEvents] = useState<LevelEventSummary[]>([]);
-  
-
-  
-  // 5. Effets
-  // =========
-  // 5.A. Effet d'initialisation
-  // --------------------------
+  // -- Effet d'initialisation --
   useEffect(() => {
+    console.log('useGameLogicA => Effet d\'initialisation => initGame()');
     initGame();
-    return () => {
-      console.log('Cleaning up game...');
-    };
   }, []);
 
-  // 5.B. Effet de compte à rebours
-  // ----------------------------
+  // -- Compte à rebours --
   useEffect(() => {
-    let timer;
-    if (isCountdownActive && timeLeft > 0 && !isLevelPaused) {
+    let timer: NodeJS.Timeout | undefined;
+
+    if (isCountdownActive && timeLeft > 0 && !isLevelPaused && !isGameOver) {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => {
           if (prevTime <= 1) {
+            console.log('useGameLogicA => Timer reached 0 => handleTimeout()');
             handleTimeout();
             return 0;
           }
@@ -266,678 +146,750 @@ const [currentLevelEvents, setCurrentLevelEvents] = useState<LevelEventSummary[]
         });
       }, 1000);
     }
-    return () => clearInterval(timer);
-  }, [isCountdownActive, isLevelPaused]);
 
-// 6. Fonctions d'initialisation
-// ===========================
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [
+    isCountdownActive,
+    isLevelPaused,
+    isGameOver,
+    timeLeft,
+    handleTimeout,
+    playCountdownSound
+  ]);
 
-// 6.A. Initialisation du jeu
-// -------------------------
-const initGame = async () => {
-  try {
-    setLoading(true);
-    console.log('[initGame] Starting game initialization');
+  // =======================================================================
+  // ============================ FONCTIONS ================================
+  // =======================================================================
 
-    // 6.A.x. Récupération de l’utilisateur
-    // ------------------------------------
-    console.log('[initGame] About to call fetchUserData...');
-    await fetchUserData();
-    console.log('[initGame] fetchUserData finished. Current user name:', user.name);
+  // [A] Initialisation du jeu
+  const initGame = async () => {
+    try {
+      setLoading(true);
+      await fetchUserData();
+      console.log('useGameLogicA => initGame => fetchUserData OK');
 
-    // Vérification de la configuration initiale
-    const initialConfig = LEVEL_CONFIGS[1];
-    if (!initialConfig) {
-      throw new Error('Configuration du niveau 1 manquante');
-    }
-
-    console.log('[initGame] Initial config loaded:', {
-      timeGap: initialConfig.timeGap
-    });
-
-    setCurrentLevelConfig(initialConfig);
-
-    // 6.A.a. Chargement des événements
-    // --------------------------------
-    const { data: events, error: eventsError } = await supabase
-      .from('evenements')
-      .select('*')
-      .order('date', { ascending: true });
-
-    if (eventsError) throw eventsError;
-
-    if (!events?.length) {
-      throw new Error('Aucun événement disponible');
-    }
-
-    // 6.A.b. Filtrage et stockage des événements valides
-    // -------------------------------------------------
-    const validEvents = events.filter(event => 
-      event.date && 
-      event.titre && 
-      event.illustration_url &&
-      event.niveau_difficulte && 
-      event.types_evenement
-    );
-
-    // Important : Stocker les événements valides dans l'état
-    setAllEvents(validEvents);
-    console.log(`[initGame] ${validEvents.length} événements valides chargés`);
-
-    if (validEvents.length < 2) {
-      throw new Error('Pas assez d\'événements disponibles');
-    }
-
-    // 6.A.c. Configuration niveau 1
-    // -----------------------------
-    const level1Events = validEvents.filter(event => 
-      event.niveau_difficulte <= 2 && 
-      event.universel
-    );
-
-    if (level1Events.length === 0) {
-      throw new Error('Pas d\'événements universels de niveau 1-2 disponibles');
-    }
-
-    const startEvent = level1Events[Math.floor(Math.random() * level1Events.length)];
-    setPreviousEvent(startEvent);
-    setUsedEvents(new Set([startEvent.id]));
-
-    const nextEvent = await selectNewEvent(validEvents, startEvent);
-    if (!nextEvent) {
-      throw new Error('Impossible de trouver un second événement valide');
-    }
-
-    // 6.A.d. Configuration initiale
-    // -----------------------------
-    setCurrentLevelConfig(LEVEL_CONFIGS[1]);
-    setShowLevelModal(true);
-    setIsLevelPaused(true);
-    setIsCountdownActive(false);
-
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Erreur d\'initialisation';
-    console.error('[initGame] Init game error:', errorMsg);
-    setError(errorMsg);
-  } finally {
-    setLoading(false);
-    console.log('[initGame] Initialization finished');
-  }
-};
-
-// 6.B. Chargement données utilisateur
-// ---------------------------------
-const fetchUserData = async () => {
-  try {
-    console.log('[fetchUserData] Starting fetchUserData...');
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-
-    if (authError) {
-      throw authError;
-    }
-
-    console.log('[fetchUserData] supabase.auth.getUser() result:', authUser);
-
-    if (authUser) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('display_name, high_score')
-        .eq('id', authUser.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setUser(prev => ({
-          ...prev,
-          name: data.display_name
-        }));
-        setHighScore(data.high_score || 0);
-
-        console.log('[fetchUserData] User data fetched successfully:', {
-          display_name: data.display_name,
-          high_score: data.high_score
-        });
-      } else {
-        console.log('[fetchUserData] No profile data returned for this user.');
+      const initialConfig = LEVEL_CONFIGS[1];
+      if (!initialConfig) {
+        throw new Error('Configuration du niveau 1 manquante');
       }
-    } else {
-      console.log('[fetchUserData] No authUser found (not logged in?)');
+      setCurrentLevelConfig(initialConfig);
+
+      // Récupération depuis la table "evenements"
+      const { data: events, error: eventsError } = await supabase
+        .from('evenements')
+        .select('*')
+        .order('date', { ascending: true });
+
+      console.log(`→ 'evenements' total: ${events?.length}`);
+      if (eventsError) throw eventsError;
+      if (!events?.length) {
+        throw new Error('Aucun événement disponible');
+      }
+
+      // Filtrage
+      const validEvents = events.filter(
+        (event) =>
+          event.date &&
+          event.titre &&
+          event.illustration_url &&
+          event.niveau_difficulte &&
+          event.types_evenement
+      );
+      setAllEvents(validEvents);
+      console.log(`useGameLogicA => initGame => validEvents: ${validEvents.length}`);
+
+      if (validEvents.length < 2) {
+        throw new Error("Pas assez d'événements disponibles");
+      }
+
+      // Filtre pour le niveau 1
+      const level1Events = validEvents.filter((e) => e.niveau_difficulte <= 2);
+      console.log(`useGameLogicA => initGame => level1Events => count: ${level1Events.length}`);
+
+      if (level1Events.length < 2) {
+        throw new Error("Pas d'événements adaptés au niveau 1 disponibles");
+      }
+
+      // Sélection aléatoire
+      const firstIndex = Math.floor(Math.random() * level1Events.length);
+      const firstEvent = level1Events[firstIndex];
+      const filteredForSecond = level1Events.filter((e) => e.id !== firstEvent.id);
+      const secondIndex = Math.floor(Math.random() * filteredForSecond.length);
+      const secondEvent = filteredForSecond[secondIndex];
+
+      setPreviousEvent(firstEvent);
+      setNewEvent(secondEvent);
+      setUsedEvents(new Set([firstEvent.id, secondEvent.id]));
+
+      console.log('useGameLogicA => initGame => firstEvent:', firstEvent.id);
+      console.log('useGameLogicA => initGame => secondEvent:', secondEvent.id);
+
+      // Démarrage
+      setIsLevelPaused(false);
+      setIsCountdownActive(true);
+      setTimeLeft(20);
+
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Erreur d'initialisation";
+      setError(errorMsg);
+      console.log('useGameLogicA => initGame => ERROR:', errorMsg);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('[fetchUserData] Error fetching user data:', error);
-  }
-};
-
-// 7. Gestion des événements
-// ========================
-
-
-// 7.A. Calcul différence temporelle
-// -------------------------------
-const getTimeDifference = useCallback((date1: string, date2: string): number => {
-  try {
-    const d1 = new Date(date1).getTime();
-    const d2 = new Date(date2).getTime();
-    const diffInYears = Math.abs(d1 - d2) / (365.25 * 24 * 60 * 60 * 1000);
-    return diffInYears;
-  } catch (error) {
-    return Infinity;
-  }
-}, []);
-
-// 7.B. Détermination de la période
-// -----------------------------
-const getPeriod = useCallback((date: string): HistoricalPeriod => {
-  try {
-    const year = new Date(date).getFullYear();
-    if (year < 500) return HistoricalPeriod.ANTIQUITY;
-    if (year < 1500) return HistoricalPeriod.MIDDLE_AGES;
-    if (year < 1800) return HistoricalPeriod.RENAISSANCE;
-    if (year < 1900) return HistoricalPeriod.NINETEENTH;
-    if (year < 2000) return HistoricalPeriod.TWENTIETH;
-    return HistoricalPeriod.TWENTYFIRST;
-  } catch (error) {
-    return HistoricalPeriod.TWENTIETH;
-  }
-}, []);
-
-// 7.C. Mise à jour de l'état du jeu
-// -------------------------------
-const updateGameState = useCallback(async (selectedEvent: Event) => {
-  try {
-    setUsedEvents(prev => new Set([...prev, selectedEvent.id]));
-    setNewEvent(selectedEvent);
-    setIsImageLoaded(false);
-    setShowDates(false);
-    setIsCorrect(undefined);
-    setIsCountdownActive(false);
-    setTimeLeft(20);
-
-    const period = getPeriod(selectedEvent.date);
-    setEventHistory(prev => [...prev, {
-      type: selectedEvent.types_evenement[0],
-      period,
-      success: false
-    }]);
-  } catch (error) {
-  }
-}, [getPeriod]);
-
-// 7.D. Sélection des événements
-// ---------------------------
-
-// 7.D.1 Sélection nouvel événement
-const selectNewEvent = useCallback(async (events: Event[], referenceEvent: Event) => {
-  if (!events || !Array.isArray(events) || events.length === 0) {
-    return null;
-  }
-
-  // 7.D.1.c Configuration du niveau
-  const config = LEVEL_CONFIGS[user.level];
-  if (!config) {
-    return null;
-  }
-
-  // 7.D.2 Calcul de l'écart temporel dynamique
-  // ----------------------------------------
-  const calculateDynamicTimeGap = (referenceDate: string): { base: number; min: number; max: number } => {
-    const currentYear = 2024;
-    const referenceYear = new Date(referenceDate).getFullYear();
-    const yearsFromPresent = currentYear - referenceYear;
-    const proximityFactor = Math.max(0.2, Math.min(1, yearsFromPresent / 500));
-    
-    const baseGap = config.timeGap.base * proximityFactor;
-    const minGap = config.timeGap.minimum * proximityFactor;
-    const maxGap = config.timeGap.base * proximityFactor * 1.5;
-
-    return {
-      base: baseGap,
-      min: minGap * difficultyModifiers.timeGapModifier,
-      max: maxGap * difficultyModifiers.timeGapModifier
-    };
   };
 
-  const timeGap = calculateDynamicTimeGap(referenceEvent.date);
+  // [B] Récupération des données user
+  const fetchUserData = async () => {
+    console.log('useGameLogicA => fetchUserData()');
+    try {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
 
-  // 7.D.3 Système de scoring des événements
-  // ------------------------------------
-  const scoreEvent = (event: Event, timeDiff: number): number => {
-    const randomFactor = 0.85 + (Math.random() * 0.3);
-    const idealGap = timeGap.base;
-    const gapScore = 35 * (1 - Math.abs(timeDiff - idealGap) / idealGap) * randomFactor;
-    
-    const idealDifficulty = (config.eventSelection.minDifficulty + config.eventSelection.maxDifficulty) / 2;
-    const difficultyScore = 25 * (1 - Math.abs(event.niveau_difficulte - idealDifficulty) / 5) * randomFactor;
-    
-    const typeScore = !previousEventTypes.includes(event.types_evenement[0]) ? 25 : 0;
-    const universalScore = event.universel ? 5 : 0;
-    const variationBonus = Math.random() * 10;
-    const recentlyUsedPenalty = previousEventTypes.length > 0 ? 
-      previousEventTypes.filter(t => event.types_evenement.includes(t)).length * 5 : 0;
+      if (authUser) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('display_name, high_score')
+          .eq('id', authUser.id)
+          .single();
+        if (error) throw error;
 
-    return gapScore + difficultyScore + typeScore + universalScore + variationBonus - recentlyUsedPenalty;
+        if (data) {
+          setUser((prev) => ({
+            ...prev,
+            name: data.display_name
+          }));
+          setHighScore(data.high_score || 0);
+        }
+      }
+    } catch (error) {
+      console.log('useGameLogicA => fetchUserData => error:', error);
+    }
   };
 
-  // 7.D.4 Filtrage et sélection
-  // --------------------------
-  const availableEvents = events.filter(event => !usedEvents.has(event.id));
+  // [C] handleImageLoad (appelée quand l'image est chargée)
+  const handleImageLoad = () => {
+    console.log('handleImageLoad triggered');
+    setIsImageLoaded(true);
+    if (!isLevelPaused) {
+      setIsCountdownActive(true);
+    }
+  }; 
+
+  // [D] Fonctions "updateGameState" et "selectNewEvent"
+  const getTimeDifference = useCallback((date1: string, date2: string) => {
+    try {
+      const d1 = new Date(date1).getTime();
+      const d2 = new Date(date2).getTime();
+      const diffInYears = Math.abs(d1 - d2) / (365.25 * 24 * 60 * 60 * 1000);
+      return diffInYears;
+    } catch (error) {
+      return Infinity;
+    }
+  }, []);
+
+  const getPeriod = useCallback((date: string): HistoricalPeriod => {
+    try {
+      const year = new Date(date).getFullYear();
+      if (year < 500) return HistoricalPeriod.ANTIQUITY;
+      if (year < 1500) return HistoricalPeriod.MIDDLE_AGES;
+      if (year < 1800) return HistoricalPeriod.RENAISSANCE;
+      if (year < 1900) return HistoricalPeriod.NINETEENTH;
+      if (year < 2000) return HistoricalPeriod.TWENTIETH;
+      return HistoricalPeriod.TWENTYFIRST;
+    } catch {
+      return HistoricalPeriod.TWENTIETH;
+    }
+  }, []);
+
+  const updateGameState = useCallback(async (selectedEvent: Event) => {
+    try {
+      console.log('useGameLogicA => updateGameState => event:', selectedEvent.id);
+      setUsedEvents((prev) => new Set([...prev, selectedEvent.id]));
+      setNewEvent(selectedEvent);
+      setIsImageLoaded(false);
+      setShowDates(false);
+      setIsCorrect(undefined);
+      setTimeLeft(20);
+      setIsCountdownActive(false); // Add this line
   
-  const scoredEvents = availableEvents
-    .map(event => {
-      const timeDiff = getTimeDifference(event.date, referenceEvent.date);
-      const score = scoreEvent(event, timeDiff);
-      return { event, timeDiff, score };
-    })
-    .filter(({ timeDiff }) => timeDiff >= timeGap.min && timeDiff <= timeGap.max)
-    .sort((a, b) => b.score - a.score);
-
-  // 7.D.5 Gestion des cas spéciaux
-  // -----------------------------
-  if (scoredEvents.length === 0) {
-    const relaxedEvents = availableEvents
-      .map(event => {
-        const timeDiff = getTimeDifference(event.date, referenceEvent.date);
-        const score = scoreEvent(event, timeDiff);
-        return { event, timeDiff, score };
-      })
-      .filter(({ timeDiff }) => 
-        timeDiff >= timeGap.min * 0.5 && 
-        timeDiff <= timeGap.max * 2
-      )
-      .sort((a, b) => b.score - a.score);
-
-    if (relaxedEvents.length > 0) {
-      const selected = relaxedEvents[0].event;
-      await updateGameState(selected);
-      return selected;
-    }
-
-    const randomEvent = availableEvents[Math.floor(Math.random() * availableEvents.length)];
-    if (randomEvent) {
-      await updateGameState(randomEvent);
-      return randomEvent;
-    }
-  }
-
-  // 7.D.6 Sélection finale
-  // ----------------------
-  const topEvents = scoredEvents.slice(0, Math.min(3, scoredEvents.length));
-  const selectedEvent = topEvents[Math.floor(Math.random() * topEvents.length)].event;
-
-  await supabase
-    .from('evenements')
-    .update({
-      frequency_score: (selectedEvent.frequency_score || 0) + 1,
-      last_used: new Date().toISOString()
-    })
-    .eq('id', selectedEvent.id);
-
-  await updateGameState(selectedEvent);
-  return selectedEvent;
-}, [
-  user.level, 
-  gamePhase, 
-  difficultyModifiers, 
-  performanceStats, 
-  usedEvents, 
-  previousEventTypes, 
-  getTimeDifference, 
-  updateGameState
-]);
-
- // 8. Gestion des statistiques
-// =========================
-// 8.A. Mise à jour des performances
-// ------------------------------
-const updatePerformanceStats = useCallback((type: string, period: string, success: boolean) => {
-  setPerformanceStats(prev => {
-    // 8.A.a. Initialisation sûre des compteurs
-    const typeSuccesses = Number(prev.typeSuccess[type]) || 0;
-    const typeAttempts = Number(prev.typeSuccess[type]) || 0;
-    const periodSuccesses = Number(prev.periodSuccess[period]) || 0;
-    const periodAttempts = Number(prev.periodSuccess[period]) || 0;
-
-    // 8.A.b. Calcul des nouveaux taux de succès
-    const typeSuccess = (typeSuccesses + (success ? 1 : 0)) / (typeAttempts + 1);
-    const periodSuccess = (periodSuccesses + (success ? 1 : 0)) / (periodAttempts + 1);
-
-    // 8.A.c. Calcul de la précision globale
-    const totalAttempts = eventHistory.length + 1;
-    const overallAccuracy = ((prev.overallAccuracy * eventHistory.length) + (success ? 1 : 0)) / totalAttempts;
-
-    // 8.A.d. Construction de la mise à jour
-    return {
-      typeSuccess: {
-        ...prev.typeSuccess,
-        [type]: Number.isFinite(typeSuccess) ? typeSuccess : 0
-      },
-      periodSuccess: {
-        ...prev.periodSuccess,
-        [period]: Number.isFinite(periodSuccess) ? periodSuccess : 0
-      },
-      overallAccuracy: Number.isFinite(overallAccuracy) ? overallAccuracy : 0
-    };
-  });
-}, [eventHistory.length]);
-
-// 8.B. Initialisation des statistiques
-// ---------------------------------
-const initializeStats = useCallback(() => {
-  setPerformanceStats({
-    typeSuccess: {},
-    periodSuccess: {},
-    overallAccuracy: 0
-  });
-  setCategoryMastery({});
-  setPeriodStats({});
-}, []);
-
-// 9. Gestion des points
-// ===================
-// 9.A. Calcul des points
-// ------------------
-const calculatePoints = useCallback((timeLeft: number, difficulty: number, streak: number, eventType: string): number => {
-  try {
-    // 9.A.a. Configuration de base
-    const config = LEVEL_CONFIGS[user.level];
-    const phase = gamePhase;
-    
-    // 9.A.b. Points de base adaptatifs
-    const basePoints = config.scoring.basePoints * 
-                      difficulty * 
-                      difficultyModifiers.scoringModifier;
-    
-    // 9.A.c. Multiplicateur de temps
-    const timeMultiplier = Math.min(
-      1 + (timeLeft / 20) * config.scoring.timeMultiplier,
-      2.5
-    );
-    
-    // 9.A.d. Multiplicateur de série
-    const streakMultiplier = Math.min(
-      1 + Math.floor(streak / config.scoring.comboThreshold) * 
-          config.scoring.streakMultiplier,
-      3.0
-    );
-    
-    // 9.A.e. Multiplicateur de phase
-    const phaseMultiplier = {
-      [GamePhase.LEARNING]: 1.0,
-      [GamePhase.INTERMEDIATE]: 1.2,
-      [GamePhase.ADVANCED]: 1.4,
-      [GamePhase.EXPERT]: 1.6,
-      [GamePhase.LEGENDARY]: 2.0
-    }[phase];
-
-    // 9.A.f. Calcul final
-    const calculatedPoints = Math.floor(
-      basePoints * 
-      timeMultiplier * 
-      streakMultiplier * 
-      phaseMultiplier
-    );
-
-    // 9.A.g. Log et sécurité
-    console.log('Points calculation:', {
-      base: basePoints,
-      multipliers: {
-        time: timeMultiplier,
-        streak: streakMultiplier,
-        phase: phaseMultiplier
-      },
-      final: calculatedPoints
-    });
-
-    return Math.max(0, calculatedPoints);
-
-  } catch (error) {
-    console.error('Error in points calculation:', error);
-    return 0;
-  }
-}, [user.level, gamePhase, difficultyModifiers]);
-
-// 9.B. Application des récompenses
-// ------------------------------
-const applyReward = useCallback((reward: { type: RewardType; amount: number }) => {
-  try {
-    const safeAmount = Math.max(0, Math.floor(Number(reward.amount) || 0));
-    console.log('Applying reward:', { type: reward.type, amount: safeAmount });
-
-    setUser(prev => {
-      const currentPoints = Math.max(0, Number(prev.points) || 0);
-      const updatedPoints = currentPoints + safeAmount;
-
-      return {
+      const period = getPeriod(selectedEvent.date);
+      setEventHistory((prev) => [
         ...prev,
-        points: updatedPoints,
-        lives: reward.type === RewardType.EXTRA_LIFE 
-          ? Math.min(prev.lives + 1, MAX_LIVES)
-          : prev.lives
-      };
-    });
-  } catch (error) {
-    console.error('Error applying reward:', error);
-  }
-}, []);
-
- // 10. Mécanique de jeu
-// ==================
-// 10.A. Gestion du timeout
-// ----------------------
-const handleTimeout = useCallback(() => {
-  if (isLevelPaused) return;
-  
-  // 10.A.a. Mise à jour vie et streak
-  setUser(prev => {
-    const newLives = prev.lives - 1;
-    if (newLives <= 0) {
-      endGame();
-      return prev;
+        {
+          type: selectedEvent.types_evenement[0],
+          period,
+          success: false
+        }
+      ]);
+    } catch (err) {
+      console.log('useGameLogicA => updateGameState => ERROR:', err);
     }
-    
-    return {
-      ...prev,
-      lives: newLives,
-      streak: 0
-    };
-  });
+  }, [getPeriod]);
 
-  // 10.A.b. Réinitialisation et suite
-  setPreviousEventTypes([]);
-  if (newEvent) {
-    setPreviousEvent(newEvent);
-    selectNewEvent(allEvents, newEvent);
-  }
-}, [newEvent, allEvents, isLevelPaused]);
+  const selectNewEvent = useCallback(
+    async (events: Event[], referenceEvent: Event) => {
+      console.log('selectNewEvent => Attempting to pick next event');
+      if (!events || events.length === 0) {
+        console.log('selectNewEvent => No events or empty list');
+        return null;
+      }
 
-// 10.B. Gestion des choix joueur
-// ----------------------------
-const handleChoice = useCallback((choice: 'avant' | 'après') => {
-  if (!previousEvent || !newEvent || isLevelPaused) return;
+      if (fallbackCountdown <= 0) {
+        console.log('selectNewEvent => random fallback triggered => among available unselected events');
+        const available = events.filter((e) => !usedEvents.has(e.id));
+        if (available.length === 0) {
+          console.log('selectNewEvent => no available events at all => returning null');
+          return null;
+        }
+        const randomEvt = available[Math.floor(Math.random() * available.length)];
+        await updateGameState(randomEvt);
 
-  // 10.B.a. Vérification réponse
-  setIsCountdownActive(false);
-  const previousDate = new Date(previousEvent.date);
-  const newDate = new Date(newEvent.date);
-  
-  const isCorrect = (choice === 'avant' && newDate < previousDate) || 
-                   (choice === 'après' && newDate > previousDate);
+        const newCount = Math.floor(Math.random() * (25 - 12 + 1)) + 12;
+        console.log(`selectNewEvent => new fallbackCountdown = ${newCount}`);
+        setFallbackCountdown(newCount);
 
-  setIsCorrect(isCorrect);
-  setShowDates(true);
-  
-  if (isCorrect) {
-    // 10.B.b. Traitement réponse correcte
-    playCorrectSound();
-    const newStreak = streak + 1;
-    setStreak(newStreak);
-    
-    const currentType = newEvent.types_evenement?.[0] || 'default';
-    setPreviousEventTypes(prev => [...prev, currentType]);
+        await supabase
+          .from('evenements')
+          .update({
+            frequency_score: (randomEvt as any).frequency_score + 1 || 1,
+            last_used: new Date().toISOString()
+          })
+          .eq('id', randomEvt.id);
 
-    // Mise à jour des statistiques
-    updatePerformanceStats(
-      currentType,
-      getPeriod(newEvent.date),
-      true
-    );
+        return randomEvt;
+      }
 
-    const calculatedPoints = calculatePoints(
-      timeLeft,
-      newEvent.niveau_difficulte || 1,
-      newStreak,
-      currentType
-    );
+      // Config
+      const config = LEVEL_CONFIGS[user.level];
+      if (!config) {
+        console.log(`selectNewEvent => No config for level ${user.level}`);
+        return null;
+      }
 
-    // Ajout de l'événement au résumé
-setCurrentLevelEvents(prev => [...prev, {
-  id: newEvent.id,
-  titre: newEvent.titre,
-  date: newEvent.date,
-  date_formatee: newEvent.date_formatee || newEvent.date,
-  illustration_url: newEvent.illustration_url,
-  wasCorrect: true,
-  responseTime: 20 - timeLeft
-}]);
+      const calculateDynamicTimeGap = (referenceDate: string) => {
+        const currentYear = new Date().getFullYear();
+        const referenceYear = new Date(referenceDate).getFullYear();
+        const yearsFromPresent = currentYear - referenceYear;
+        const proximityFactor = Math.max(0.2, Math.min(1, yearsFromPresent / 500));
 
-    // 10.B.c. Mise à jour des points et progression
-    if (Number.isFinite(calculatedPoints) && calculatedPoints > 0) {
-      setUser(prev => {
-        const currentPoints = Math.max(0, Number(prev.points) || 0);
-        const newPoints = currentPoints + calculatedPoints;
+        const baseGap = config.timeGap.base * proximityFactor;
+        const minGap = config.timeGap.minimum * proximityFactor;
+        const maxGap = config.timeGap.base * proximityFactor * 1.5;
 
-        console.log('Updating points:', {
-          current: currentPoints,
-          adding: calculatedPoints,
-          new: newPoints
-        });
-
-        const updatedUser = {
-          ...prev,
-          points: newPoints,
-          streak: newStreak,
-          maxStreak: Math.max(prev.maxStreak || 0, newStreak),
-          eventsCompletedInLevel: prev.eventsCompletedInLevel + 1
+        return {
+          base: baseGap,
+          min: minGap,
+          max: maxGap,
         };
+      };
 
-        // 10.B.d. Vérification passage niveau
-        if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
-          const nextLevel = prev.level + 1;
-          updatedUser.level = nextLevel;
-          updatedUser.eventsCompletedInLevel = 0;
-          setShowLevelModal(true);
-          setIsLevelPaused(true);
-          playLevelUpSound();
-          
-          checkRewards({ type: 'level', value: nextLevel }, updatedUser);
+      const timeGap = calculateDynamicTimeGap(referenceEvent.date);
+      const scoreEvent = (event: Event, timeDiff: number): number => {
+        const randomFactor = 0.85 + Math.random() * 0.3;
+        const idealGap = timeGap.base;
+
+        const gapScore =
+          35 * (1 - Math.abs(timeDiff - idealGap) / idealGap) * randomFactor;
+
+        const idealDifficulty =
+          (config.eventSelection.minDifficulty + config.eventSelection.maxDifficulty) / 2;
+        const difficultyScore =
+          25 *
+          (1 - Math.abs(event.niveau_difficulte - idealDifficulty) / 5) *
+          randomFactor;
+
+        const variationBonus = Math.random() * 10;
+        return gapScore + difficultyScore + variationBonus;
+      };
+
+      const availableEvents = events.filter((e) => !usedEvents.has(e.id));
+      console.log(`selectNewEvent => availableEvents.length = ${availableEvents.length}`);
+
+      const scoredEvents = availableEvents
+        .map((event) => {
+          const timeDiff = getTimeDifference(event.date, referenceEvent.date);
+          const score = scoreEvent(event, timeDiff);
+          return { event, timeDiff, score };
+        })
+        .filter(({ timeDiff }) => timeDiff >= timeGap.min && timeDiff <= timeGap.max)
+        .sort((a, b) => b.score - a.score);
+
+      console.log(`selectNewEvent => scoredEvents.length = ${scoredEvents.length} (timeGap = ${timeGap.min}..${timeGap.max})`);
+
+      if (scoredEvents.length === 0) {
+        const relaxedEvents = availableEvents
+          .map((event) => {
+            const timeDiff = getTimeDifference(event.date, referenceEvent.date);
+            const score = scoreEvent(event, timeDiff);
+            return { event, timeDiff, score };
+          })
+          .filter(({ timeDiff }) => timeDiff >= timeGap.min * 0.5 && timeDiff <= timeGap.max * 2)
+          .sort((a, b) => b.score - a.score);
+
+        console.log(`selectNewEvent => relaxedEvents.length = ${relaxedEvents.length}`);
+
+        if (relaxedEvents.length > 0) {
+          const selected = relaxedEvents[0].event;
+          await updateGameState(selected);
+          console.log(`selectNewEvent => relaxed selected => ${selected.id}`);
+
+          await supabase
+            .from('evenements')
+            .update({
+              frequency_score: (selected as any).frequency_score + 1 || 1,
+              last_used: new Date().toISOString()
+            })
+            .eq('id', selected.id);
+
+          setFallbackCountdown((prev) => {
+            console.log(`selectNewEvent => fallbackCountdown-- => ${prev - 1}`);
+            return prev - 1;
+          });
+
+          return selected;
         }
 
-        return updatedUser;
+        const randomEvent =
+          availableEvents[Math.floor(Math.random() * availableEvents.length)];
+        if (randomEvent) {
+          await updateGameState(randomEvent);
+          console.log(`selectNewEvent => fallback => random => ${randomEvent.id}`);
+
+          await supabase
+            .from('evenements')
+            .update({
+              frequency_score: (randomEvent as any).frequency_score + 1 || 1,
+              last_used: new Date().toISOString()
+            })
+            .eq('id', randomEvent.id);
+
+          setFallbackCountdown((prev) => prev - 1);
+          return randomEvent;
+        }
+        return null;
+      }
+
+      const topEvents = scoredEvents.slice(0, Math.min(10, scoredEvents.length));
+      const chosen = topEvents[Math.floor(Math.random() * topEvents.length)].event;
+
+      await supabase
+        .from('evenements')
+        .update({
+          frequency_score: (chosen as any).frequency_score + 1 || 1,
+          last_used: new Date().toISOString()
+        })
+        .eq('id', chosen.id);
+
+      await updateGameState(chosen);
+      console.log(`selectNewEvent => selected => ${chosen.id}`);
+
+      setFallbackCountdown((prev) => prev - 1);
+      return chosen;
+    },
+    [
+      user.level,
+      performanceStats,
+      usedEvents,
+      fallbackCountdown,
+      updateGameState,
+      getTimeDifference
+    ]
+  );
+
+  // [E] Statistiques
+  const updatePerformanceStats = useCallback((type: string, period: string, success: boolean) => {
+    setPerformanceStats((prev) => {
+      const typeSuccesses = Number(prev.typeSuccess[type]) || 0;
+      const periodSuccesses = Number(prev.periodSuccess[period]) || 0;
+      const totalAttemptsBefore = eventHistory.length;
+
+      const typeSuccessRatio =
+        (typeSuccesses + (success ? 1 : 0)) / (typeSuccesses + 1);
+
+      const periodSuccessRatio =
+        (periodSuccesses + (success ? 1 : 0)) / (periodSuccesses + 1);
+
+      const overallAccuracy =
+        (prev.overallAccuracy * totalAttemptsBefore + (success ? 1 : 0)) /
+        (totalAttemptsBefore + 1);
+
+      return {
+        typeSuccess: {
+          ...prev.typeSuccess,
+          [type]: Number.isFinite(typeSuccessRatio) ? typeSuccessRatio : 0
+        },
+        periodSuccess: {
+          ...prev.periodSuccess,
+          [period]: Number.isFinite(periodSuccessRatio) ? periodSuccessRatio : 0
+        },
+        overallAccuracy: Number.isFinite(overallAccuracy)
+          ? overallAccuracy
+          : 0
+      };
+    });
+  }, [eventHistory.length]);
+
+  // [F] Calcul de points
+  const calculatePoints = useCallback(
+    (timeLeft: number, difficulty: number, streak: number, eventType: string): number => {
+      try {
+        const config = LEVEL_CONFIGS[user.level];
+        const basePoints = config.scoring.basePoints * difficulty;
+
+        const timeMultiplier = Math.min(
+          1 + (timeLeft / 20) * config.scoring.timeMultiplier,
+          2.5
+        );
+        const streakMultiplier = Math.min(
+          1 + Math.floor(streak / config.scoring.comboThreshold) * config.scoring.streakMultiplier,
+          3.0
+        );
+
+        const phaseMultiplier = 1; // On ne l’utilise pas pour l’instant
+
+        const calculatedPoints = Math.floor(
+          basePoints * timeMultiplier * streakMultiplier * phaseMultiplier
+        );
+        return Math.max(0, calculatedPoints);
+      } catch (error) {
+        return 0;
+      }
+    },
+    [user.level]
+  );
+
+  // [G] Récompenses
+  const applyReward = useCallback((reward: { type: RewardType; amount: number }) => {
+    try {
+      const safeAmount = Math.max(0, Math.floor(Number(reward.amount) || 0));
+      setUser((prev) => {
+        const currentPoints = Math.max(0, Number(prev.points) || 0);
+        const updatedPoints = currentPoints + safeAmount;
+        return {
+          ...prev,
+          points: updatedPoints,
+          lives:
+            reward.type === RewardType.EXTRA_LIFE
+              ? Math.min(prev.lives + 1, MAX_LIVES)
+              : prev.lives
+        };
       });
+    } catch (error) {
+      // Rien
     }
+  }, []);
 
-    checkRewards({ type: 'streak', value: newStreak }, user);
-  } else {
-    // 10.B.e. Traitement réponse incorrecte
-    playIncorrectSound();
+  // [H] Timeout
+  const handleTimeout = useCallback(() => {
+    if (isLevelPaused) return;
+    console.log('useGameLogicA => handleTimeout => lose 1 life');
+
+    setUser((prev) => {
+      const newLives = prev.lives - 1;
+      if (newLives <= 0) {
+        endGame();
+        return { ...prev, lives: newLives, streak: 0 };
+      }
+      return {
+        ...prev,
+        lives: newLives,
+        streak: 0
+      };
+    });
+
     setStreak(0);
-    setPreviousEventTypes([]);
 
-    // Mise à jour des statistiques
-    updatePerformanceStats(
-      newEvent.types_evenement?.[0] || 'default',
-      getPeriod(newEvent.date),
-      false
-    );
+    Animated.timing(progressAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false
+    }).start();
 
-    setUser(prev => ({
-      ...prev,
-      lives: prev.lives - 1,
-      streak: 0
-    }));
-
-    if (user.lives <= 1) {
-      endGame();
-      return;
-    }
-  }
-
-  // 10.B.f. Passage à l'événement suivant
-  setTimeout(() => {
-    if (!isGameOver) {
+    if (newEvent) {
       setPreviousEvent(newEvent);
       selectNewEvent(allEvents, newEvent);
     }
-  }, 2000);
-}, [
-  previousEvent, newEvent, timeLeft, user.level, streak,
-  isLevelPaused, allEvents, checkRewards, calculatePoints,
-  updatePerformanceStats
-]);
-  // ====================
-  // 11.A. Passage au niveau suivant
-  // ----------------------------
+  }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
+
+  // [I] handleChoice
+  const handleChoice = useCallback(
+    (choice: 'avant' | 'après') => {
+      console.log('====== DÉBUT HANDLECOMPARISON ======');
+      console.log(`Choix de l'utilisateur: ${choice}`);
+
+      if (!previousEvent || !newEvent || isLevelPaused) {
+        console.log('❌ Comparaison annulée');
+        return;
+      }
+
+      const previousDate = new Date(previousEvent.date);
+      const newDate = new Date(newEvent.date);
+
+      const newBeforePrevious = newDate < previousDate;
+      const newAfterPrevious = newDate > previousDate;
+
+      const isAnswerCorrect =
+        (choice === 'avant' && newBeforePrevious) ||
+        (choice === 'après' && newAfterPrevious);
+
+      setIsCorrect(isAnswerCorrect);
+      setShowDates(true);
+
+      const eventSummaryItem: LevelEventSummary = {
+        id: newEvent.id,
+        titre: newEvent.titre,
+        date: newEvent.date,
+        date_formatee: newEvent.date_formatee || newEvent.date,
+        illustration_url: newEvent.illustration_url,
+        wasCorrect: isAnswerCorrect,
+        responseTime: 20 - timeLeft
+      };
+
+      if (isAnswerCorrect) {
+        console.log('Réponse correcte');
+        playCorrectSound();
+        const newStreak = streak + 1;
+        setStreak(newStreak);
+
+        Animated.timing(progressAnim, {
+          toValue: newStreak,
+          duration: 500,
+          useNativeDriver: false
+        }).start();
+
+        updatePerformanceStats(
+          newEvent.types_evenement?.[0] || 'default',
+          getPeriod(newEvent.date),
+          true
+        );
+
+        const pts = calculatePoints(
+          timeLeft,
+          newEvent.niveau_difficulte || 1,
+          newStreak,
+          'default'
+        );
+
+        setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+
+        if (Number.isFinite(pts) && pts > 0) {
+          setUser((prev) => {
+            const currentPoints = Math.max(0, Number(prev.points) || 0);
+            const newPoints = currentPoints + pts;
+
+            const updatedUser = {
+              ...prev,
+              points: newPoints,
+              streak: newStreak,
+              maxStreak: Math.max(prev.maxStreak, newStreak),
+              eventsCompletedInLevel: prev.eventsCompletedInLevel + 1
+            };
+
+            // Changement de niveau ?
+            if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
+              const nextLevel = prev.level + 1;
+              updatedUser.level = nextLevel;
+              updatedUser.eventsCompletedInLevel = 0;
+
+              setPreviousEvent(newEvent);
+              setCurrentLevelConfig((prevConf) => ({
+                ...prevConf,
+                eventsSummary: [...currentLevelEvents, eventSummaryItem]
+              }));
+              setCurrentLevelEvents([]);
+              setShowLevelModal(true);
+              setIsLevelPaused(true);
+              playLevelUpSound();
+
+              checkRewards({ type: 'level', value: nextLevel }, updatedUser);
+            } else {
+              setTimeout(() => {
+                if (!isGameOver && !showLevelModal) {
+                  setPreviousEvent(newEvent);
+                  selectNewEvent(allEvents, newEvent);
+                }
+              }, 2000);
+            }
+            return updatedUser;
+          });
+        }
+      } else {
+        console.log('Réponse incorrecte');
+        playIncorrectSound();
+        setStreak(0);
+
+        Animated.timing(progressAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: false
+        }).start();
+
+        setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+
+        updatePerformanceStats(
+          newEvent.types_evenement?.[0] || 'default',
+          getPeriod(newEvent.date),
+          false
+        );
+
+        setUser((prev) => {
+          const updatedLives = prev.lives - 1;
+          if (updatedLives <= 0) {
+            endGame();
+          }
+          return {
+            ...prev,
+            lives: updatedLives,
+            streak: 0
+          };
+        });
+
+        setTimeout(() => {
+          if (!isGameOver && !showLevelModal) {
+            setPreviousEvent(newEvent);
+            selectNewEvent(allEvents, newEvent);
+          }
+        }, 2000);
+      }
+
+      console.log('====== FIN HANDLECOMPARISON ======\n');
+    },
+    [
+      previousEvent,
+      newEvent,
+      streak,
+      timeLeft,
+      isLevelPaused,
+      isGameOver,
+      showLevelModal,
+      getPeriod,
+      calculatePoints,
+      playCorrectSound,
+      playIncorrectSound,
+      checkRewards,
+      selectNewEvent,
+      currentLevelEvents,
+      endGame,
+      updatePerformanceStats,
+      allEvents,
+      progressAnim
+    ]
+  );
+
+  // [J] handleLevelUp (forcé)
   const handleLevelUp = useCallback(() => {
     const nextLevel = user.level + 1;
     const config = LEVEL_CONFIGS[nextLevel];
+    if (!config) return;
 
-    if (!config) {
-      console.warn('No config found for next level', { nextLevel });
-      return;
-    }
-
-    // 11.A.a. Configuration nouveau niveau
-    setCurrentLevelConfig(config);
+    console.log(`handleLevelUp => forced => new level = ${nextLevel}`);
+    setCurrentLevelConfig((prevConf) => ({
+      ...config,
+      eventsSummary: [...currentLevelEvents]
+    }));
     setShowLevelModal(true);
     setIsLevelPaused(true);
     setIsCountdownActive(false);
-    config.eventsSummary = currentLevelEvents;
-setCurrentLevelEvents([]); // Réinitialiser pour le prochain niveau;
+    setCurrentLevelEvents([]);
 
-    // 11.A.b. Attribution récompense
-    const reward = {
+    const reward: { type: RewardType; amount: number } = {
       type: RewardType.POINTS,
-      amount: config.pointsReward || 500 
+      amount: config.pointsReward || 500
     };
     applyReward(reward);
-
     saveProgress();
-  }, [user.level]);
+  }, [user.level, currentLevelEvents, applyReward]);
 
- // 12. Sauvegarde et fin de partie
-  // ============================
-  // 12.A. Sauvegarde progression
-  // -------------------------
-  const saveProgress = async () => {
+  // [K] endGame
+  const endGame = useCallback(async () => {
+    console.log('useGameLogicA => endGame() => isGameOver = true');
+    setIsGameOver(true);
+    playGameOverSound();
+    setLeaderboardsReady(false);
+
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser?.id) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const firstDayOfMonth = `${today.substring(0, 7)}-01`;
+
+      await supabase.from('game_scores').insert({
+        user_id: authUser.id,
+        display_name: user.name,
+        score: user.points,
+        created_at: new Date().toISOString()
+      });
+
+      const { data: dailyScores } = await supabase
+        .from('game_scores')
+        .select('display_name, score')
+        .gte('created_at', today)
+        .order('score', { ascending: false })
+        .limit(5);
+
+      const { data: monthlyScores } = await supabase
+        .from('game_scores')
+        .select('display_name, score')
+        .gte('created_at', firstDayOfMonth)
+        .order('score', { ascending: false })
+        .limit(5);
+
+      const { data: allTimeScores } = await supabase
+        .from('profiles')
+        .select('display_name, high_score')
+        .order('high_score', { ascending: false })
+        .limit(5);
+
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('high_score')
+        .eq('id', authUser.id)
+        .single();
+
+      if (currentProfile && user.points > currentProfile.high_score) {
+        await supabase
+          .from('profiles')
+          .update({ high_score: user.points })
+          .eq('id', authUser.id);
+      }
+
+      if (dailyScores && monthlyScores && allTimeScores) {
+        setScoresAndShow(dailyScores, monthlyScores, allTimeScores);
+      }
+      await saveProgress();
+    } catch (error) {
+      console.log('useGameLogicA => endGame => error:', error);
+    }
+  }, [user, playGameOverSound, saveProgress]);
+
+  // [L] Sauvegarde
+  const saveProgress = useCallback(async () => {
+    console.log('useGameLogicA => saveProgress()');
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
 
-      // 12.A.a. Données à sauvegarder
       const saveData = {
         high_score: Math.max(user.points, highScore),
         current_level: user.level,
         total_events_completed: user.totalEventsCompleted,
         last_played: new Date().toISOString()
       };
-
-      // 12.A.b. Mise à jour profil
-      await supabase
-        .from('profiles')
-        .update(saveData)
-        .eq('id', authUser.id);
-
+      await supabase.from('profiles').update(saveData).eq('id', authUser.id);
     } catch (error) {
-      console.error('Error saving progress:', error);
+      console.log('useGameLogicA => saveProgress => error:', error);
     }
-  };
+  }, [user.points, user.level, user.totalEventsCompleted, highScore]);
 
-  // 12.B. Gestion des scores et classements
-  // ------------------------------------
-  const setScoresAndShow = (dailyScores, monthlyScores, allTimeScores) => {
-    // 12.B.a. Traitement des classements
-    console.log('Processing leaderboards');
+  const setScoresAndShow = (
+    dailyScores: any[],
+    monthlyScores: any[],
+    allTimeScores: any[]
+  ) => {
+    console.log('useGameLogicA => setScoresAndShow() => format leaderboards');
     const formatted = {
       daily: dailyScores.map((score, index) => ({
         name: score.display_name.trim(),
@@ -955,200 +907,82 @@ setCurrentLevelEvents([]); // Réinitialiser pour le prochain niveau;
         rank: index + 1
       }))
     };
-
-    // 12.B.b. Mise à jour interface
     setLeaderboards(formatted);
     setLeaderboardsReady(true);
   };
 
-  // 12.C. Fin de partie
-// ----------------
-const endGame = async () => {
-  // 12.C.a. Initialisation fin de partie
-  setIsGameOver(true);
-  playGameOverSound();
-  setLeaderboardsReady(false);
-
-  console.log('[endGame] Game over triggered');
-
-  try {
-    // 12.C.b. Vérification utilisateur
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser?.id) {
-      console.error('[endGame] No authenticated user found.');
-      return;
-    }
-
-    console.log('[endGame] User state before processing:', user);
-
-    // Définition des dates pour les requêtes
-    const today = new Date().toISOString().split('T')[0];
-    const firstDayOfMonth = `${today.substring(0, 7)}-01`;
-
-    // 12.C.c. Enregistrement score final
-    await supabase.from('game_scores').insert({
-      user_id: authUser.id,
-      display_name: user.name,
-      score: user.points,
-      created_at: new Date().toISOString()
-    });
-
-    // 12.C.d. Récupération scores journaliers
-    const { data: dailyScores } = await supabase
-      .from('game_scores')
-      .select('display_name, score')
-      .gte('created_at', today)
-      .order('score', { ascending: false })
-      .limit(5);
-
-    // 12.C.e. Récupération scores mensuels
-    const { data: monthlyScores } = await supabase
-      .from('game_scores')
-      .select('display_name, score')
-      .gte('created_at', firstDayOfMonth)
-      .order('score', { ascending: false })
-      .limit(5);
-
-    // 12.C.f. Récupération meilleurs scores
-    const { data: allTimeScores } = await supabase
-      .from('profiles')
-      .select('display_name, high_score')
-      .order('high_score', { ascending: false })
-      .limit(5);
-
-      console.log('[endGame] All time scores fetched:', allTimeScores);
-
-      // 12.C.g. Mise à jour high score
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('high_score')
-        .eq('id', authUser.id)
-        .single();
-
-      if (currentProfile && user.points > currentProfile.high_score) {
-        await supabase
-          .from('profiles')
-          .update({ high_score: user.points })
-          .eq('id', authUser.id);
-      }
-
-      // 12.C.h. Mise à jour classements
-      if (dailyScores && monthlyScores && allTimeScores) {
-        setScoresAndShow(dailyScores, monthlyScores, allTimeScores);
-      } else {
-        console.error('[endGame] Missing scores data:', {
-          daily: !!dailyScores,
-          monthly: !!monthlyScores,
-          allTime: !!allTimeScores
-        });
-      }
-
-      await saveProgress();
-
-    } catch (error) {
-      console.error('[endGame] Error:', error);
-    }
-  };
-
-  // 13. Redémarrage et gestion des ressources
-  // ======================================
-  // 13.A. Redémarrage de partie
-  // -------------------------
+  // [M] Redémarrage
   const restartGame = () => {
-    // 13.A.a. Réinitialisation états utilisateur
-    setUser({
-      ...user,
+    console.log('useGameLogicA => restartGame() => reset everything');
+    setUser((prev) => ({
+      ...prev,
       points: 0,
-      lives: 3,
+      lives: MAX_LIVES,
       level: 1,
-      currentStreak: 0,
+      streak: 0,
       eventsCompletedInLevel: 0,
-      totalEventsCompleted: 0,
-      consecutiveCorrectAnswers: 0
-    });
-    
-    // 13.A.b. Réinitialisation états jeu
+      totalEventsCompleted: 0
+    }));
+
     setStreak(0);
+    Animated.timing(progressAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false
+    }).start();
+
     setUsedEvents(new Set());
     setIsGameOver(false);
     setError(null);
-    setShowLevelModal(true);
-    setIsLevelPaused(true);
-    setIsCountdownActive(false);
+    setShowLevelModal(false);
+    setIsLevelPaused(false);
+    setIsCountdownActive(true);
     setCurrentLevelConfig(LEVEL_CONFIGS[1]);
     setCurrentLevelEvents([]);
-    
-    // 13.A.c. Configuration événement initial
+    setTimeLeft(20);
+
+    setFallbackCountdown(() => Math.floor(Math.random() * (25 - 12 + 1)) + 12);
+
     if (allEvents.length > 0) {
-      // Filtrer pour obtenir les événements faciles
-      const easyEvents = allEvents.filter(event => 
-        event.niveau_difficulte <= 2 && 
-        event.universel
-      );
+      const level1Events = allEvents.filter((event) => event.niveau_difficulte <= 2);
+      if (level1Events.length >= 2) {
+        const firstIndex = Math.floor(Math.random() * level1Events.length);
+        const firstEvent = level1Events[firstIndex];
+        const filteredForSecond = level1Events.filter((e) => e.id !== firstEvent.id);
+        const secondIndex = Math.floor(Math.random() * filteredForSecond.length);
+        const secondEvent = filteredForSecond[secondIndex];
 
-      if (easyEvents.length >= 2) {
-        // Trier tous les événements faciles par date
-        const sortedEvents = [...easyEvents].sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-
-        // Choisir un index aléatoire pour le premier événement
-        const randomIndex = Math.floor(Math.random() * (sortedEvents.length - 1));
-        
-        // Définir le premier événement (plus ancien) et le second (plus récent)
-        setPreviousEvent(sortedEvents[randomIndex]);
-        setNewEvent(sortedEvents[randomIndex + 1]);
-
-        // Mettre à jour les événements utilisés
-        setUsedEvents(new Set([
-          sortedEvents[randomIndex].id,
-          sortedEvents[randomIndex + 1].id
-        ]));
-
-        // Réinitialiser les états visuels
+        setPreviousEvent(firstEvent);
+        setNewEvent(secondEvent);
+        setUsedEvents(new Set([firstEvent.id, secondEvent.id]));
         setShowDates(false);
+
+        // Remet isImageLoaded à false au démarrage
         setIsImageLoaded(false);
+
         setIsCorrect(undefined);
-      } else {
-        // Fallback si pas assez d'événements faciles
-        console.warn('Not enough easy events available for restart');
-        const startEvent = easyEvents[0] || allEvents[0];
-        setPreviousEvent(startEvent);
-        setUsedEvents(new Set([startEvent.id]));
-        selectNewEvent(allEvents, startEvent);
       }
     }
   };
 
-  // 13.B. Gestion des ressources
-  // --------------------------
-  // 13.B.a. Chargement des images
-  const handleImageLoad = () => {
-    setIsImageLoaded(true);
-    if (!isLevelPaused) {
-      setIsCountdownActive(true);
-    }
-  };
-
-  // 13.B.b. Démarrage de niveau
+  // [N] Démarrage du niveau
   const startLevel = useCallback(() => {
-    console.log('Starting level', { 
-      level: user.level,
-      config: currentLevelConfig
-    });
-
+    console.log('useGameLogicA => startLevel() => unpause level');
     setShowLevelModal(false);
     setIsLevelPaused(false);
     setIsCountdownActive(true);
     setTimeLeft(20);
-  }, [user.level, currentLevelConfig]);
 
-  // 14. Interface externe
-  // ==================
-  // 14.A. États exposés
-  // -----------------
+    if (previousEvent) {
+      console.log('startLevel => selecting new event to compare with previous level event');
+      selectNewEvent(allEvents, previousEvent);
+    } else {
+      console.log('startLevel => ERROR: no previous event found');
+    }
+  }, [allEvents, previousEvent, selectNewEvent]);
+
+  // [O] Exposition de l'interface
   return {
-    // 14.A.a. États du jeu
     user,
     previousEvent,
     newEvent,
@@ -1165,30 +999,29 @@ const endGame = async () => {
     isLevelPaused,
     currentLevelConfig,
     leaderboards,
-    
-    // 14.A.b. États des performances
     performanceStats,
     categoryMastery,
     periodStats,
-    
-    // 14.A.c. États des bonus
     activeBonus,
-    bonusStack,
-    
-    // 14.A.d. États des récompenses
+
+    // Récompenses
     currentReward,
     completeRewardAnimation,
     updateRewardPosition,
-    
-    // 14.A.e. Actions exposées
+
+    // Fonctions
     handleChoice,
-    handleImageLoad,
     startLevel,
     restartGame,
-    
-    // 14.A.f. Statistiques
-    remainingEvents: allEvents.length - usedEvents.size
+    handleLevelUp,
+
+    // Pour affichage ou debug
+    remainingEvents: allEvents.length - usedEvents.size,
+
+    // Animation
+    progressAnim,
+
+    // Important : callback pour signaler que l’image est chargée
+    onImageLoad: handleImageLoad
   };
 }
-
-export default useGameLogicA;

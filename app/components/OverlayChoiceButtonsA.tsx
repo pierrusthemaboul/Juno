@@ -8,14 +8,15 @@ interface OverlayChoiceButtonsAProps {
   isLevelPaused: boolean;
 }
 
-const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({ 
-  onChoice, 
+const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
+  onChoice,
   disabled,
-  isLevelPaused 
+  isLevelPaused
 }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    // Animation uniquement quand les boutons sont désactivés
     if (disabled || isLevelPaused) {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -23,28 +24,29 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
         useNativeDriver: true,
       }).start();
     } else {
+      // Réinitialisation immédiate de l'opacité
       fadeAnim.setValue(1);
     }
   }, [disabled, isLevelPaused]);
 
   const handlePress = (choice: string) => {
     if (!disabled && !isLevelPaused) {
+      console.log('Choix:', choice);
       onChoice(choice);
     }
   };
 
-  const buttonEnabled = !disabled && !isLevelPaused;
-
   return (
-    <Animated.View 
+    <Animated.View
       style={[styles.container, { opacity: fadeAnim }]}
-      pointerEvents={buttonEnabled ? 'auto' : 'none'}
+      pointerEvents={!disabled && !isLevelPaused ? 'auto' : 'none'}
     >
       <TouchableOpacity
         style={[styles.button, styles.buttonLeft]}
         onPress={() => handlePress('avant')}
-        disabled={!buttonEnabled}
-        hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}
+        disabled={disabled || isLevelPaused}
+        activeOpacity={0.7}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       >
         <View style={styles.buttonInner}>
           <Text style={styles.buttonText}>AVANT</Text>
@@ -54,8 +56,9 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
       <TouchableOpacity
         style={[styles.button, styles.buttonRight]}
         onPress={() => handlePress('après')}
-        disabled={!buttonEnabled}
-        hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}
+        disabled={disabled || isLevelPaused}
+        activeOpacity={0.7}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       >
         <View style={styles.buttonInner}>
           <Text style={styles.buttonText}>APRÈS</Text>
@@ -70,33 +73,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    width: '100%',
   },
   button: {
-    width: '45%',  // Réduit de 100px à une valeur relative
+    width: '45%',
+    maxWidth: 180,
   },
   buttonInner: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',  // Rendu plus transparent (0.7 -> 0.6)
-    paddingVertical: 8,  // Réduit de 10 à 8
-    paddingHorizontal: 15,
-    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     alignItems: 'center',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   buttonLeft: {
-    transform: [{ rotate: '-1deg' }],  // Inclinaison réduite (-2deg -> -1deg)
+    transform: [{ rotate: '-1deg' }],
   },
   buttonRight: {
-    transform: [{ rotate: '1deg' }],  // Inclinaison réduite (2deg -> 1deg)
+    transform: [{ rotate: '1deg' }],
   },
   buttonText: {
-    color: 'rgba(255, 255, 255, 0.9)',  // Légèrement plus transparent
-    fontSize: 15,  // Réduit de 16 à 15
-    fontWeight: '600',  // Réduit de 'bold' à '600'
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontSize: 16,
+    fontWeight: '700',
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
 });
 
