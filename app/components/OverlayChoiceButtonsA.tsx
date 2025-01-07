@@ -1,13 +1,26 @@
-// OverlayChoiceButtonsA.tsx
+/************************************************************************************
+ * 5. COMPOSANT : OverlayChoiceButtonsA
+ *
+ * 5.A. Description
+ *     Affiche deux boutons "avant"/"après" superposés. Gère leur opacité en fonction
+ *     du statut "disabled" ou "isLevelPaused".
+ *
+ * 5.B. Props
+ *     @interface OverlayChoiceButtonsAProps
+ *     @property {(choice: string) => void} onChoice
+ *     @property {boolean} disabled
+ *     @property {boolean} isLevelPaused
+ ************************************************************************************/
+
 import React, { useEffect, useRef } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 
-interface OverlayChoiceButtonsAProps {
-  onChoice: (choice: string) => void;
-  disabled: boolean;
-  isLevelPaused: boolean;
-}
-
+/**
+ * 5.C. Composant principal OverlayChoiceButtonsA
+ * @function OverlayChoiceButtonsA
+ * @param {OverlayChoiceButtonsAProps} props
+ * @returns {JSX.Element}
+ */
 const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   onChoice,
   disabled,
@@ -15,8 +28,8 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
 }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
+  // 5.C.1. useEffect => Animation d’opacité
   useEffect(() => {
-    // Animation uniquement quand les boutons sont désactivés
     if (disabled || isLevelPaused) {
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -24,11 +37,11 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
         useNativeDriver: true,
       }).start();
     } else {
-      // Réinitialisation immédiate de l'opacité
       fadeAnim.setValue(1);
     }
   }, [disabled, isLevelPaused]);
 
+  // 5.C.2. handlePress
   const handlePress = (choice: string) => {
     if (!disabled && !isLevelPaused) {
       console.log('Choix:', choice);
@@ -36,6 +49,7 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
     }
   };
 
+  // 5.C.3. Rendu
   return (
     <Animated.View
       style={[styles.container, { opacity: fadeAnim }]}
@@ -68,6 +82,7 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   );
 };
 
+// 5.D. Styles
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',

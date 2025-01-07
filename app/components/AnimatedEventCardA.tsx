@@ -1,8 +1,29 @@
-// AnimatedEventCardA.tsx
+/************************************************************************************
+ * 1. COMPOSANT : AnimatedEventCardA
+ *
+ * 1.A. Description
+ *     Composant React Native affichant une carte d'événement animée avec des
+ *     fonctionnalités spécifiques selon sa position (haut ou bas).
+ *
+ * 1.B. Props
+ *     @interface AnimatedEventCardAProps
+ *     @property {any} event - Données de l’événement à afficher.
+ *     @property {'top' | 'bottom'} position - Position de la carte (haut ou bas).
+ *     @property {() => void} [onImageLoad] - Callback appelé lorsque l'image est chargée.
+ *     @property {boolean} [showDate] - Indique si la date doit être affichée.
+ *     @property {boolean} [isCorrect] - Indique si la réponse est correcte.
+ *     @property {number} [streak] - Nombre de bonnes réponses consécutives.
+ *     @property {number} [level] - Niveau actuel du jeu.
+ ************************************************************************************/
+
+// 1.C. Imports
 import React, { useEffect, useRef } from 'react';
 import { View, Image, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+/************************************************************************************
+ * 1.D. Interface des Props
+ ************************************************************************************/
 interface AnimatedEventCardAProps {
   event: any;
   position: 'top' | 'bottom';
@@ -13,6 +34,9 @@ interface AnimatedEventCardAProps {
   level?: number;
 }
 
+/************************************************************************************
+ * 1.E. Composant Fonctionnel
+ ************************************************************************************/
 const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
   event,
   position,
@@ -22,8 +46,10 @@ const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
   streak,
   level
 }) => {
+  // 1.E.1. Référence pour l'animation de la date
   const dateScale = useRef(new Animated.Value(1)).current;
 
+  // 1.E.2. Effet d'animation pour la date
   useEffect(() => {
     if (position === 'bottom' && showDate) {
       Animated.sequence([
@@ -41,6 +67,7 @@ const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
     }
   }, [showDate]);
 
+  // 1.E.3. Fonction pour extraire l'année d'une date
   const getYearFromDate = (dateString: string): string => {
     try {
       if (/^\d{4}$/.test(dateString)) return dateString;
@@ -52,6 +79,7 @@ const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
     }
   };
 
+  // 1.E.4. Fonction pour rendre la date avec overlay
   const renderDate = () => {
     if ((position === 'top' || showDate) && event?.date) {
       const overlayStyle = [
@@ -78,6 +106,7 @@ const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
     return null;
   };
 
+  // 1.E.5. Rendu principal du composant
   return (
     <View style={styles.container}>
       <View style={styles.cardFrame}>
@@ -116,6 +145,9 @@ const AnimatedEventCardA: React.FC<AnimatedEventCardAProps> = ({
   );
 };
 
+/************************************************************************************
+ * 1.F. Styles
+ ************************************************************************************/
 const styles = StyleSheet.create({
   container: {
     flex: 1,

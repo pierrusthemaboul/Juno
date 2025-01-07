@@ -1,4 +1,24 @@
-// EventLayoutA.tsx
+/************************************************************************************
+ * 3. COMPOSANT : EventLayoutA
+ *
+ * 3.A. Description
+ *     Gère l’affichage superposé de deux cartes d’événements (previousEvent, newEvent).
+ *     Anime la transition lorsque "newEvent" change.
+ *
+ * 3.B. Props
+ *     @interface EventLayoutAProps
+ *     @property {any} previousEvent
+ *     @property {any} newEvent
+ *     @property {() => void} [onImageLoad]
+ *     @property {(choice: string) => void} onChoice
+ *     @property {boolean} [showDate]
+ *     @property {boolean} [isCorrect]
+ *     @property {boolean} isImageLoaded
+ *     @property {number} streak
+ *     @property {number} level
+ *     @property {boolean} isLevelPaused
+ ************************************************************************************/
+
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
 import AnimatedEventCardA from './AnimatedEventCardA';
@@ -7,19 +27,12 @@ import OverlayChoiceButtonsA from './OverlayChoiceButtonsA';
 const { height } = Dimensions.get('window');
 const ANIMATION_DURATION = 800;
 
-interface EventLayoutAProps {
-  previousEvent: any;
-  newEvent: any;
-  onImageLoad?: () => void;
-  onChoice: (choice: string) => void;
-  showDate?: boolean;
-  isCorrect?: boolean;
-  isImageLoaded: boolean;
-  streak: number;
-  level: number;
-  isLevelPaused: boolean;
-}
-
+/**
+ * 3.C. Composant principal EventLayoutA
+ * @function EventLayoutA
+ * @param {EventLayoutAProps} props
+ * @returns {JSX.Element}
+ */
 const EventLayoutA: React.FC<EventLayoutAProps> = ({
   previousEvent,
   newEvent,
@@ -35,25 +48,26 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   console.log('EventLayoutA => RENDER => previousEvent:', previousEvent?.id, ' newEvent:', newEvent?.id);
   console.log('EventLayoutA => RENDER => showDate:', showDate, ' isCorrect:', isCorrect, ' isImageLoaded:', isImageLoaded);
 
+  // 3.C.1. États locaux
   const [transitioning, setTransitioning] = useState(false);
   const [currentTop, setCurrentTop] = useState(previousEvent);
   const [currentBottom, setCurrentBottom] = useState(newEvent);
 
-  // Animations
+  // 3.C.2. Animations
   const topCardTranslateY = useRef(new Animated.Value(0)).current;
   const bottomCardTranslateY = useRef(new Animated.Value(0)).current;
   const topCardScale = useRef(new Animated.Value(1)).current;
 
+  // 3.C.3. useEffect => Sur changement de newEvent
   useEffect(() => {
-    // À chaque fois que newEvent change, on lance une transition
     if (newEvent && (!currentBottom || newEvent.id !== currentBottom.id)) {
       console.log('EventLayoutA => useEffect => newEvent détecté => startTransition()');
       startTransition();
     }
   }, [newEvent]);
 
+  // 3.C.4. startTransition
   const startTransition = () => {
-    // Empêche un déclenchement multiple si déjà en cours
     if (transitioning) {
       console.log('EventLayoutA => startTransition => transition déjà en cours, on ignore');
       return;
@@ -86,7 +100,6 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
       setCurrentTop(currentBottom);
       setCurrentBottom(newEvent);
 
-      // Réinitialisation des valeurs animées
       topCardTranslateY.setValue(0);
       bottomCardTranslateY.setValue(0);
       topCardScale.setValue(1);
@@ -95,6 +108,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
     });
   };
 
+  // 3.C.5. handleChoice
   const handleChoice = (choice: string) => {
     console.log('EventLayoutA => handleChoice => choix:', choice);
     if (!transitioning) {
@@ -105,9 +119,10 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
     }
   };
 
+  // 3.C.6. Render
   return (
     <View style={styles.container}>
-      {/** Carte du haut (previousEvent) */}
+      {/* Carte du haut (previousEvent) */}
       <Animated.View 
         style={[
           styles.cardContainer,
@@ -129,7 +144,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
         />
       </Animated.View>
 
-      {/** Carte du bas (newEvent) */}
+      {/* Carte du bas (newEvent) */}
       <Animated.View
         style={[
           styles.cardContainer,
@@ -162,6 +177,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   );
 };
 
+// 3.D. Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -190,7 +206,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 40, // Remonté de 25 à 40
+    bottom: 40,
     paddingHorizontal: 20,
     zIndex: 3,
   },

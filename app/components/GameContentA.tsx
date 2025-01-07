@@ -1,6 +1,41 @@
-// 1. Configuration et Imports
-// =======================
-// Configuration de base du composant et imports nécessaires
+/************************************************************************************
+ * 4. COMPOSANT : GameContentA
+ *
+ * 4.A. Description
+ *     Gère l’interface du jeu : l’en-tête (UserInfo, Countdown), l’affichage des cartes
+ *     (EventLayoutA), la gestion du modal de niveau (LevelUpModal), du scoreboard,
+ *     et des animations de récompenses.
+ *
+ * 4.B. Props
+ *     @interface GameContentAProps
+ *     @property {User} user
+ *     @property {number} timeLeft
+ *     @property {boolean} loading
+ *     @property {string|null} error
+ *     @property {Event|null} previousEvent
+ *     @property {Event|null} newEvent
+ *     @property {boolean} isGameOver
+ *     @property {boolean} showDates
+ *     @property {boolean} [isCorrect]
+ *     @property {boolean} isImageLoaded
+ *     @property {(choice: string) => void} handleChoice
+ *     @property {() => void} handleImageLoad
+ *     @property {() => void} handleRestart
+ *     @property {number} streak
+ *     @property {number} highScore
+ *     @property {number} level
+ *     @property {Animated.Value} fadeAnim
+ *     @property {boolean} showLevelModal
+ *     @property {boolean} isLevelPaused
+ *     @property {() => void} startLevel
+ *     @property {LevelConfig} currentLevelConfig
+ *     @property {{type: RewardType; value: number; targetPosition?:{x:number,y:number}}|null} currentReward
+ *     @property {() => void} completeRewardAnimation
+ *     @property {(position:{x:number,y:number}) => void} updateRewardPosition
+ *     @property {Object} [leaderboards]
+ ************************************************************************************/
+
+// 4.C. Imports
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, ActivityIndicator, Animated, StyleSheet, Platform, StatusBar, SafeAreaView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -14,52 +49,15 @@ import { colors } from '../styles/colors';
 import { User, Event, LevelConfig, RewardType } from '../hooks/types';
 import { gameLogger } from '../utils/gameLogger';
 
-// 1.A. Dimensions de l'écran
-// -------------------------
+// 4.C.1. Dimensions de l'écran
 const { width, height } = Dimensions.get('window');
 
-// 2. Types et Interfaces
-// ====================
-// 2.A. Interface principale des props
-// ---------------------------------
-interface GameContentAProps {
-  user: User;
-  timeLeft: number;
-  loading: boolean;
-  error: string | null;
-  previousEvent: Event | null;
-  newEvent: Event | null;
-  isGameOver: boolean;
-  showDates: boolean;
-  isCorrect?: boolean;
-  isImageLoaded: boolean;
-  handleChoice: (choice: string) => void;
-  handleImageLoad: () => void;
-  handleRestart: () => void;
-  streak: number;
-  highScore: number;
-  level: number;
-  fadeAnim: Animated.Value;
-  showLevelModal: boolean;
-  isLevelPaused: boolean;
-  startLevel: () => void;
-  currentLevelConfig: LevelConfig;
-  currentReward: {
-    type: RewardType;
-    value: number;
-    targetPosition?: { x: number; y: number };
-  } | null;
-  completeRewardAnimation: () => void;
-  updateRewardPosition: (position: { x: number; y: number }) => void;
-  leaderboards?: {
-    daily: Array<{name: string, score: number}>;
-    monthly: Array<{name: string, score: number}>;
-    allTime: Array<{name: string, score: number}>;
-  };
-}
-
-// 3. Composant Principal
-// ====================
+/**
+ * 4.D. Composant principal GameContentA
+ * @function GameContentA
+ * @param {GameContentAProps} props
+ * @returns {JSX.Element}
+ */
 const GameContentA: React.FC<GameContentAProps> = ({
   user,
   timeLeft,
@@ -87,16 +85,13 @@ const GameContentA: React.FC<GameContentAProps> = ({
   updateRewardPosition,
   leaderboards
 }) => {
-  // 3.A. Hooks et Refs
-  // -----------------
+  // 4.D.1. Hooks et Refs
   const router = useRouter();
   const userInfoRef = useRef<UserInfoHandle>(null);
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const [isRewardPositionSet, setIsRewardPositionSet] = useState(false);
 
-  // 3.B. Effets
-  // ----------
-  // 3.B.a. Gestion de la position des récompenses
+  // 4.D.2. Effet : gestion de la position de la récompense
   useEffect(() => {
     let mounted = true;
     let positionUpdateTimer: NodeJS.Timeout;
@@ -144,7 +139,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     };
   }, [currentReward, width, height]);
 
-  // 3.B.b. Gestion de l'animation du modal de niveau
+  // 4.D.3. Effet : animation quand le level modal apparaît
   useEffect(() => {
     if (showLevelModal) {
       gameLogger.info('Level modal shown. Animating opacity.');
@@ -166,8 +161,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
   }, [showLevelModal]);
 
-  // 3.C. Rendu conditionnel
-  // ---------------------
+  // 4.D.4. Rendu conditionnel
   const renderContent = () => {
     if (loading) {
       return (
@@ -236,8 +230,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     );
   };
 
-  // 3.D. Rendu principal
-  // ------------------
+  // 4.D.5. Rendu principal
   return (
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -281,8 +274,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
   );
 };
 
-// 4. Styles
-// ========
+// 4.E. Styles
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -346,6 +338,4 @@ const styles = StyleSheet.create({
   }
 });
 
-// 5. Exportation
-// =============
 export default GameContentA;
