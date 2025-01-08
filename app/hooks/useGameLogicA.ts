@@ -159,14 +159,9 @@ export function useGameLogicA(initialEvent: string) {
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
 
-    console.log("useEffect Compte à rebours - Entrée dans useEffect, isCountdownActive:", isCountdownActive);
-    console.log("useEffect Compte à rebours - isLevelPaused:", isLevelPaused, "isGameOver:", isGameOver, "timeLeft:", timeLeft);
-
     if (isCountdownActive && timeLeft > 0 && !isLevelPaused && !isGameOver) {
-      console.log("useEffect Compte à rebours - Condition remplie, création du timer");
       timer = setInterval(() => {
         setTimeLeft((prevTime) => {
-          console.log("Compte à rebours - timeLeft avant décrémentation :", prevTime);
           if (prevTime <= 1) {
             handleTimeout(); 
             return 0;
@@ -174,14 +169,12 @@ export function useGameLogicA(initialEvent: string) {
           if (prevTime <= 5) {
             playCountdownSound(); 
           }
-          console.log("Compte à rebours - timeLeft après décrémentation :", prevTime - 1);
           return prevTime - 1;
         });
       }, 1000);
     } 
 
     return () => {
-      console.log("useEffect Compte à rebours - Nettoyage du timer");
       if (timer) clearInterval(timer);
     };
   }, [isCountdownActive, isLevelPaused, isGameOver, timeLeft]); // Dépendances optimisées
@@ -299,11 +292,8 @@ export function useGameLogicA(initialEvent: string) {
    */
   const handleImageLoad = () => {
     setIsImageLoaded(true);
-    console.log("handleImageLoad - isLevelPaused =", isLevelPaused); // Log ajouté
     if (!isLevelPaused) {
-      console.log("handleImageLoad - Avant activation du compte à rebours : isCountdownActive =", isCountdownActive); // Log ajouté
       setIsCountdownActive(true);
-      console.log("handleImageLoad - Après activation du compte à rebours : isCountdownActive =", isCountdownActive); // Log ajouté
     }
   };
 
@@ -363,12 +353,9 @@ export function useGameLogicA(initialEvent: string) {
       setNewEvent(selectedEvent);
       setIsImageLoaded(false);
       setShowDates(false);
-      console.log("updateGameState - isLevelPaused =", isLevelPaused);  // Log ajouté
       setIsCorrect(undefined);
 
-      console.log("updateGameState - Avant désactivation du compte à rebours : isCountdownActive =", isCountdownActive);  // Log ajouté
       setIsCountdownActive(false);
-      console.log("updateGameState - Après désactivation du compte à rebours : isCountdownActive =", isCountdownActive);  // Log ajouté
 
       setTimeLeft(20);
 
@@ -382,8 +369,6 @@ export function useGameLogicA(initialEvent: string) {
         }
       ]);
 
-      // Log ajouté - Fin de la fonction
-      console.log("updateGameState - Fin, nouvel event défini, compteur arrêté, timeLeft réinitialisé.");
     } catch (err) {
       // Gestion des erreurs si nécessaire
       console.error("updateGameState - Erreur:", err); // Log ajouté - Erreur
@@ -712,7 +697,6 @@ export function useGameLogicA(initialEvent: string) {
     (choice: 'avant' | 'après') => {
 
       if (!previousEvent || !newEvent || isLevelPaused) {
-        console.log("handleChoice - Aucune action : previousEvent, newEvent ou isLevelPaused est invalide."); // Log ajouté
         return;
       }
 
@@ -808,7 +792,6 @@ export function useGameLogicA(initialEvent: string) {
 
               setTimeout(() => {
                 if (!isGameOver && !showLevelModal) {
-                  console.log("handleChoice - Bonne réponse, on sélectionne le prochain événement."); // Log ajouté
                   setPreviousEvent(newEvent);
                   selectNewEvent(allEvents, newEvent);
                 }
@@ -857,7 +840,6 @@ export function useGameLogicA(initialEvent: string) {
 
         setTimeout(() => {
           if (!isGameOver && !showLevelModal) {
-            console.log("handleChoice - Mauvaise réponse, on sélectionne le prochain événement."); // Log ajouté
             setPreviousEvent(newEvent);
             selectNewEvent(allEvents, newEvent);
           }
@@ -1112,7 +1094,6 @@ export function useGameLogicA(initialEvent: string) {
    * @returns {void}
    */
   const startLevel = useCallback(() => {
-    console.log("startLevel - Fermeture du modal de niveau, relance du timer et réinitialisation timeLeft."); // Log ajouté
     setShowLevelModal(false);
     setIsLevelPaused(false);
     setIsCountdownActive(true);
@@ -1121,11 +1102,9 @@ export function useGameLogicA(initialEvent: string) {
     setLevelCompletedEvents([]); // On vide les événements du niveau terminé
 
     if (previousEvent) {
-      console.log("startLevel - previousEvent présent, on va sélectionner un nouvel événement."); // Log ajouté
       selectNewEvent(allEvents, previousEvent);
     } else {
       // Aucun événement précédent, aucune action spécifique définie
-      console.log("startLevel - Aucun événement précédent détecté, aucune sélection d'événement."); // Log ajouté
     }
   }, [allEvents, previousEvent, selectNewEvent]);
 
