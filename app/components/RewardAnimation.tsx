@@ -1,18 +1,11 @@
-// 1. Configuration du Composant RewardAnimation
-// =====================================
-// Composant principal gérant l'animation des récompenses dans l'interface
-
-// 1.A. Imports et Dépendances
-// ---------------------------
+// RewardAnimation.tsx
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RewardType } from '../hooks/types';
 import { colors } from '../styles/colors';
 
-// 1.B. Interface et Types
-// ----------------------
-// 1.B.a. Définition des props du composant
+// 1. Définition des props
 interface RewardAnimationProps {
   type: RewardType;
   amount: number;
@@ -20,64 +13,93 @@ interface RewardAnimationProps {
   onComplete?: () => void;
 }
 
-// 2. Implémentation du Composant
-// =============================
 const RewardAnimation: React.FC<RewardAnimationProps> = ({
   type,
   amount,
   targetPosition = { x: 0, y: 0 },
   onComplete,
 }) => {
-  // 2.A. Gestion de l'Animation
-  // --------------------------
-  // 2.A.a. Initialisation des valeurs animées
+  // Réfs animées
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
 
-  // 2.A.b. Configuration et exécution de l'animation
   useEffect(() => {
-    if (!targetPosition) {
-      console.warn('Target position is undefined. Using default position {x: 0, y: 0}.');
+    let isMounted = true;
+    console.log('[RewardAnimation] useEffect triggered', { type, amount, targetPosition });
+
+    // Si la position est invalide ou manquante, on skip l’animation
+    if (!targetPosition || typeof targetPosition.x !== 'number' || typeof targetPosition.y !== 'number') {
+      console.warn('[RewardAnimation] Target position is invalid or undefined. Skipping animation.');
+      opacity.setValue(0);
+      translateY.setValue(0);
+      scale.setValue(1);
+      onComplete?.();
+      return;
     }
 
-    console.log('[RewardAnimation] Starting animation with:', {
-      type,
-      amount,
-      targetPosition,
+    console.log('[RewardAnimation] Starting animation with:', { type, amount, targetPosition });
+
+    // On lance la séquence d’animation
+    requestAnimationFrame(() => {
+      if (!isMounted) return;
+
+      // 1) Apparition
+      const appear = Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scale, {
+          toValue: 1.2,
+          friction: 4,
+          useNativeDriver: true,
+        }),
+      ]);
+
+      // 2) On fait “flotter” et disparaître
+      const floatAndFade = Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: -50,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 400,
+          delay: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.8,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]);
+
+      Animated.sequence([appear, floatAndFade]).start(({ finished }) => {
+        if (finished && isMounted) {
+          console.log('[RewardAnimation] Animation sequence finished successfully');
+          // On reset les valeurs
+          opacity.setValue(0);
+          translateY.setValue(0);
+          scale.setValue(1);
+          onComplete?.();
+        }
+      });
     });
 
-    // 2.A.c. Séquences d'animation
-    const fadeIn = Animated.timing(opacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    });
+    // Cleanup
+    return () => {
+      console.log('[RewardAnimation] Cleanup');
+      isMounted = false;
+    };
+  }, [type, amount, targetPosition, onComplete]);
 
-    const moveAndFade = Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: -50,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    Animated.sequence([fadeIn, moveAndFade]).start(() => {
-      console.log('[RewardAnimation] Animation completed');
-      if (onComplete) {
-        onComplete();
-      }
-    });
-  }, [targetPosition, onComplete, opacity, translateY]);
-
-  // 2.B. Configuration Visuelle
-  // -------------------------
-  // 2.B.a. Gestion des types de récompenses
+  // Gestion du style en fonction du type de reward
   const getConfig = () => {
+    console.log('[RewardAnimation] Getting config for type:', type);
     switch (type) {
       case RewardType.POINTS:
         return {
@@ -95,7 +117,7 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
           color: colors.primary,
         };
       default:
-        console.warn('Unknown RewardType. Falling back to default.');
+        console.warn('[RewardAnimation] Unknown RewardType. Falling back to default.');
         return {
           icon: 'star',
           color: colors.primary,
@@ -104,18 +126,21 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
   };
 
   const config = getConfig();
+  console.log('[RewardAnimation] Rendering with:', { type, amount, targetPosition });
 
-  // 2.C. Rendu du Composant
-  // ----------------------
+  // Rendu
   return (
     <Animated.View
       style={[
         styles.container,
         {
-          transform: [{ translateY }],
+          transform: [
+            { translateY },
+            { scale }
+          ],
           opacity,
-          left: targetPosition?.x - 30,
-          top: targetPosition?.y - 30,
+          left: targetPosition.x - 30,
+          top: targetPosition.y - 30,
         },
       ]}
     >
@@ -127,8 +152,7 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
   );
 };
 
-// 3. Styles
-// ========
+// Styles
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -137,6 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
+    pointerEvents: 'none',
   },
   bubble: {
     width: '100%',
@@ -171,48 +196,13 @@ const styles = StyleSheet.create({
   },
 });
 
-// 4. Système de Logs
-// ================
-// 4.A. Configuration des Logs de Récompenses
-// ---------------------------------------
-const rewardLogs = {
-  // 4.A.a. Logs d'Animation
-  animation: {
-    start: (props: { type: RewardType, amount: number, targetPosition?: Position }) => {
-      console.log('[RewardAnimation] Démarrage animation:', {
-        type: props.type,
-        amount: props.amount,
-        targetPosition: props.targetPosition 
-      });
-    },
-    complete: () => {
-      console.log('[RewardAnimation] Animation terminée');
-    },
-    error: (context: string, error: any) => {
-      console.error(`[RewardAnimation] Erreur dans ${context}:`, error);
-    }
-  },
-  // 4.A.b. Logs de Séries
-  streak: {
-    update: (current: number, isIncrease: boolean) => {
-      console.log(`[Streak] ${isIncrease ? 'Augmentation' : 'Réinitialisation'} à ${current}`);
-    },
-    bonus: (value: number) => {
-      console.log(`[Streak] Bonus de points: ${value}`); 
-    }
-  },
-  // 4.A.c. Logs de Récompenses
-  rewards: {
-    points: (amount: number, reason: string) => {
-      console.log('[Reward] Points gagnés:', { amount, reason });
-    },
-    life: (current: number) => {
-      console.log('[Reward] Vie bonus, total:', current);
-    },
-    level: (newLevel: number) => {
-      console.log('[Reward] Passage niveau:', newLevel);
-    }
-  }
-};
-
-export default RewardAnimation;
+// Ajout de onComplete dans la comparaison
+export default React.memo(RewardAnimation, (prevProps, nextProps) => {
+  return (
+    prevProps.type === nextProps.type &&
+    prevProps.amount === nextProps.amount &&
+    prevProps.onComplete === nextProps.onComplete && // Ajout essentiel
+    prevProps.targetPosition?.x === nextProps.targetPosition?.x &&
+    prevProps.targetPosition?.y === nextProps.targetPosition?.y
+  );
+});

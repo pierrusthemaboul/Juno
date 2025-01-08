@@ -1,36 +1,10 @@
-// 1. Introduction
-// ==============
-// 1.A. Description générale
-// ------------------------
-// Composant d'affichage des informations utilisateur dans le jeu de chronologie historique
-
-// 1.B. Configuration IA
-// --------------------
-// FORMAT_COMMENT: Les commentaires commençant par "AI:" sont des points d'attention 
-// spécifiques pour les futures modifications avec Claude AI
-
-// 1.C. Points clés de maintenance
-// -----------------------------
-// - La mesure des positions est critique pour les animations de récompense
-// - Le système de bonus doit rester modulaire et extensible
-// - Les animations des vies et points sont synchronisées
-// - Le rendu est optimisé pour les performances
-// Fin de la section "1.C. Points clés de maintenance"
-
-// 2. Imports et Types
-// ==================
-// 2.A. Imports de base
-// ------------------
-import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles/colors';
 import { MAX_LIVES, ActiveBonus, BonusType } from '../hooks/types';
-// Fin de la section "2.A. Imports de base"
 
-// 2.B. Définition des interfaces
-// ---------------------------
-// 2.B.a. Interface des props
+// Interface des props
 interface UserInfoProps {
   name: string;
   points: number;
@@ -39,32 +13,25 @@ interface UserInfoProps {
   streak: number;
   activeBonus?: ActiveBonus[];
 }
-// Fin de la section "2.B.a. Interface des props"
 
-// 2.B.b. Interface des méthodes exposées
+// Interface des méthodes exposées
 export interface UserInfoHandle {
   getPointsPosition: () => Promise<{ x: number; y: number }>;
   getLifePosition: () => Promise<{ x: number; y: number }>;
 }
-// Fin de la section "2.B.b. Interface des méthodes exposées"
-// Fin de la section "2.B. Définition des interfaces"
-// Fin de la section "2. Imports et Types"
 
-// 3. Implémentation du composant
-// ============================
-// 3.A. Définition du composant
-// --------------------------
+// Composant UserInfo
 const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
   ({ name, points, lives, level, streak, activeBonus = [] }, ref) => {
-    // 3.B. Gestion des refs
-    // -------------------
-    // 3.B.a. Refs pour les éléments UI
-    const pointsRef = React.useRef<View>(null);
-    const livesRef = React.useRef<View>(null);
-    const bounceAnim = React.useRef(new Animated.Value(1)).current;
-    // Fin de la section "3.B.a. Refs pour les éléments UI"
+    const pointsRef = useRef<Text>(null);
+    const livesRef = useRef<View>(null);
+    const bounceAnim = useRef(new Animated.Value(1)).current;
 
-    // 3.B.b. Animation des points
+    // State pour stocker les positions
+    const [pointsPosition, setPointsPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [livesPosition, setLivesPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+    // Animation des points
     useEffect(() => {
       Animated.sequence([
         Animated.spring(bounceAnim, {
@@ -80,154 +47,132 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
         }),
       ]).start();
     }, [points]);
-    // Fin de la section "3.B.b. Animation des points"
-    // Fin de la section "3.B. Gestion des refs"
 
-    // 3.C. Gestion des positions
-    // ------------------------
-    // 3.C.a. Mesure des positions pour les animations
-    useImperativeHandle(ref, () => ({
-      getPointsPosition: () =>
-        new Promise((resolve) => {
-          debugLogs.positions.pointsRequested();
-          
-          if (!pointsRef.current) {
-            debugLogs.refs.pointsRefMissing();
-            debugLogs.positions.pointsDefaulted();
-            resolve({ x: 0, y: 0 });
-            return;
-          }
-    
-          pointsRef.current.measure((x, y, width, height, pageX, pageY) => {
-            if (typeof pageX === 'number' && typeof pageY === 'number') {
-              const position = { 
-                x: pageX + (width || 0) / 2, 
-                y: pageY + (height || 0) / 2 
-              };
+    // Calcul des positions après le rendu
+    useEffect(() => {
+      const measurePositions = () => {
+        requestAnimationFrame(() => {
+          if (pointsRef.current) {
+            pointsRef.current.measure((x, y, width, height, pageX, pageY) => {
+              const position = { x: pageX + width / 2, y: pageY + height / 2 };
               debugLogs.positions.pointsCalculated(position);
-              resolve(position);
-            } else {
-              debugLogs.refs.measureFailed('points');
-              debugLogs.positions.pointsDefaulted();
-              resolve({ x: 0, y: 0 });
-            }
-          });
-        }),
-      getLifePosition: () =>
-        new Promise((resolve) => {
-          debugLogs.positions.livesRequested();
-          
-          if (!livesRef.current) {
-            debugLogs.refs.livesRefMissing();
-            debugLogs.positions.livesDefaulted();
-            resolve({ x: 0, y: 0 });
-            return;
+              setPointsPosition(position);
+            });
+          } else {
+            debugLogs.refs.pointsRefMissing();
           }
-      
-          livesRef.current.measure((x, y, width, height, pageX, pageY) => {
-            if (typeof pageX === 'number' && typeof pageY === 'number') {
-              const position = { 
-                x: pageX + (width || 0) / 2, 
-                y: pageY + (height || 0) / 2 
-              };
+
+          if (livesRef.current) {
+            livesRef.current.measure((x, y, width, height, pageX, pageY) => {
+              const position = { x: pageX + width / 2, y: pageY + height / 2 };
               debugLogs.positions.livesCalculated(position);
-              resolve(position);
-            } else {
-              debugLogs.refs.measureFailed('lives');
-              debugLogs.positions.livesDefaulted();
-              resolve({ x: 0, y: 0 });
-            }
-          });
-        }),
+              setLivesPosition(position);
+            });
+          } else {
+            debugLogs.refs.livesRefMissing();
+          }
+        });
+      };
+
+      measurePositions();
+    }, [lives, points]); // Dépendances
+
+    // Exposition des méthodes pour obtenir les positions
+    useImperativeHandle(ref, () => ({
+      getPointsPosition: () => {
+        debugLogs.positions.pointsRequested();
+        if (!pointsRef.current) {
+          debugLogs.positions.pointsDefaulted();
+          return Promise.resolve({ x: 0, y: 0 });
+        }
+        return Promise.resolve(pointsPosition);
+      },
+      getLifePosition: () => {
+        debugLogs.positions.livesRequested();
+        if (!livesRef.current) {
+          debugLogs.positions.livesDefaulted();
+          return Promise.resolve({ x: 0, y: 0 });
+        }
+        return Promise.resolve(livesPosition);
+      },
     }));
-    // Fin de la section "3.C.a. Mesure des positions pour les animations"
-    // Fin de la section "3.C. Gestion des positions"
 
-    // 3.D. Utilitaires de rendu
-    // ------------------------
-    // 3.D.a. Gestion des couleurs de bonus
+    // Fonctions utilitaires (getBonusColor, getBonusIcon)
     const getBonusColor = (type: BonusType) => {
-      switch (type) {
-        case BonusType.TIME:
-          return colors.timerNormal;
-        case BonusType.STREAK:
-          return colors.warningYellow;
-        case BonusType.PERIOD:
-          return colors.primary;
-        case BonusType.MASTERY:
-          return colors.accent;
-        case BonusType.COMBO:
-          return colors.correctGreen;
-        default:
-          return colors.primary;
-      }
-    };
-    // Fin de la section "3.D.a. Gestion des couleurs de bonus"
+        switch (type) {
+          case BonusType.TIME:
+            return colors.timerNormal;
+          case BonusType.STREAK:
+            return colors.warningYellow;
+          case BonusType.PERIOD:
+            return colors.primary;
+          case BonusType.MASTERY:
+            return colors.accent;
+          case BonusType.COMBO:
+            return colors.correctGreen;
+          default:
+            return colors.primary;
+        }
+      };
+  
+      const getBonusIcon = (type: BonusType): string => {
+        switch (type) {
+          case BonusType.TIME:
+            return 'timer-outline';
+          case BonusType.STREAK:
+            return 'flame-outline';
+          case BonusType.PERIOD:
+            return 'calendar-outline';
+          case BonusType.MASTERY:
+            return 'star-outline';
+          case BonusType.COMBO:
+            return 'flash-outline';
+          default:
+            return 'star-outline';
+        }
+      };
 
-    // 3.D.b. Gestion des icônes de bonus
-    const getBonusIcon = (type: BonusType): string => {
-      switch (type) {
-        case BonusType.TIME:
-          return 'timer-outline';
-        case BonusType.STREAK:
-          return 'flame-outline';
-        case BonusType.PERIOD:
-          return 'calendar-outline';
-        case BonusType.MASTERY:
-          return 'star-outline';
-        case BonusType.COMBO:
-          return 'flash-outline';
-        default:
-          return 'star-outline';
-      }
-    };
-    // Fin de la section "3.D.b. Gestion des icônes de bonus"
-    // Fin de la section "3.D. Utilitaires de rendu"
-
-    // 3.E. Composants de rendu
-    // ----------------------
-    // 3.E.a. Rendu des indicateurs de bonus
+    // Rendu des indicateurs de bonus
     const renderBonusIndicators = () => {
-      const currentTime = Date.now();
-      const activeMultipliers = activeBonus.filter(
-        (bonus) => bonus.expiresAt > currentTime
-      );
-
-      if (activeMultipliers.length === 0) return null;
-
-      return (
-        <View style={styles.bonusContainer}>
-          {activeMultipliers.map((bonus, index) => (
-            <View key={index} style={styles.bonusItem}>
-              <View style={styles.bonusIconContainer}>
-                <Ionicons
-                  name={getBonusIcon(bonus.type)}
-                  size={16}
-                  color={getBonusColor(bonus.type)}
-                />
-                <Text style={[styles.bonusMultiplier, { color: getBonusColor(bonus.type) }]}>
-                  x{bonus.multiplier.toFixed(1)}
-                </Text>
+        const currentTime = Date.now();
+        const activeMultipliers = activeBonus.filter(
+          (bonus) => bonus.expiresAt > currentTime
+        );
+  
+        if (activeMultipliers.length === 0) return null;
+  
+        return (
+          <View style={styles.bonusContainer}>
+            {activeMultipliers.map((bonus, index) => (
+              <View key={index} style={styles.bonusItem}>
+                <View style={styles.bonusIconContainer}>
+                  <Ionicons
+                    name={getBonusIcon(bonus.type)}
+                    size={16}
+                    color={getBonusColor(bonus.type)}
+                  />
+                  <Text style={[styles.bonusMultiplier, { color: getBonusColor(bonus.type) }]}>
+                    x{bonus.multiplier.toFixed(1)}
+                  </Text>
+                </View>
+                <View style={styles.bonusProgressContainer}>
+                  <View
+                    style={[
+                      styles.bonusProgress,
+                      {
+                        width: `${((bonus.expiresAt - currentTime) / bonus.duration) * 100}%`,
+                        backgroundColor: getBonusColor(bonus.type),
+                      },
+                    ]}
+                  />
+                </View>
               </View>
-              <View style={styles.bonusProgressContainer}>
-                <View
-                  style={[
-                    styles.bonusProgress,
-                    {
-                      width: `${((bonus.expiresAt - currentTime) / bonus.duration) * 100}%`,
-                      backgroundColor: getBonusColor(bonus.type),
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-          ))}
-        </View>
-      );
-    };
-    // Fin de la section "3.E.a. Rendu des indicateurs de bonus"
+            ))}
+          </View>
+        );
+      };
 
-    // 3.E.b. Rendu des vies
+    // Rendu des vies
     const renderLives = () => (
       <View ref={livesRef} style={styles.livesContainer}>
         {Array(MAX_LIVES)
@@ -252,64 +197,55 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
           ))}
       </View>
     );
-    // Fin de la section "3.E.b. Rendu des vies"
 
-    // 3.E.c. Gestion du streak
-    <View style={styles.streakContainer}>
-      <Text style={[
-        styles.streakText,
-        streak >= 20 ? styles.streakUltra :
-        streak >= 15 ? styles.streakMaster : 
-        streak >= 10 ? styles.streakExpert :
-        streak >= 5 ? styles.streakPro : null
-      ]}>
-        {streak > 0 ? `×${streak}` : ''}
-      </Text>
-    </View>
-    // Fin de la section "3.E.c. Gestion du streak"
+      // Gestion du streak
+      // Rendu du streak
+    const renderStreak = () => (
+        <View style={styles.streakContainer}>
+        <Text style={[
+            styles.streakText,
+            streak >= 20 ? styles.streakUltra :
+            streak >= 15 ? styles.streakMaster : 
+            streak >= 10 ? styles.streakExpert :
+            streak >= 5 ? styles.streakPro : null
+        ]}>
+            {streak > 0 ? `×${streak}` : ''}
+        </Text>
+        </View>
+    );
 
-    // 3.E.d. Gestion des couleurs de niveau
+
+    // Gestion des couleurs de niveau
     const getLevelColor = (level: number): string => {
       if (level <= 5) return colors.primary;
       if (level <= 10) return colors.accent;
       if (level <= 15) return colors.warningYellow;
       return colors.incorrectRed;
     };
-    // Fin de la section "3.E.d. Gestion des couleurs de niveau"
 
-    // 3.E.e. Rendu principal
+    // Rendu principal
     return (
-      <View style={styles.container}>
+        <View style={styles.container}>
         <View style={styles.mainSection}>
-         
-          <View style={styles.userInfo}>
+            <View style={styles.userInfo}>
             <Text style={styles.userName}>{name || ''}</Text>
-            <View ref={pointsRef}>
-              <Text style={styles.score}>{points}</Text>
+            <Text ref={pointsRef} style={styles.score}>{points}</Text>
             </View>
-          </View>
-          <View style={styles.statsContainer}>
+            <View style={styles.statsContainer}>
             {renderLives()}
             <View style={[styles.levelBadge, { backgroundColor: getLevelColor(level) }]}>
-              <Text style={styles.levelText}>{level}</Text>
+                <Text style={styles.levelText}>{level}</Text>
             </View>
+            {renderStreak()}
             {renderBonusIndicators()}
-          </View>
+            </View>
         </View>
-      </View>
+        </View>
     );
-    
-    // Fin de la section "3.E.e. Rendu principal"
-    // Fin de la section "3.E. Composants de rendu"
   }
 );
-// Fin de la section "3.A. Définition du composant"
-// Fin de la section "3. Implémentation du composant"
 
-// 4. Styles et Configuration
-// ========================
-// 4.A. Styles du composant
-// ----------------------
+// Styles
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -333,25 +269,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 8,
-    // Ajout de log pour les dimensions
-    onLayout: ({ nativeEvent }) => {
-      
-    }
   },
   userName: {
     fontSize: 14,
     fontWeight: 'bold',
     color: colors.darkText,
     marginRight: 6,
-    // Ajout de log pour vérifier le style
-    onLayout: ({ nativeEvent }) => {
-      
-    }
   },
   score: {
     fontSize: 14,
     color: colors.primary,
     fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
   },
   livesContainer: {
     flexDirection: 'row',
@@ -369,84 +299,77 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-});
-// Fin de la section "4.A. Styles du composant"
-
-// 4.B. Configuration des logs de débogage
-// -----------------------------------
-const debugLogs = {
-  positions: {
-    pointsRequested: () => {
-    
-    },
-    pointsCalculated: (position: { x: number; y: number }) => {
-      
-    },
-    pointsDefaulted: () => {
-      
-    },
-    livesRequested: () => {
-      
-    },
-    livesCalculated: (position: { x: number; y: number }) => {
-    
-    },
-    livesDefaulted: () => {
-      
-    },
-  },
-  refs: {
-    pointsRefMissing: () => {
-      
-    },
-    livesRefMissing: () => {
-     
-    },
-    measureFailed: (context: string) => {
-     
-    }
-  }
-};
-// Fin de la section "4.B. Configuration des logs de débogage"
-
-// 4.C. Styles spécifiques au streak
-// ----------------------------
-// 4.C.a. Conteneur du streak
-const streakStyles = StyleSheet.create({
   streakContainer: {
-    flexDirection: 'row',
+    minWidth: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 30,
+    paddingHorizontal: 4,
   },
-  // 4.C.b. Texte de base du streak
   streakText: {
+    color: colors.darkText,
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.darkText,
   },
-  // 4.C.c. Variations de style selon le niveau
   streakPro: {
     color: colors.primary,
-    fontSize: 15,
   },
   streakExpert: {
     color: colors.accent,
-    fontSize: 16,
   },
   streakMaster: {
     color: colors.warningYellow,
-    fontSize: 17,
   },
   streakUltra: {
     color: colors.incorrectRed,
-    fontSize: 18,
+  },
+  bonusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10, // Espacement à gauche pour séparer des autres éléments
+  },
+  bonusItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 5, // Espacement entre les bonus
+  },
+  bonusIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 2, // Espacement entre l'icône et le multiplicateur
+  },
+  bonusMultiplier: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 2,
+  },
+  bonusProgressContainer: {
+    height: 6, // Hauteur de la barre de progression
+    width: 50, // Largeur de la barre de progression
+    backgroundColor: colors.lightGrey, // Couleur de fond de la barre
+    borderRadius: 3, // Bords arrondis pour la barre
+    overflow: 'hidden', // Assure que la barre de progression ne dépasse pas les bords
+  },
+  bonusProgress: {
+    height: '100%', // La barre de progression remplit la hauteur du conteneur
+    borderRadius: 3, // Bords arrondis pour la barre
   },
 });
-// Fin de la section "4.C. Styles spécifiques au streak"
-// Fin de la section "4. Styles et Configuration"
 
-// 5. Export du composant
-// ====================
+// Configuration des logs de débogage
+const debugLogs = {
+  positions: {
+    pointsRequested: () => console.log('[UserInfo] Position des points demandée'),
+    pointsCalculated: (position: { x: number; y: number }) => console.log('[UserInfo] Position des points calculée :', position),
+    pointsDefaulted: () => console.log('[UserInfo] Position des points par défaut utilisée (0, 0)'),
+    livesRequested: () => console.log('[UserInfo] Position des vies demandée'),
+    livesCalculated: (position: { x: number; y: number }) => console.log('[UserInfo] Position des vies calculée :', position),
+    livesDefaulted: () => console.log('[UserInfo] Position des vies par défaut utilisée (0, 0)'),
+  },
+  refs: {
+    pointsRefMissing: () => console.warn('[UserInfo] Référence aux points manquante'),
+    livesRefMissing: () => console.warn('[UserInfo] Référence aux vies manquante'),
+    measureFailed: (context: string) => console.error(`[UserInfo] Échec de la mesure pour ${context}`),
+  }
+};
+
 export default UserInfo;
-// Fin de la section "5. Export du composant"

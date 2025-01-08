@@ -54,7 +54,8 @@ export function useGameLogicA(initialEvent: string) {
   } = useRewards({
     onRewardEarned: (reward) => {
       applyReward(reward);
-    }
+    },
+   
   });
 
   /* 1.E.2. (Audio - sons) */
@@ -685,7 +686,7 @@ export function useGameLogicA(initialEvent: string) {
     }
   }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
 
-  /* ******* MODIFICATION ******* */
+ /* ******* MODIFICATION ******* */
   // 1.H.9. handleChoice
   /**
    * 1.H.9. Gère la réponse de l’utilisateur : "avant" ou "après"
@@ -747,6 +748,10 @@ export function useGameLogicA(initialEvent: string) {
           'default'
         );
 
+        // CALCUL DES RÉCOMPENSES AVANT LA MISE À JOUR DE L'UTILISATEUR
+        console.log(`[useGameLogicA - handleChoice] Streak: ${newStreak}`);
+        checkRewards({ type: 'streak', value: newStreak }, user); // Vérification pour la série
+
         // MISE A JOUR ICI
         setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
 
@@ -784,7 +789,8 @@ export function useGameLogicA(initialEvent: string) {
               setIsLevelPaused(true);
               playLevelUpSound();
 
-              checkRewards({ type: 'level', value: nextLevel }, updatedUser);
+              // Appeler checkRewards pour le niveau APRÈS la mise à jour de l'utilisateur
+              checkRewards({ type: 'level', value: nextLevel }, updatedUser); // Vérification pour le niveau
             } else {
               // ******* MODIFICATION *******
               // MISE A JOUR DE currentLevelEvents (niveau non terminé)
@@ -864,7 +870,8 @@ export function useGameLogicA(initialEvent: string) {
       endGame,
       updatePerformanceStats,
       allEvents,
-      progressAnim
+      progressAnim,
+      user // Ajout de user comme dépendance
     ]
   );
 
