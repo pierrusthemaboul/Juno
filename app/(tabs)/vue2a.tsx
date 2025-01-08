@@ -3,11 +3,11 @@
 // Vue principale du jeu avec gestion des animations et des états
 
 import React, { useState, useEffect } from 'react';
-import { 
-  SafeAreaView, 
-  ImageBackground, 
-  StyleSheet, 
-  Animated, 
+import {
+  SafeAreaView,
+  ImageBackground,
+  StyleSheet,
+  Animated,
   StatusBar,
   BackHandler,
   Alert
@@ -15,7 +15,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useGameLogicA } from '../hooks/useGameLogicA';
 import GameContentA from '../components/GameContentA';
-import { Event } from '../types';
+import { Event } from '../hooks/types'; // Assurez-vous que le chemin est correct
 import { gameLogger } from '../utils/gameLogger';
 
 export default function Vue2a() {
@@ -30,8 +30,8 @@ export default function Vue2a() {
   // --------------------------
   // 1.B.a. Sécurisation et parsing des paramètres d'entrée
   const params = useLocalSearchParams();
-  const initialEvent = typeof params.initialEvent === 'string' 
-    ? params.initialEvent 
+  const initialEvent = typeof params.initialEvent === 'string'
+    ? params.initialEvent
     : JSON.stringify({} as Event);
 
   // 1.C. Configuration de la logique de jeu
@@ -63,7 +63,8 @@ export default function Vue2a() {
     handleChoice,
     handleImageLoad,
     startLevel,
-    restartGame
+    restartGame,
+    levelCompletedEvents // Récupération de levelCompletedEvents
   } = useGameLogicA(initialEvent);
 
   // 2. Gestion des interactions utilisateur
@@ -84,8 +85,8 @@ export default function Vue2a() {
             onPress: () => null,
             style: "cancel"
           },
-          { 
-            text: "Quitter", 
+          {
+            text: "Quitter",
             onPress: () => {
               setIsExiting(true);
               handleExit();
@@ -141,17 +142,17 @@ export default function Vue2a() {
   // 3. Rendu de l'interface
   // =====================
   return (
-    <ImageBackground 
-      source={require('../../assets/images/bgvue2.webp')} 
+    <ImageBackground
+      source={require('../../assets/images/bgvue2.webp')}
       style={styles.backgroundImage}
       resizeMode="cover"
     >
-      <StatusBar 
-        translucent 
-        backgroundColor="transparent" 
-        barStyle="light-content" 
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
       />
-      
+
       <SafeAreaView style={styles.container}>
         <GameContentA
           user={user}
@@ -183,6 +184,7 @@ export default function Vue2a() {
           periodStats={periodStats}
           activeBonus={activeBonus}
           leaderboards={leaderboards}
+          levelCompletedEvents={levelCompletedEvents} // Passage de levelCompletedEvents à GameContentA
         />
       </SafeAreaView>
     </ImageBackground>

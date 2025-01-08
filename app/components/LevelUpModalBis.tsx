@@ -1,6 +1,5 @@
-
-  /************************************************************************************
- * 4. COMPOSANT : LevelUpModal
+/************************************************************************************
+ * 4. COMPOSANT : LevelUpModalBis
  *
  * 4.A. Description
  *     Modal de transition et présentation des niveaux avec récapitulatif des événements.
@@ -16,11 +15,11 @@
  *     @property {SpecialRules[]} [specialRules] - Règles spéciales du niveau.
  *     @property {number} [previousLevel] - Niveau précédent (si applicable).
  *     @property {boolean} isNewLevel - Indique si c'est un nouveau niveau.
- *     @property {LevelConfig | undefined} currentLevelConfig - Configuration actuelle du niveau.
+ *     @property {LevelEventSummary[] | undefined} eventsSummary - Récapitulatif des événements du niveau.
  ************************************************************************************/
 
 // 4.C. Imports
-import React, { useEffect, useRef, useState } from 'react'; // Ajout de useState
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   View,
@@ -36,18 +35,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../styles/colors';
-import {
-  LevelConfig,
-  SpecialRules,
-  RewardType
-} from '../hooks/types';
+import { LevelEventSummary } from '../hooks/types'; // Importez le type LevelEventSummary
 
 // 4.D. Configuration dimensions
 const { width, height } = Dimensions.get('window');
+console.log(`Dimensions: width=<span class="math-inline">\{width\}, height\=</span>{height}`);
 
-/************************************************************************************
- * 4.E. Interface des Props
- ************************************************************************************/
+// ******* AJOUT DE L'INTERFACE LevelModalProps *******
 interface LevelModalProps {
   visible: boolean;
   level: number;
@@ -55,20 +49,16 @@ interface LevelModalProps {
   name: string;
   description: string;
   requiredEvents: number;
-  specialRules?: SpecialRules[];
+  specialRules?: any[]; // Vous pouvez remplacer 'any' par le type approprié si vous l'avez défini
   previousLevel?: number;
   isNewLevel: boolean;
-  transitionReward?: {
-    type: RewardType;
-    value: number;
-  };
-  currentLevelConfig: LevelConfig | undefined; // Maintenant explicitement optionnel
+  eventsSummary: LevelEventSummary[] | undefined;
 }
 
 /************************************************************************************
- * 4.F. Composant Principal LevelUpModal
+ * 4.F. Composant Principal LevelUpModalBis
  ************************************************************************************/
-const LevelUpModal: React.FC<LevelModalProps> = ({
+const LevelUpModalBis: React.FC<LevelModalProps> = ({
   visible,
   level,
   onStart,
@@ -78,64 +68,70 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   specialRules,
   previousLevel,
   isNewLevel,
-  transitionReward,
-  currentLevelConfig
+  eventsSummary
 }) => {
-  // 4.F.1. Références d'animation
-  const scaleAnim = useRef(new Animated.Value(0.3)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const buttonScaleAnim = useRef(new Animated.Value(1)).current;
-  const backgroundOpacityAnim = useRef(new Animated.Value(0)).current;
-  const levelNumberAnim = useRef(new Animated.Value(0)).current;
-  const contentTranslateY = useRef(new Animated.Value(50)).current;
-  const statsProgressAnim = useRef(new Animated.Value(0)).current;
+  console.log('LevelUpModalBis rendu avec les props :', { visible, level, name, description, requiredEvents, specialRules, previousLevel, isNewLevel, eventsSummary });
+
+  // 4.F.1. Références d'animation - Renommer les variables
+  const scaleAnimBis = useRef(new Animated.Value(0.3)).current;
+  const opacityAnimBis = useRef(new Animated.Value(0)).current;
+  const buttonScaleAnimBis = useRef(new Animated.Value(1)).current;
+  const backgroundOpacityAnimBis = useRef(new Animated.Value(0)).current;
+  const levelNumberAnimBis = useRef(new Animated.Value(0)).current;
+  const contentTranslateYBis = useRef(new Animated.Value(50)).current;
+  const statsProgressAnimBis = useRef(new Animated.Value(0)).current;
+
+  console.log('Références d\'animation initialisées');
 
   // 4.F.2. Effets d'animation lors de l'apparition du modal
   useEffect(() => {
+    console.log('useEffect déclenché avec visible =', visible);
     let isMounted = true;
 
     if (visible) {
+      console.log('Modal est visible, démarrage des animations');
       // Réinitialisation des animations
       const resetAnimations = () => {
-        scaleAnim.setValue(0.3);
-        opacityAnim.setValue(0);
-        backgroundOpacityAnim.setValue(0);
-        levelNumberAnim.setValue(0);
-        contentTranslateY.setValue(50);
-        buttonScaleAnim.setValue(1);
-        statsProgressAnim.setValue(0);
+        console.log('Réinitialisation des animations');
+        scaleAnimBis.setValue(0.3);
+        opacityAnimBis.setValue(0);
+        backgroundOpacityAnimBis.setValue(0);
+        levelNumberAnimBis.setValue(0);
+        contentTranslateYBis.setValue(50);
+        buttonScaleAnimBis.setValue(1);
+        statsProgressAnimBis.setValue(0);
       };
 
       resetAnimations();
 
       // Séquence d'animations
       Animated.sequence([
-        Animated.timing(backgroundOpacityAnim, {
+        Animated.timing(backgroundOpacityAnimBis, {
           toValue: 1,
           duration: 400,
           useNativeDriver: true,
           easing: Easing.ease
         }),
         Animated.parallel([
-          Animated.spring(scaleAnim, {
+          Animated.spring(scaleAnimBis, {
             toValue: 1,
             friction: 8,
             tension: 40,
             useNativeDriver: true
           }),
-          Animated.timing(opacityAnim, {
+          Animated.timing(opacityAnimBis, {
             toValue: 1,
             duration: 400,
             useNativeDriver: true,
             easing: Easing.ease
           }),
-          Animated.spring(contentTranslateY, {
+          Animated.spring(contentTranslateYBis, {
             toValue: 0,
             friction: 8,
             tension: 40,
             useNativeDriver: true
           }),
-          Animated.spring(levelNumberAnim, {
+          Animated.spring(levelNumberAnimBis, {
             toValue: 1,
             friction: 8,
             tension: 40,
@@ -143,13 +139,18 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
           })
         ])
       ]).start(() => {
+        console.log('Séquence d\'animations terminée');
         if (isMounted) {
           startButtonAnimation();
+          console.log('Démarrage de l\'animation du bouton de démarrage');
         }
       });
+    } else {
+      console.log('Modal n\'est pas visible, aucune animation démarrée');
     }
 
     return () => {
+      console.log('Nettoyage du useEffect');
       isMounted = false;
     };
   }, [visible]);
@@ -158,12 +159,12 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   const startButtonAnimation = () => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(buttonScaleAnim, {
+        Animated.timing(buttonScaleAnimBis, {
           toValue: 1.1,
           duration: 1000,
           useNativeDriver: true,
         }),
-        Animated.timing(buttonScaleAnim, {
+        Animated.timing(buttonScaleAnimBis, {
           toValue: 1,
           duration: 1000,
           useNativeDriver: true,
@@ -178,17 +179,22 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   };
 
   // 4.F.5. Rendu du bandeau de fin de niveau
-  const renderLevelUpBanner = () => {
-    if (!previousLevel || !isNewLevel) return null;
+  const renderLevelUpBannerBis = () => {
+    console.log("renderLevelUpBannerBis appelé");
+    if (!previousLevel || !isNewLevel) {
+      console.log("renderLevelUpBannerBis : Pas de previousLevel ou isNewLevel est faux, rendu null");
+      return null;
+    }
 
+    console.log("renderLevelUpBannerBis : affichage du bandeau de fin de niveau");
     return (
       <Animated.View 
         style={[
           styles.levelUpBanner,
           {
             transform: [
-              { scale: levelNumberAnim },
-              { translateY: contentTranslateY }
+              { scale: levelNumberAnimBis },
+              { translateY: contentTranslateYBis }
             ]
           }
         ]}
@@ -209,76 +215,77 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
     );
   };
 
-  // ******* MODIFICATION *******
   // 4.F.6. Rendu du récapitulatif des événements
-  const renderEventsSummary = () => {
-    console.log("renderEventsSummary => currentLevelConfig:", currentLevelConfig); // LOG
-    if (!currentLevelConfig || !currentLevelConfig.eventsSummary?.length) {
-        console.log("renderEventsSummary => no eventsSummary or empty"); // LOG
-        return null;
+  const renderEventsSummaryBis = () => {
+    console.log("renderEventsSummaryBis => eventsSummary:", eventsSummary);
+
+    if (!eventsSummary || eventsSummary.length === 0) {
+      console.log("renderEventsSummaryBis => no eventsSummary or empty");
+      return null;
     }
 
     return (
-        <View style={styles.eventsSummaryContainer}>
-            <Text style={styles.sectionTitle}>Événements du niveau</Text>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                key={currentLevelConfig.level} // Utilisation du niveau comme clé
-            >
-                {currentLevelConfig.eventsSummary.map((event) => (
-                    <View key={event.id} style={styles.eventCard}>
-                        <Image
-                            source={{ uri: event.illustration_url }}
-                            style={styles.eventImage}
-                            resizeMode="cover"
-                        />
-                        <LinearGradient
-                            colors={['transparent', 'rgba(0,0,0,0.8)']}
-                            style={styles.eventGradient}
-                        >
-                            <Text style={styles.eventDate}>{event.date_formatee}</Text>
-                            <Text style={styles.eventTitle} numberOfLines={2}>
-                                {event.titre}
-                            </Text>
-                            <View
-                                style={[
-                                    styles.responseIndicator,
-                                    {
-                                        backgroundColor: event.wasCorrect
-                                            ? colors.correctGreen
-                                            : colors.incorrectRed,
-                                    },
-                                ]}
-                            >
-                                <Ionicons
-                                    name={event.wasCorrect ? "checkmark" : "close"}
-                                    size={20}
-                                    color="white"
-                                />
-                            </View>
-                        </LinearGradient>
-                    </View>
-                ))}
-            </ScrollView>
-        </View>
+      <View style={styles.eventsSummaryContainer}>
+        <Text style={styles.sectionTitle}>Événements du niveau</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          key={level} // Utilisation du niveau comme clé pour forcer le re-rendu
+        >
+          {eventsSummary.map((event) => (
+            <View key={event.id} style={styles.eventCard}>
+              <Image
+                source={{ uri: event.illustration_url }}
+                style={styles.eventImage}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                style={styles.eventGradient}
+              >
+                <Text style={styles.eventDate}>{event.date_formatee}</Text>
+                <Text style={styles.eventTitle} numberOfLines={2}>
+                  {event.titre}
+                </Text>
+                <View
+                  style={[
+                    styles.responseIndicator,
+                    {
+                      backgroundColor: event.wasCorrect
+                        ? colors.correctGreen
+                        : colors.incorrectRed,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={event.wasCorrect ? "checkmark" : "close"}
+                    size={20}
+                    color="white"
+                  />
+                </View>
+              </LinearGradient>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     );
-};
+  };
 
   // 4.F.7. Rendu conditionnel du contenu du modal
-  const renderModalContent = () => {
+  const renderModalContentBis = () => {
+      console.log("renderModalContentBis appelé");
     return (
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {renderLevelUpBanner()}
+        {renderLevelUpBannerBis()}
         <View style={styles.levelContainer}>
           <Animated.Text
             style={[
               styles.levelLabel,
               {
-                transform: [{ scale: levelNumberAnim }]
+                transform: [{ scale: levelNumberAnimBis }]
               }
             ]}
           >
@@ -287,7 +294,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
           <Text style={styles.levelName}>{name}</Text>
         </View>
 
-        {renderEventsSummary()}
+        {renderEventsSummaryBis()}
 
         <Text style={styles.eventsInfo}>
           Objectif : {requiredEvents} événements
@@ -296,7 +303,7 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
         <Animated.View
           style={[
             styles.startButtonContainer,
-            { transform: [{ scale: buttonScaleAnim }] }
+            { transform: [{ scale: buttonScaleAnimBis }] }
           ]}
         >
           <TouchableOpacity
@@ -320,7 +327,11 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
   };
 
   // 4.F.8. Rendu principal du composant
-  if (!visible) return null;
+  console.log("Rendu du Modal");
+  if (!visible) {
+      console.log("Modal non visible, rendu null");
+      return null;
+  }
 
   return (
     <Modal
@@ -332,22 +343,22 @@ const LevelUpModal: React.FC<LevelModalProps> = ({
       <Animated.View 
         style={[
           styles.modalOverlay,
-          { opacity: backgroundOpacityAnim }
+          { opacity: backgroundOpacityAnimBis }
         ]}
       >
         <Animated.View
           style={[
             styles.modalContent,
             {
-              opacity: opacityAnim,
+              opacity: opacityAnimBis,
               transform: [
-                { scale: scaleAnim },
-                { translateY: contentTranslateY }
+                { scale: scaleAnimBis },
+                { translateY: contentTranslateYBis }
               ]
             }
           ]}
         >
-          {renderModalContent()}
+          {renderModalContentBis()}
         </Animated.View>
       </Animated.View>
     </Modal>
@@ -506,7 +517,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  
   eventGradient: {
     position: 'absolute',
     bottom: 0,
@@ -554,4 +564,4 @@ const styles = StyleSheet.create({
 /************************************************************************************
  * 6. Exportation
  ************************************************************************************/
-export default LevelUpModal;
+export default LevelUpModalBis;

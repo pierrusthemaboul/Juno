@@ -3,7 +3,7 @@
  *
  * 4.A. Description
  *     Gère l’interface du jeu : l’en-tête (UserInfo, Countdown), l’affichage des cartes
- *     (EventLayoutA), la gestion du modal de niveau (LevelUpModal), du scoreboard,
+ *     (EventLayoutA), la gestion du modal de niveau (LevelUpModalBis), du scoreboard,
  *     et des animations de récompenses.
  *
  * 4.B. Props
@@ -28,11 +28,12 @@
  *     @property {boolean} showLevelModal
  *     @property {boolean} isLevelPaused
  *     @property {() => void} startLevel
- *     @property {LevelConfig} currentLevelConfig
+ *     @property {ExtendedLevelConfig} currentLevelConfig // Utilisation de ExtendedLevelConfig
  *     @property {{type: RewardType; value: number; targetPosition?:{x:number,y:number}}|null} currentReward
  *     @property {() => void} completeRewardAnimation
  *     @property {(position:{x:number,y:number}) => void} updateRewardPosition
  *     @property {Object} [leaderboards]
+ *     @property {LevelEventSummary[]} levelCompletedEvents
  ************************************************************************************/
 
 // 4.C. Imports
@@ -42,11 +43,11 @@ import { useRouter } from 'expo-router';
 import UserInfo, { UserInfoHandle } from './UserInfo';
 import Countdown from './Countdown';
 import EventLayoutA from './EventLayoutA';
-import LevelUpModal from './LevelUpModal';
+import LevelUpModalBis from './LevelUpModalBis'; // ***** Correction ici : Import depuis le bon fichier
 import ScoreboardModal from './ScoreboardModal';
 import RewardAnimation from './RewardAnimation';
 import { colors } from '../styles/colors';
-import { User, Event, LevelConfig, RewardType } from '../hooks/types';
+import { User, Event, ExtendedLevelConfig, RewardType, LevelEventSummary } from '../hooks/types'; // Importez ExtendedLevelConfig
 import { gameLogger } from '../utils/gameLogger';
 
 // 4.C.1. Dimensions de l'écran
@@ -83,7 +84,8 @@ const GameContentA: React.FC<GameContentAProps> = ({
   currentReward,
   completeRewardAnimation,
   updateRewardPosition,
-  leaderboards
+  leaderboards,
+  levelCompletedEvents
 }) => {
   // 4.D.1. Hooks et Refs
   const router = useRouter();
@@ -196,7 +198,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
           isLevelPaused={isLevelPaused}
         />
         
-        <LevelUpModal
+        <LevelUpModalBis
           visible={showLevelModal}
           level={level}
           onStart={startLevel}
@@ -206,6 +208,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
           specialRules={currentLevelConfig.specialRules}
           previousLevel={level > 1 ? level - 1 : undefined}
           isNewLevel={level > 1}
+          eventsSummary={levelCompletedEvents}
         />
 
         <ScoreboardModal 
