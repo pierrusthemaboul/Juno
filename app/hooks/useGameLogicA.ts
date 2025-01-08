@@ -152,7 +152,6 @@ export function useGameLogicA(initialEvent: string) {
   /* ******* MODIFICATION ******* */
   // 1.F. Effet d'initialisation
   useEffect(() => {
-    console.log('useGameLogicA => useEffect, initGame');
     initGame();
   }, []);
 
@@ -165,7 +164,6 @@ export function useGameLogicA(initialEvent: string) {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => {
           if (prevTime <= 1) {
-            console.log('useGameLogicA => Timer reached 0 => handleTimeout()');
             handleTimeout();
             return 0;
           }
@@ -702,10 +700,8 @@ export function useGameLogicA(initialEvent: string) {
    */
   const handleChoice = useCallback(
     (choice: 'avant' | 'après') => {
-      console.log('handleChoice => called with choice:', choice); // LOG
 
       if (!previousEvent || !newEvent || isLevelPaused) {
-        console.log('handleChoice => conditions not met (no previousEvent, no newEvent, or level paused)'); // LOG
         return;
       }
 
@@ -719,8 +715,6 @@ export function useGameLogicA(initialEvent: string) {
         (choice === 'avant' && newBeforePrevious) ||
         (choice === 'après' && newAfterPrevious);
 
-      console.log('handleChoice => isAnswerCorrect:', isAnswerCorrect); // LOG
-
       setIsCorrect(isAnswerCorrect);
       setShowDates(true);
 
@@ -733,8 +727,6 @@ export function useGameLogicA(initialEvent: string) {
         wasCorrect: isAnswerCorrect,
         responseTime: 20 - timeLeft
       };
-
-      console.log('handleChoice => eventSummaryItem:', eventSummaryItem); // LOG
 
       if (isAnswerCorrect) {
         playCorrectSound();
@@ -760,8 +752,6 @@ export function useGameLogicA(initialEvent: string) {
           'default'
         );
 
-        console.log('handleChoice => points calculated:', pts); // LOG
-
         // MISE A JOUR ICI
         setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
 
@@ -777,8 +767,6 @@ export function useGameLogicA(initialEvent: string) {
               maxStreak: Math.max(prev.maxStreak, newStreak),
               eventsCompletedInLevel: prev.eventsCompletedInLevel + 1
             };
-
-            console.log('handleChoice => updatedUser:', updatedUser); // LOG
 
             if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
               const nextLevel = prev.level + 1;
@@ -834,7 +822,6 @@ export function useGameLogicA(initialEvent: string) {
           getPeriod(newEvent.date),
           false
         );
-
         setUser((prev) => {
           const updatedLives = prev.lives - 1;
           if (updatedLives <= 0) {
@@ -893,7 +880,6 @@ export function useGameLogicA(initialEvent: string) {
       const nextLevel = prevUser.level + 1;
       const config = LEVEL_CONFIGS[nextLevel];
       if (!config) {
-        console.error('No level configuration found for level:', nextLevel);
         return prevUser; 
       }
 
@@ -1113,22 +1099,17 @@ export function useGameLogicA(initialEvent: string) {
    * @returns {void}
    */
   const startLevel = useCallback(() => {
-    // ******* MODIFICATION *******
-    console.log('startLevel => called');
-
     setShowLevelModal(false);
     setIsLevelPaused(false);
     setIsCountdownActive(true);
     setTimeLeft(20);
 
-    // ******* MODIFICATION *******
     setLevelCompletedEvents([]); // On vide les événements du niveau terminé
 
     if (previousEvent) {
-      console.log('startLevel => selecting new event based on previousEvent:', previousEvent.id);
       selectNewEvent(allEvents, previousEvent);
     } else {
-      console.log('startLevel => no previousEvent');
+      // Aucun événement précédent, aucune action spécifique définie
     }
   }, [allEvents, previousEvent, selectNewEvent]); // SUPPRESSION DE setCurrentLevelEvents DES DEPENDANCES
 

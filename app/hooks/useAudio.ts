@@ -113,11 +113,11 @@ export const useAudio = () => {
 
         sound.setOnPlaybackStatusUpdate(status => {
           if (!status.isLoaded) {
-            console.error(`Sound ${soundKey} failed to load properly`);
+          
             reloadSound(soundKey);
           }
           if (status.didJustFinish) {
-            console.log(`Sound ${soundKey} finished playing`);
+            
           }
         });
 

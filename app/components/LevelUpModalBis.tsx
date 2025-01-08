@@ -39,7 +39,7 @@ import { LevelEventSummary } from '../hooks/types'; // Importez le type LevelEve
 
 // 4.D. Configuration dimensions
 const { width, height } = Dimensions.get('window');
-console.log(`Dimensions: width=${width}, height=${height}`);
+
 
 // ******* AJOUT DE L'INTERFACE LevelModalProps *******
 interface LevelModalProps {
@@ -70,17 +70,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   isNewLevel,
   eventsSummary
 }) => {
-  console.log('LevelUpModalBis rendu avec les props :', {
-    visible,
-    level,
-    name,
-    description,
-    requiredEvents,
-    specialRules,
-    previousLevel,
-    isNewLevel,
-    eventsSummary
-  });
 
   // 4.F.1. Références d'animation
   const scaleAnimBis = useRef(new Animated.Value(0.3)).current;
@@ -91,18 +80,18 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   const contentTranslateYBis = useRef(new Animated.Value(50)).current;
   const statsProgressAnimBis = useRef(new Animated.Value(0)).current;
 
-  console.log("Références d'animation initialisées");
+  
 
   // 4.F.2. Effets d'animation lors de l'apparition du modal
   useEffect(() => {
-    console.log('useEffect déclenché avec visible =', visible);
+
     let isMounted = true;
 
     if (visible) {
-      console.log('Modal est visible, démarrage des animations');
+     
       // Réinitialisation des animations
       const resetAnimations = () => {
-        console.log('Réinitialisation des animations');
+ 
         scaleAnimBis.setValue(0.3);
         opacityAnimBis.setValue(0);
         backgroundOpacityAnimBis.setValue(0);
@@ -149,18 +138,18 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
           })
         ])
       ]).start(() => {
-        console.log("Séquence d'animations terminée");
+     
         if (isMounted) {
           startButtonAnimation();
-          console.log("Démarrage de l'animation du bouton de démarrage");
+ 
         }
       });
     } else {
-      console.log("Modal n'est pas visible, aucune animation démarrée");
+   
     }
 
     return () => {
-      console.log('Nettoyage du useEffect');
+    
       isMounted = false;
     };
   }, [visible]);
@@ -190,15 +179,13 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.5. Rendu du bandeau de fin de niveau
   const renderLevelUpBannerBis = () => {
-    console.log("renderLevelUpBannerBis appelé");
+
     if (!previousLevel || !isNewLevel) {
-      console.log(
-        "renderLevelUpBannerBis : Pas de previousLevel ou isNewLevel est faux, rendu null"
-      );
+      
       return null;
     }
 
-    console.log("renderLevelUpBannerBis : affichage du bandeau de fin de niveau");
+   
     return (
       <Animated.View
         style={[
@@ -229,10 +216,10 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummaryBis = () => {
-    console.log("renderEventsSummaryBis => eventsSummary:", eventsSummary);
+   
 
     if (!eventsSummary || eventsSummary.length === 0) {
-      console.log("renderEventsSummaryBis => no eventsSummary or empty");
+   
       return null;
     }
 
@@ -286,7 +273,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.7. Rendu conditionnel du contenu du modal
   const renderModalContentBis = () => {
-    console.log('renderModalContentBis appelé');
+
     return (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {renderLevelUpBannerBis()}
@@ -337,9 +324,8 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   };
 
   // 4.F.8. Rendu principal du composant
-  console.log('Rendu du Modal');
   if (!visible) {
-    console.log('Modal non visible, rendu null');
+ 
     return null;
   }
 
