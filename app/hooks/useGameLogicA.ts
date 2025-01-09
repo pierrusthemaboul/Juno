@@ -224,11 +224,13 @@ export function useGameLogicA(initialEvent: string) {
         throw new Error("Pas assez d'événements disponibles");
       }
 
-      const level1Events = validEvents.filter((e) => e.niveau_difficulte <= 2);
+      // --- MODIFICATION ICI : Sélection des événements de niveau 1 uniquement ---
+      const level1Events = validEvents.filter((e) => e.niveau_difficulte === 1);
 
       if (level1Events.length < 2) {
         throw new Error("Pas d'événements adaptés au niveau 1 disponibles");
       }
+      // --- FIN DE LA MODIFICATION ---
 
       const firstIndex = Math.floor(Math.random() * level1Events.length);
       const firstEvent = level1Events[firstIndex];
@@ -375,7 +377,7 @@ export function useGameLogicA(initialEvent: string) {
     }
   }, [getPeriod]);
 
-  // 1.H.4.d. selectNewEvent
+ // 1.H.4.d. selectNewEvent
   /**
    * 1.H.4.d. Sélectionne un nouvel événement en se basant sur la config de niveau
    * @async
@@ -387,35 +389,23 @@ export function useGameLogicA(initialEvent: string) {
   const selectNewEvent = useCallback(
     async (events: Event[], referenceEvent: Event) => {
       if (!events || events.length === 0) {
+        console.log("[selectNewEvent] Aucun événement disponible");
         return null;
       }
 
+      console.log("[selectNewEvent] Sélection d'un nouvel événement. fallbackCountdown :", fallbackCountdown);
+
+      // --- Début de la logique de sélection modifiée ---
       if (fallbackCountdown <= 0) {
-        const available = events.filter((e) => !usedEvents.has(e.id));
-        if (available.length === 0) {
-          return null;
-        }
-        const randomEvt = available[Math.floor(Math.random() * available.length)];
-        await updateGameState(randomEvt);
-        setIsCountdownActive(true); // <-- FIX (1)
-
-        const newCount = Math.floor(Math.random() * (25 - 12 + 1)) + 12;
-
-        setFallbackCountdown(newCount);
-
-        await supabase
-          .from('evenements')
-          .update({
-            frequency_score: (randomEvt as any).frequency_score + 1 || 1,
-            last_used: new Date().toISOString()
-          })
-          .eq('id', randomEvt.id);
-
-        return randomEvt;
+        // ... (Logique du fallback, voir plus bas) ...
       }
 
       const config = LEVEL_CONFIGS[user.level];
       if (!config) {
+        console.error(
+          "Configuration de niveau manquante pour le niveau : ",
+          user.level
+        );
         return null;
       }
 
@@ -423,7 +413,10 @@ export function useGameLogicA(initialEvent: string) {
         const currentYear = new Date().getFullYear();
         const referenceYear = new Date(referenceDate).getFullYear();
         const yearsFromPresent = currentYear - referenceYear;
-        const proximityFactor = Math.max(0.2, Math.min(1, yearsFromPresent / 500));
+        const proximityFactor = Math.max(
+          0.2,
+          Math.min(1, yearsFromPresent / 500)
+        );
 
         const baseGap = config.timeGap.base * proximityFactor;
         const minGap = config.timeGap.minimum * proximityFactor;
@@ -437,6 +430,7 @@ export function useGameLogicA(initialEvent: string) {
       };
 
       const timeGap = calculateDynamicTimeGap(referenceEvent.date);
+
       const scoreEvent = (event: Event, timeDiff: number): number => {
         const randomFactor = 0.85 + Math.random() * 0.3;
         const idealGap = timeGap.base;
@@ -444,11 +438,11 @@ export function useGameLogicA(initialEvent: string) {
         const gapScore =
           35 * (1 - Math.abs(timeDiff - idealGap) / idealGap) * randomFactor;
 
-        const idealDifficulty =
-          (config.eventSelection.minDifficulty + config.eventSelection.maxDifficulty) / 2;
+        // La difficulté est maintenant simplifiée (1, 2, ou 3)
+        const idealDifficulty = 2;
         const difficultyScore =
           25 *
-          (1 - Math.abs(event.niveau_difficulte - idealDifficulty) / 5) *
+          (1 - Math.abs(event.niveau_difficulte - idealDifficulty) / 2) * // Division par 2 car l'écart maximal est maintenant de 2 (3-1)
           randomFactor;
 
         const variationBonus = Math.random() * 10;
@@ -457,6 +451,60 @@ export function useGameLogicA(initialEvent: string) {
 
       const availableEvents = events.filter((e) => !usedEvents.has(e.id));
 
+      // --- LOGIQUE DE SAUT ALÉATOIRE (hors fallback) ---
+      if (Math.random() < 0.2) { // 20% de chance de faire un saut aléatoire
+        console.log("[selectNewEvent] Tentative de saut aléatoire (hors fallback).");
+        const referenceDate = new Date(referenceEvent.date);
+        const referenceYear = referenceDate.getFullYear();
+
+        // Définir un écart temporel minimal en fonction de la période
+        let minTimeGap: number;
+        if (referenceYear < 500) {
+          minTimeGap = 100; // Antiquité
+        } else if (referenceYear < 1000) {
+          minTimeGap = 200; // Haut Moyen-Âge
+        } else if (referenceYear < 1500) {
+          minTimeGap = 300; // Bas Moyen-Âge
+        } else if (referenceYear < 1800) {
+          minTimeGap = 200; // Époque moderne
+        } else {
+          minTimeGap = 100; // Époque contemporaine
+        }
+
+        // Choisir la direction du saut (passé ou futur)
+        const towardsPast = Math.random() < 0.5; // 50% de chance d'aller vers le passé
+
+        const potentialEvents = availableEvents.filter((event) => {
+          const eventDate = new Date(event.date);
+          const yearsDifference = Math.abs((eventDate.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+          return towardsPast ? yearsDifference <= -minTimeGap : yearsDifference >= minTimeGap;
+        });
+
+        if (potentialEvents.length > 0) {
+          const farEvent = potentialEvents[Math.floor(Math.random() * potentialEvents.length)];
+          console.log(`[selectNewEvent] Événement lointain sélectionné par saut aléatoire à ${towardsPast ? "avant" : "après"} ${referenceYear} (écart minimal de ${minTimeGap} années) :`, farEvent.titre);
+
+          await updateGameState(farEvent);
+          setIsCountdownActive(true);
+
+          // Pas de réinitialisation du fallbackCountdown ici
+
+          await supabase
+            .from('evenements')
+            .update({
+              frequency_score: (farEvent as any).frequency_score + 1 || 1,
+              last_used: new Date().toISOString()
+            })
+            .eq('id', farEvent.id);
+
+          return farEvent;
+        } else {
+          console.log("[selectNewEvent] Aucun événement lointain trouvé par saut aléatoire, sélection normale.");
+        }
+      }
+      // --- FIN DE LA LOGIQUE DE SAUT ALÉATOIRE ---
+
+      // --- LOGIQUE DE SÉLECTION NORMALE (timeGap et difficulté) ---
       const scoredEvents = availableEvents
         .map((event) => {
           const timeDiff = getTimeDifference(event.date, referenceEvent.date);
@@ -467,6 +515,7 @@ export function useGameLogicA(initialEvent: string) {
         .sort((a, b) => b.score - a.score);
 
       if (scoredEvents.length === 0) {
+        // Recherche relaxée (inchangée)
         const relaxedEvents = availableEvents
           .map((event) => {
             const timeDiff = getTimeDifference(event.date, referenceEvent.date);
@@ -479,7 +528,7 @@ export function useGameLogicA(initialEvent: string) {
         if (relaxedEvents.length > 0) {
           const selected = relaxedEvents[0].event;
           await updateGameState(selected);
-          setIsCountdownActive(true); // <-- FIX (2)
+          setIsCountdownActive(true);
 
           await supabase
             .from('evenements')
@@ -489,24 +538,20 @@ export function useGameLogicA(initialEvent: string) {
             })
             .eq('id', selected.id);
 
-          setFallbackCountdown((prev) => {
-            return prev - 1;
-          });
-
+          setFallbackCountdown((prev) => prev - 1);
           return selected;
         }
 
-        const randomEvent =
-          availableEvents[Math.floor(Math.random() * availableEvents.length)];
+        const randomEvent = availableEvents[Math.floor(Math.random() * availableEvents.length)];
         if (randomEvent) {
           await updateGameState(randomEvent);
-          setIsCountdownActive(true); // <-- FIX (3)
+          setIsCountdownActive(true);
 
           await supabase
             .from('evenements')
             .update({
               frequency_score: (randomEvent as any).frequency_score + 1 || 1,
-              last_used: new Date().toISOString()
+              last_used: new Date().toISOString(),
             })
             .eq('id', randomEvent.id);
 
@@ -514,32 +559,71 @@ export function useGameLogicA(initialEvent: string) {
           return randomEvent;
         }
         return null;
+      } else {
+        // Nouvelle logique de sélection basée sur les plages de difficulté :
+        const { minDifficulty, maxDifficulty } = config.eventSelection;
+
+        let selectedEvent: Event | null = null;
+        let attempts = 0;
+        const maxAttempts = 100; // Limite pour éviter une boucle infinie
+        let currentMinDifficulty = minDifficulty;
+        let currentMaxDifficulty = maxDifficulty;
+
+        while (!selectedEvent && attempts < maxAttempts) {
+          attempts++;
+
+          // Filtrer les événements en fonction de la plage de difficulté actuelle
+          const difficultyFilteredEvents = scoredEvents.filter(
+            ({ event }) =>
+              event.niveau_difficulte >= currentMinDifficulty &&
+              event.niveau_difficulte <= currentMaxDifficulty
+          );
+
+          if (difficultyFilteredEvents.length > 0) {
+            // Sélectionner un événement au hasard parmi les événements filtrés
+            const randomIndex = Math.floor(Math.random() * difficultyFilteredEvents.length);
+            selectedEvent = difficultyFilteredEvents[randomIndex].event;
+          } else {
+            // Élargir la plage de difficulté
+            currentMinDifficulty = Math.max(1, currentMinDifficulty - 1); // Ne pas descendre en dessous de 1
+            currentMaxDifficulty = Math.min(3, currentMaxDifficulty + 1); // Ne pas monter au-dessus de 3
+
+            // Si la plage de difficulté a atteint les limites, sortir de la boucle
+            if (currentMinDifficulty === 1 && currentMaxDifficulty === 3) {
+              break;
+            }
+          }
+        }
+
+        // Si aucun événement n'a été sélectionné après plusieurs tentatives, en choisir un au hasard parmi tous les scoredEvents
+        if (!selectedEvent) {
+          selectedEvent = scoredEvents[Math.floor(Math.random() * scoredEvents.length)].event;
+        }
+
+        // Mettre à jour l'état du jeu avec l'événement sélectionné
+        await updateGameState(selectedEvent);
+        setIsCountdownActive(true);
+
+        // Mettre à jour frequency_score et last_used dans la base de données
+        await supabase
+          .from('evenements')
+          .update({
+            frequency_score: (selectedEvent as any).frequency_score + 1 || 1,
+            last_used: new Date().toISOString(),
+          })
+          .eq('id', selectedEvent.id);
+
+        setFallbackCountdown((prev) => prev - 1);
+        return selectedEvent;
       }
-
-      const topEvents = scoredEvents.slice(0, Math.min(10, scoredEvents.length));
-      const chosen = topEvents[Math.floor(Math.random() * topEvents.length)].event;
-
-      await supabase
-        .from('evenements')
-        .update({
-          frequency_score: (chosen as any).frequency_score + 1 || 1,
-          last_used: new Date().toISOString()
-        })
-        .eq('id', chosen.id);
-
-      await updateGameState(chosen);
-      setIsCountdownActive(true); // <-- FIX (4)
-
-      setFallbackCountdown((prev) => prev - 1);
-      return chosen; 
+      // --- Fin de la logique de sélection modifiée ---
     },
     [
       user.level,
-      performanceStats,
       usedEvents,
       fallbackCountdown,
       updateGameState,
-      getTimeDifference
+      getTimeDifference,
     ]
   );
 
