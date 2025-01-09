@@ -905,189 +905,175 @@ const selectNewEvent = useCallback(
     }
   }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
 
-  /* ******* MODIFICATION ******* */
-  // 1.H.9. handleChoice
-  /**
-   * 1.H.9. Gère la réponse de l’utilisateur : "avant" ou "après"
+/**
+   * Gère la réponse de l’utilisateur : "avant" ou "après"
    * @function handleChoice
    * @param {'avant' | 'après'} choice
    * @returns {void}
    */
-  const handleChoice = useCallback(
-    (choice: 'avant' | 'après') => {
+const handleChoice = useCallback(
+  (choice: 'avant' | 'après') => {
+    if (!previousEvent || !newEvent || isLevelPaused) {
+      return;
+    }
 
-      if (!previousEvent || !newEvent || isLevelPaused) {
-        return;
-      }
+    const previousDate = new Date(previousEvent.date);
+    const newDate = new Date(newEvent.date);
+    const newBeforePrevious = newDate < previousDate;
+    const newAfterPrevious = newDate > previousDate;
+    const isAnswerCorrect =
+      (choice === 'avant' && newBeforePrevious) ||
+      (choice === 'après' && newAfterPrevious);
 
-      const previousDate = new Date(previousEvent.date);
-      const newDate = new Date(newEvent.date);
+    setIsCorrect(isAnswerCorrect);
+    setShowDates(true);
 
-      const newBeforePrevious = newDate < previousDate;
-      const newAfterPrevious = newDate > previousDate;
+    const eventSummaryItem: LevelEventSummary = {
+      id: newEvent.id,
+      titre: newEvent.titre,
+      date: newEvent.date,
+      date_formatee: newEvent.date_formatee || newEvent.date,
+      illustration_url: newEvent.illustration_url,
+      wasCorrect: isAnswerCorrect,
+      responseTime: 20 - timeLeft,
+    };
 
-      const isAnswerCorrect =
-        (choice === 'avant' && newBeforePrevious) ||
-        (choice === 'après' && newAfterPrevious);
+    if (isAnswerCorrect) {
+      playCorrectSound();
+      const newStreak = streak + 1;
+      setStreak(newStreak);
 
-      setIsCorrect(isAnswerCorrect);
-      setShowDates(true);
+      Animated.timing(progressAnim, {
+        toValue: newStreak,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
 
-      const eventSummaryItem: LevelEventSummary = {
-        id: newEvent.id,
-        titre: newEvent.titre,
-        date: newEvent.date,
-        date_formatee: newEvent.date_formatee || newEvent.date,
-        illustration_url: newEvent.illustration_url,
-        wasCorrect: isAnswerCorrect,
-        responseTime: 20 - timeLeft
-      };
+      updatePerformanceStats(
+        newEvent.types_evenement?.[0] || 'default',
+        getPeriod(newEvent.date),
+        true
+      );
 
-      if (isAnswerCorrect) {
-        playCorrectSound();
-        const newStreak = streak + 1;
-        setStreak(newStreak);
+      const pts = calculatePoints(
+        timeLeft,
+        newEvent.niveau_difficulte || 1,
+        newStreak,
+        'default'
+      );
 
-        Animated.timing(progressAnim, {
-          toValue: newStreak,
-          duration: 500,
-          useNativeDriver: false
-        }).start();
+      checkRewards({ type: 'streak', value: newStreak }, user);
 
-        updatePerformanceStats(
-          newEvent.types_evenement?.[0] || 'default',
-          getPeriod(newEvent.date),
-          true
-        );
-
-        const pts = calculatePoints(
-          timeLeft,
-          newEvent.niveau_difficulte || 1,
-          newStreak,
-          'default'
-        );
-
-        checkRewards({ type: 'streak', value: newStreak }, user); // Vérification pour la série
-
-        // MISE A JOUR ICI
-        setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
-
-        if (Number.isFinite(pts) && pts > 0) {
-          setUser((prev) => {
-            const currentPoints = Math.max(0, Number(prev.points) || 0);
-            const newPoints = currentPoints + pts;
-
-            const updatedUser = {
-              ...prev,
-              points: newPoints,
-              streak: newStreak,
-              maxStreak: Math.max(prev.maxStreak, newStreak),
-              eventsCompletedInLevel: prev.eventsCompletedInLevel + 1
-            };
-
-            if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
-              const nextLevel = prev.level + 1;
-              updatedUser.level = nextLevel;
-              updatedUser.eventsCompletedInLevel = 0;
-
-              setPreviousEvent(newEvent);
-
-              // ******* MODIFICATION *******
-              // On met à jour les événements du niveau terminé
-              setLevelCompletedEvents((prevEvents) => [...prevEvents, ...currentLevelEvents, eventSummaryItem]);
-
-              setCurrentLevelConfig((prevConf) => ({
-                ...LEVEL_CONFIGS[nextLevel], // On utilise la configuration du niveau suivant
-                eventsSummary: [] // On réinitialise eventsSummary
-              }));
-
-              setCurrentLevelEvents([]); // On réinitialise les événements du niveau
-              setShowLevelModal(true);
-              setIsLevelPaused(true);
-              playLevelUpSound();
-
-              checkRewards({ type: 'level', value: nextLevel }, updatedUser); // Vérification pour le niveau
-            } else {
-              // ******* MODIFICATION *******
-              // MISE A JOUR DE currentLevelEvents (niveau non terminé)
-              setCurrentLevelEvents((prevEvents) => [...prevEvents, eventSummaryItem]);
-
-              setTimeout(() => {
-                if (!isGameOver && !showLevelModal) {
-                  setPreviousEvent(newEvent);
-                  selectNewEvent(allEvents, newEvent);
-                }
-              }, 2000);
-            }
-            return updatedUser;
-          });
-        }
-      } else {
-        playIncorrectSound();
-        setStreak(0);
-
-        Animated.timing(progressAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: false
-        }).start();
-
-        updatePerformanceStats(
-          newEvent.types_evenement?.[0] || 'default',
-          getPeriod(newEvent.date),
-          false
-        );
+      if (Number.isFinite(pts) && pts > 0) {
         setUser((prev) => {
-          const updatedLives = prev.lives - 1;
-          if (updatedLives <= 0) {
-            endGame();
-          }
-          return {
+          const currentPoints = Math.max(0, Number(prev.points) || 0);
+          const newPoints = currentPoints + pts;
+
+          const updatedUser = {
             ...prev,
-            lives: updatedLives,
-            streak: 0
+            points: newPoints,
+            streak: newStreak,
+            maxStreak: Math.max(prev.maxStreak, newStreak),
+            eventsCompletedInLevel: prev.eventsCompletedInLevel + 1,
           };
-        });
 
-        // ******* MODIFICATION *******
-        // MISE A JOUR CORRECTE DE currentLevelConfig
-        setCurrentLevelConfig((prevConf) => ({
-          ...prevConf,
-          eventsSummary: [...(prevConf?.eventsSummary || []), eventSummaryItem] 
-        }));
-        // MISE A JOUR DE currentLevelEvents
-        setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+          if (
+            updatedUser.eventsCompletedInLevel >=
+            LEVEL_CONFIGS[prev.level].eventsNeeded
+          ) {
+            const nextLevel = prev.level + 1;
+            updatedUser.level = nextLevel;
+            updatedUser.eventsCompletedInLevel = 0;
 
-        setTimeout(() => {
-          if (!isGameOver && !showLevelModal) {
             setPreviousEvent(newEvent);
-            selectNewEvent(allEvents, newEvent);
+            setLevelCompletedEvents((prevEvents) => [
+              ...prevEvents,
+              ...currentLevelEvents,
+            ]);
+            setCurrentLevelConfig((prevConf) => ({
+              ...LEVEL_CONFIGS[nextLevel],
+              eventsSummary: [],
+            }));
+            setCurrentLevelEvents([]);
+            setShowLevelModal(true);
+            setIsLevelPaused(true);
+            playLevelUpSound();
+            checkRewards({ type: 'level', value: nextLevel }, updatedUser);
+          } else {
+            setCurrentLevelEvents((prevEvents) => [
+              ...prevEvents,
+              eventSummaryItem,
+            ]);
+            setTimeout(() => {
+              if (!isGameOver && !showLevelModal) {
+                setPreviousEvent(newEvent);
+                selectNewEvent(allEvents, newEvent);
+              }
+            }, 2000);
           }
-        }, 2000);
+          return updatedUser;
+        });
       }
-    },
-    [
-      previousEvent,
-      newEvent,
-      streak,
-      timeLeft,
-      isLevelPaused,
-      isGameOver,
-      showLevelModal,
-      getPeriod,
-      calculatePoints,
-      playCorrectSound,
-      playIncorrectSound,
-      checkRewards,
-      selectNewEvent,
-      currentLevelEvents,
-      endGame,
-      updatePerformanceStats,
-      allEvents,
-      progressAnim,
-      user
-    ]
-  );
+    } else {
+      playIncorrectSound();
+      setStreak(0);
+
+      Animated.timing(progressAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
+
+      updatePerformanceStats(
+        newEvent.types_evenement?.[0] || 'default',
+        getPeriod(newEvent.date),
+        false
+      );
+
+      setUser((prev) => {
+        const updatedLives = prev.lives - 1;
+        if (updatedLives <= 0) {
+          endGame();
+        }
+        return {
+          ...prev,
+          lives: updatedLives,
+          streak: 0,
+        };
+      });
+
+      setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
+
+      setTimeout(() => {
+        if (!isGameOver && !showLevelModal) {
+          setPreviousEvent(newEvent);
+          selectNewEvent(allEvents, newEvent);
+        }
+      }, 2000);
+    }
+  },
+  [
+    previousEvent,
+    newEvent,
+    streak,
+    timeLeft,
+    isLevelPaused,
+    isGameOver,
+    showLevelModal,
+    getPeriod,
+    calculatePoints,
+    playCorrectSound,
+    playIncorrectSound,
+    checkRewards,
+    selectNewEvent,
+    currentLevelEvents,
+    endGame,
+    updatePerformanceStats,
+    allEvents,
+    progressAnim,
+    user,
+  ]
+);
 
   /* ******* MODIFICATION ******* */
   // 1.H.10. handleLevelUp (correction du bug de type)
