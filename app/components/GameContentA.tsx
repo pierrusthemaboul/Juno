@@ -55,7 +55,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
   leaderboards,
   levelCompletedEvents
 }) => {
-  console.log('[GameContentA] Rendu du composant GameContentA', { currentReward });
 
   // 4.D.1. Hooks et Refs
   const router = useRouter();
@@ -67,14 +66,10 @@ const GameContentA: React.FC<GameContentAProps> = ({
   useEffect(() => {
     let mounted = true;
 
-    console.log('[GameContentA] useEffect déclenché pour currentReward:', currentReward);
-
     const updateRewardPositionSafely = async () => {
       if (!currentReward || !userInfoRef.current || !mounted) return;
 
       try {
-        console.log("[GameContentA] updateRewardPositionSafely appelé pour:", currentReward.type);
-      
         // Obtention de la position une seule fois
         const position = await (currentReward.type === RewardType.EXTRA_LIFE 
           ? userInfoRef.current.getLifePosition()
@@ -87,13 +82,11 @@ const GameContentA: React.FC<GameContentAProps> = ({
           if (!currentReward.targetPosition || 
               currentReward.targetPosition.x !== position.x || 
               currentReward.targetPosition.y !== position.y) {
-            console.log("[GameContentA] Position mise à jour:", position);
             updateRewardPosition(position);
             setIsRewardPositionSet(true);
           }
         }
       } catch (error) {
-        console.error('[GameContentA] Erreur position:', error);
         // Ne pas mettre de position par défaut en cas d'erreur
         setIsRewardPositionSet(false);
       }
@@ -109,7 +102,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
   // 4.D.3. Effet : animation quand le level modal apparaît
   useEffect(() => {
     if (showLevelModal) {
-      console.log("[GameContentA] showLevelModal est true. Lancement de l'animation.");
       Animated.sequence([
         Animated.timing(contentOpacity, {
           toValue: 0.3,
@@ -122,16 +114,14 @@ const GameContentA: React.FC<GameContentAProps> = ({
           delay: 1000,
           useNativeDriver: true
         })
-      ]).start(() => console.log("[GameContentA] Animation de showLevelModal terminée."));
+      ]).start();
     }
   }, [showLevelModal, contentOpacity]);
 
   // 4.D.4. Rendu conditionnel
   const renderContent = () => {
-    console.log("[GameContentA] renderContent appelé.");
 
     if (loading) {
-      console.log("[GameContentA] Affichage de l'indicateur de chargement.");
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -141,7 +131,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (error) {
-      console.log("[GameContentA] Affichage de l'erreur:", error);
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -150,7 +139,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (!previousEvent || !newEvent) {
-      console.log("[GameContentA] previousEvent or newEvent est null. Affichage de 'Préparation des événements...'");
       return (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Préparation des événements...</Text>
@@ -158,7 +146,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
       );
     }
 
-    console.log("[GameContentA] Affichage des composants du jeu.");
     return (
       <>
         <EventLayoutA
@@ -201,8 +188,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
       </>
     );
   };
-
-  console.log("[GameContentA] Rendu de GameContentA. isRewardPositionSet:", isRewardPositionSet, "currentReward:", currentReward);
 
   // 4.D.5. Rendu principal
   return (

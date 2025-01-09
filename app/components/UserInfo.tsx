@@ -55,21 +55,15 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
           if (pointsRef.current) {
             pointsRef.current.measure((x, y, width, height, pageX, pageY) => {
               const position = { x: pageX + width / 2, y: pageY + height / 2 };
-              debugLogs.positions.pointsCalculated(position);
               setPointsPosition(position);
             });
-          } else {
-            debugLogs.refs.pointsRefMissing();
           }
 
           if (livesRef.current) {
             livesRef.current.measure((x, y, width, height, pageX, pageY) => {
               const position = { x: pageX + width / 2, y: pageY + height / 2 };
-              debugLogs.positions.livesCalculated(position);
               setLivesPosition(position);
             });
-          } else {
-            debugLogs.refs.livesRefMissing();
           }
         });
       };
@@ -80,17 +74,13 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
     // Exposition des méthodes pour obtenir les positions
     useImperativeHandle(ref, () => ({
       getPointsPosition: () => {
-        debugLogs.positions.pointsRequested();
         if (!pointsRef.current) {
-          debugLogs.positions.pointsDefaulted();
           return Promise.resolve({ x: 0, y: 0 });
         }
         return Promise.resolve(pointsPosition);
       },
       getLifePosition: () => {
-        debugLogs.positions.livesRequested();
         if (!livesRef.current) {
-          debugLogs.positions.livesDefaulted();
           return Promise.resolve({ x: 0, y: 0 });
         }
         return Promise.resolve(livesPosition);
@@ -99,78 +89,78 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
 
     // Fonctions utilitaires (getBonusColor, getBonusIcon)
     const getBonusColor = (type: BonusType) => {
-        switch (type) {
-          case BonusType.TIME:
-            return colors.timerNormal;
-          case BonusType.STREAK:
-            return colors.warningYellow;
-          case BonusType.PERIOD:
-            return colors.primary;
-          case BonusType.MASTERY:
-            return colors.accent;
-          case BonusType.COMBO:
-            return colors.correctGreen;
-          default:
-            return colors.primary;
-        }
-      };
-  
-      const getBonusIcon = (type: BonusType): string => {
-        switch (type) {
-          case BonusType.TIME:
-            return 'timer-outline';
-          case BonusType.STREAK:
-            return 'flame-outline';
-          case BonusType.PERIOD:
-            return 'calendar-outline';
-          case BonusType.MASTERY:
-            return 'star-outline';
-          case BonusType.COMBO:
-            return 'flash-outline';
-          default:
-            return 'star-outline';
-        }
-      };
+      switch (type) {
+        case BonusType.TIME:
+          return colors.timerNormal;
+        case BonusType.STREAK:
+          return colors.warningYellow;
+        case BonusType.PERIOD:
+          return colors.primary;
+        case BonusType.MASTERY:
+          return colors.accent;
+        case BonusType.COMBO:
+          return colors.correctGreen;
+        default:
+          return colors.primary;
+      }
+    };
+
+    const getBonusIcon = (type: BonusType): string => {
+      switch (type) {
+        case BonusType.TIME:
+          return 'timer-outline';
+        case BonusType.STREAK:
+          return 'flame-outline';
+        case BonusType.PERIOD:
+          return 'calendar-outline';
+        case BonusType.MASTERY:
+          return 'star-outline';
+        case BonusType.COMBO:
+          return 'flash-outline';
+        default:
+          return 'star-outline';
+      }
+    };
 
     // Rendu des indicateurs de bonus
     const renderBonusIndicators = () => {
-        const currentTime = Date.now();
-        const activeMultipliers = activeBonus.filter(
-          (bonus) => bonus.expiresAt > currentTime
-        );
-  
-        if (activeMultipliers.length === 0) return null;
-  
-        return (
-          <View style={styles.bonusContainer}>
-            {activeMultipliers.map((bonus, index) => (
-              <View key={index} style={styles.bonusItem}>
-                <View style={styles.bonusIconContainer}>
-                  <Ionicons
-                    name={getBonusIcon(bonus.type)}
-                    size={16}
-                    color={getBonusColor(bonus.type)}
-                  />
-                  <Text style={[styles.bonusMultiplier, { color: getBonusColor(bonus.type) }]}>
-                    x{bonus.multiplier.toFixed(1)}
-                  </Text>
-                </View>
-                <View style={styles.bonusProgressContainer}>
-                  <View
-                    style={[
-                      styles.bonusProgress,
-                      {
-                        width: `${((bonus.expiresAt - currentTime) / bonus.duration) * 100}%`,
-                        backgroundColor: getBonusColor(bonus.type),
-                      },
-                    ]}
-                  />
-                </View>
+      const currentTime = Date.now();
+      const activeMultipliers = activeBonus.filter(
+        (bonus) => bonus.expiresAt > currentTime
+      );
+
+      if (activeMultipliers.length === 0) return null;
+
+      return (
+        <View style={styles.bonusContainer}>
+          {activeMultipliers.map((bonus, index) => (
+            <View key={index} style={styles.bonusItem}>
+              <View style={styles.bonusIconContainer}>
+                <Ionicons
+                  name={getBonusIcon(bonus.type)}
+                  size={16}
+                  color={getBonusColor(bonus.type)}
+                />
+                <Text style={[styles.bonusMultiplier, { color: getBonusColor(bonus.type) }]}>
+                  x{bonus.multiplier.toFixed(1)}
+                </Text>
               </View>
-            ))}
-          </View>
-        );
-      };
+              <View style={styles.bonusProgressContainer}>
+                <View
+                  style={[
+                    styles.bonusProgress,
+                    {
+                      width: `${((bonus.expiresAt - currentTime) / bonus.duration) * 100}%`,
+                      backgroundColor: getBonusColor(bonus.type),
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          ))}
+        </View>
+      );
+    };
 
     // Rendu des vies
     const renderLives = () => (
@@ -198,22 +188,20 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
       </View>
     );
 
-      // Gestion du streak
-      // Rendu du streak
+    // Rendu du streak
     const renderStreak = () => (
-        <View style={styles.streakContainer}>
+      <View style={styles.streakContainer}>
         <Text style={[
-            styles.streakText,
-            streak >= 20 ? styles.streakUltra :
-            streak >= 15 ? styles.streakMaster : 
-            streak >= 10 ? styles.streakExpert :
-            streak >= 5 ? styles.streakPro : null
+          styles.streakText,
+          streak >= 20 ? styles.streakUltra :
+          streak >= 15 ? styles.streakMaster : 
+          streak >= 10 ? styles.streakExpert :
+          streak >= 5 ? styles.streakPro : null
         ]}>
-            {streak > 0 ? `×${streak}` : ''}
+          {streak > 0 ? `×${streak}` : ''}
         </Text>
-        </View>
+      </View>
     );
-
 
     // Gestion des couleurs de niveau
     const getLevelColor = (level: number): string => {
@@ -225,22 +213,22 @@ const UserInfo = forwardRef<UserInfoHandle, UserInfoProps>(
 
     // Rendu principal
     return (
-        <View style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.mainSection}>
-            <View style={styles.userInfo}>
+          <View style={styles.userInfo}>
             <Text style={styles.userName}>{name || ''}</Text>
             <Text ref={pointsRef} style={styles.score}>{points}</Text>
-            </View>
-            <View style={styles.statsContainer}>
+          </View>
+          <View style={styles.statsContainer}>
             {renderLives()}
             <View style={[styles.levelBadge, { backgroundColor: getLevelColor(level) }]}>
-                <Text style={styles.levelText}>{level}</Text>
+              <Text style={styles.levelText}>{level}</Text>
             </View>
             {renderStreak()}
             {renderBonusIndicators()}
-            </View>
+          </View>
         </View>
-        </View>
+      </View>
     );
   }
 );
@@ -354,22 +342,5 @@ const styles = StyleSheet.create({
     borderRadius: 3, // Bords arrondis pour la barre
   },
 });
-
-// Configuration des logs de débogage
-const debugLogs = {
-  positions: {
-    pointsRequested: () => console.log('[UserInfo] Position des points demandée'),
-    pointsCalculated: (position: { x: number; y: number }) => console.log('[UserInfo] Position des points calculée :', position),
-    pointsDefaulted: () => console.log('[UserInfo] Position des points par défaut utilisée (0, 0)'),
-    livesRequested: () => console.log('[UserInfo] Position des vies demandée'),
-    livesCalculated: (position: { x: number; y: number }) => console.log('[UserInfo] Position des vies calculée :', position),
-    livesDefaulted: () => console.log('[UserInfo] Position des vies par défaut utilisée (0, 0)'),
-  },
-  refs: {
-    pointsRefMissing: () => console.warn('[UserInfo] Référence aux points manquante'),
-    livesRefMissing: () => console.warn('[UserInfo] Référence aux vies manquante'),
-    measureFailed: (context: string) => console.error(`[UserInfo] Échec de la mesure pour ${context}`),
-  }
-};
 
 export default UserInfo;

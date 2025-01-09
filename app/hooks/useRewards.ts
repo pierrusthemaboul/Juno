@@ -76,7 +76,6 @@ export const useRewards = ({
   const checkRewards = useCallback((trigger: RewardTrigger, user: User) => {
     // Si on est déjà en train d’animer => on ignore
     if (isAnimating) {
-      console.log('[useRewards/checkRewards] Déjà en cours d’animation => on ignore la reward');
       return;
     }
 
@@ -94,12 +93,10 @@ export const useRewards = ({
     }
 
     if (!reward) {
-      console.log('[useRewards/checkRewards] Pas de reward calculée...');
       return;
     }
 
     // On commence direct l’animation
-    console.log('[useRewards/checkRewards] Launching reward =', reward);
     setCurrentReward(reward);
     setIsAnimating(true);
 

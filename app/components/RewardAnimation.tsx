@@ -26,19 +26,15 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
 
   useEffect(() => {
     let isMounted = true;
-    console.log('[RewardAnimation] useEffect triggered', { type, amount, targetPosition });
 
     // Si la position est invalide ou manquante, on skip l’animation
     if (!targetPosition || typeof targetPosition.x !== 'number' || typeof targetPosition.y !== 'number') {
-      console.warn('[RewardAnimation] Target position is invalid or undefined. Skipping animation.');
       opacity.setValue(0);
       translateY.setValue(0);
       scale.setValue(1);
       onComplete?.();
       return;
     }
-
-    console.log('[RewardAnimation] Starting animation with:', { type, amount, targetPosition });
 
     // On lance la séquence d’animation
     requestAnimationFrame(() => {
@@ -80,7 +76,6 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
 
       Animated.sequence([appear, floatAndFade]).start(({ finished }) => {
         if (finished && isMounted) {
-          console.log('[RewardAnimation] Animation sequence finished successfully');
           // On reset les valeurs
           opacity.setValue(0);
           translateY.setValue(0);
@@ -92,14 +87,12 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
 
     // Cleanup
     return () => {
-      console.log('[RewardAnimation] Cleanup');
       isMounted = false;
     };
   }, [type, amount, targetPosition, onComplete]);
 
   // Gestion du style en fonction du type de reward
   const getConfig = () => {
-    console.log('[RewardAnimation] Getting config for type:', type);
     switch (type) {
       case RewardType.POINTS:
         return {
@@ -117,7 +110,6 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
           color: colors.primary,
         };
       default:
-        console.warn('[RewardAnimation] Unknown RewardType. Falling back to default.');
         return {
           icon: 'star',
           color: colors.primary,
@@ -126,7 +118,6 @@ const RewardAnimation: React.FC<RewardAnimationProps> = ({
   };
 
   const config = getConfig();
-  console.log('[RewardAnimation] Rendering with:', { type, amount, targetPosition });
 
   // Rendu
   return (
@@ -201,7 +192,7 @@ export default React.memo(RewardAnimation, (prevProps, nextProps) => {
   return (
     prevProps.type === nextProps.type &&
     prevProps.amount === nextProps.amount &&
-    prevProps.onComplete === nextProps.onComplete && // Ajout essentiel
+    prevProps.onComplete === nextProps.onComplete &&
     prevProps.targetPosition?.x === nextProps.targetPosition?.x &&
     prevProps.targetPosition?.y === nextProps.targetPosition?.y
   );

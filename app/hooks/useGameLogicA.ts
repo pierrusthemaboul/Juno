@@ -372,7 +372,6 @@ export function useGameLogicA(initialEvent: string) {
 
     } catch (err) {
       // Gestion des erreurs si nécessaire
-      console.error("updateGameState - Erreur:", err); // Log ajouté - Erreur
     }
   }, [getPeriod]);
 
@@ -748,8 +747,6 @@ export function useGameLogicA(initialEvent: string) {
           'default'
         );
 
-        // CALCUL DES RÉCOMPENSES AVANT LA MISE À JOUR DE L'UTILISATEUR
-        console.log(`[useGameLogicA - handleChoice] Streak: ${newStreak}`);
         checkRewards({ type: 'streak', value: newStreak }, user); // Vérification pour la série
 
         // MISE A JOUR ICI
@@ -789,7 +786,6 @@ export function useGameLogicA(initialEvent: string) {
               setIsLevelPaused(true);
               playLevelUpSound();
 
-              // Appeler checkRewards pour le niveau APRÈS la mise à jour de l'utilisateur
               checkRewards({ type: 'level', value: nextLevel }, updatedUser); // Vérification pour le niveau
             } else {
               // ******* MODIFICATION *******
@@ -815,8 +811,6 @@ export function useGameLogicA(initialEvent: string) {
           duration: 500,
           useNativeDriver: false
         }).start();
-
-        // MISE A JOUR ICI (ajouter le résumé en cas de mauvaise réponse aussi)
 
         updatePerformanceStats(
           newEvent.types_evenement?.[0] || 'default',
@@ -871,7 +865,7 @@ export function useGameLogicA(initialEvent: string) {
       updatePerformanceStats,
       allEvents,
       progressAnim,
-      user // Ajout de user comme dépendance
+      user
     ]
   );
 
@@ -887,7 +881,7 @@ export function useGameLogicA(initialEvent: string) {
 
       setCurrentLevelConfig(prevConf => ({
         ...config,
-        eventsSummary: [...(prevConf?.eventsSummary || []), ...currentLevelEvents] // Conserve les résumés précédents et ajoute ceux du niveau actuel
+        eventsSummary: [...(prevConf?.eventsSummary || []), ...currentLevelEvents]
       }));
 
       setShowLevelModal(true);
