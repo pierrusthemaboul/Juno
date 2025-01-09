@@ -19,7 +19,7 @@
  ************************************************************************************/
 
 // 4.C. Imports
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   View,
@@ -40,7 +40,6 @@ import { LevelEventSummary } from '../hooks/types'; // Importez le type LevelEve
 // 4.D. Configuration dimensions
 const { width, height } = Dimensions.get('window');
 
-
 // ******* AJOUT DE L'INTERFACE LevelModalProps *******
 interface LevelModalProps {
   visible: boolean;
@@ -53,6 +52,18 @@ interface LevelModalProps {
   previousLevel?: number;
   isNewLevel: boolean;
   eventsSummary: LevelEventSummary[] | undefined;
+}
+
+/**
+ * Petite fonction utilitaire pour n'afficher que l'année
+ * depuis la string date_formatee (ex: "01 October 2022" -> "2022")
+ */
+function extractYearFromDateString(dateString: string | undefined): string {
+  if (!dateString) return '';
+  // On part du principe que la date est au format "DD MMMM YYYY"
+  // On découpe par espace et on prend le troisième bloc.
+  const parts = dateString.split(' ');
+  return parts[2] ?? dateString; // Si jamais le split ne se passe pas bien, on renvoie la string brute
 }
 
 /************************************************************************************
@@ -80,18 +91,24 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   const contentTranslateYBis = useRef(new Animated.Value(50)).current;
   const statsProgressAnimBis = useRef(new Animated.Value(0)).current;
 
-  
+  // State pour gérer l'affichage du pop-up et l'événement sélectionné
+  const [selectedEvent, setSelectedEvent] = useState<LevelEventSummary | null>(null);
+
+  // Fonction pour fermer le pop-up
+  const handleCloseEventDetails = () => {
+    setSelectedEvent(null);
+  };
 
   // 4.F.2. Effets d'animation lors de l'apparition du modal
   useEffect(() => {
-
     let isMounted = true;
 
+    console.log('[LevelUpModalBis] visible:', visible);
+    console.log('[LevelUpModalBis] eventsSummary:', eventsSummary);
+
     if (visible) {
-     
       // Réinitialisation des animations
       const resetAnimations = () => {
- 
         scaleAnimBis.setValue(0.3);
         opacityAnimBis.setValue(0);
         backgroundOpacityAnimBis.setValue(0);
@@ -138,18 +155,16 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
           })
         ])
       ]).start(() => {
-     
         if (isMounted) {
           startButtonAnimation();
- 
         }
       });
     } else {
-   
+      // Si besoin, ajouter un log ou autre chose
+      console.log('[LevelUpModalBis] Modal not visible, animations not started.');
     }
 
     return () => {
-    
       isMounted = false;
     };
   }, [visible]);
@@ -174,18 +189,16 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.4. Gestionnaire d'événement pour démarrer le niveau
   const handleStart = () => {
+    console.log('[LevelUpModalBis] handleStart called');
     onStart();
   };
 
   // 4.F.5. Rendu du bandeau de fin de niveau
   const renderLevelUpBannerBis = () => {
-
     if (!previousLevel || !isNewLevel) {
-      
       return null;
     }
 
-   
     return (
       <Animated.View
         style={[
@@ -216,10 +229,8 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummaryBis = () => {
-   
-
     if (!eventsSummary || eventsSummary.length === 0) {
-   
+      console.log('[renderEventsSummaryBis] Aucune donnée dans eventsSummary');
       return null;
     }
 
@@ -227,53 +238,109 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
       <View style={styles.eventsSummaryContainer}>
         <Text style={styles.sectionTitle}>Événements du niveau</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {eventsSummary.map((event, index) => (
-            /* Assurez-vous que `event.key` existe 
-               ou remplacez par l'index si nécessaire. */
-            <View 
-              key={event.key ?? index} 
-              style={styles.eventCard}
-            >
-              <Image
-                source={{ uri: event.illustration_url }}
-                style={styles.eventImage}
-                resizeMode="cover"
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.8)']}
-                style={styles.eventGradient}
+          {eventsSummary.map((event, index) => {
+            console.log('[renderEventsSummaryBis] event:', event);
+            return (
+              <TouchableOpacity
+                key={event.id ?? index}
+                onPress={() => {
+                  console.log('[renderEventsSummaryBis] onPress event:', event.id);
+                  setSelectedEvent(event);
+                }}
+                activeOpacity={0.7}
               >
-                <Text style={styles.eventDate}>{event.date_formatee}</Text>
-                <Text style={styles.eventTitle} numberOfLines={2}>
-                  {event.titre}
-                </Text>
-                <View
-                  style={[
-                    styles.responseIndicator,
-                    {
-                      backgroundColor: event.wasCorrect
-                        ? colors.correctGreen
-                        : colors.incorrectRed,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={event.wasCorrect ? 'checkmark' : 'close'}
-                    size={20}
-                    color="white"
+                <View style={styles.eventCard}>
+                  <Image
+                    source={{ uri: event.illustration_url }}
+                    style={styles.eventImage}
+                    resizeMode="cover"
                   />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                    style={styles.eventGradient}
+                  >
+                    {/* On n'affiche que l'année à partir de event.date_formatee */}
+                    <Text style={styles.eventDate}>
+                      {extractYearFromDateString(event.date_formatee)}
+                    </Text>
+                    <Text style={styles.eventTitle} numberOfLines={2}>
+                      {event.titre}
+                    </Text>
+                    <View
+                      style={[
+                        styles.responseIndicator,
+                        {
+                          backgroundColor: event.wasCorrect
+                            ? colors.correctGreen
+                            : colors.incorrectRed,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name={event.wasCorrect ? 'checkmark' : 'close'}
+                        size={20}
+                        color="white"
+                      />
+                    </View>
+                  </LinearGradient>
                 </View>
-              </LinearGradient>
-            </View>
-          ))}
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     );
   };
 
+  // Rendu du pop-up de détails d'événement
+  const renderEventDetailsModal = () => {
+    if (!selectedEvent) {
+      return null;
+    }
+
+    console.log('[renderEventDetailsModal] selectedEvent:', selectedEvent);
+
+    return (
+      <Modal
+        transparent={true}
+        visible={!!selectedEvent}
+        onRequestClose={handleCloseEventDetails}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.eventDetailsModal}>
+            <ScrollView>
+              <Text style={styles.eventDetailsTitle}>
+                {selectedEvent.titre}
+              </Text>
+
+              {/* Ici, on n'affiche que l'année */}
+              <Text style={styles.eventDetailsDate}>
+                {extractYearFromDateString(selectedEvent.date_formatee)}
+              </Text>
+
+              {/* Vérifier si selectedEvent.description_detaillee est bien défini */}
+              <Text style={styles.eventDetailsDescription}>
+                {selectedEvent.description_detaillee
+                  ? selectedEvent.description_detaillee
+                  : '[Aucune description détaillée]'}
+              </Text>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleCloseEventDetails}
+            >
+              <Text style={styles.closeButtonText}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   // 4.F.7. Rendu conditionnel du contenu du modal
   const renderModalContentBis = () => {
-
     return (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {renderLevelUpBannerBis()}
@@ -324,11 +391,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   };
 
   // 4.F.8. Rendu principal du composant
-  if (!visible) {
- 
-    return null;
-  }
-
   return (
     <Modal
       transparent
@@ -355,6 +417,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
           ]}
         >
           {renderModalContentBis()}
+          {renderEventDetailsModal()}
         </Animated.View>
       </Animated.View>
     </Modal>
@@ -554,6 +617,42 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+  },
+
+  // 5.H. Styles pour le modal de détails d'événement
+  // Remarque : attention à la duplication de modalOverlay (déjà défini plus haut)
+  // On peut renommer ici pour éviter les conflits.
+  eventDetailsModal: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    maxWidth: 400,
+    maxHeight: '70%', // Hauteur maximale du modal
+  },
+  eventDetailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  eventDetailsDate: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  eventDetailsDescription: {
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

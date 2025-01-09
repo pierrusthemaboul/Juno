@@ -936,6 +936,7 @@ const handleChoice = useCallback(
       illustration_url: newEvent.illustration_url,
       wasCorrect: isAnswerCorrect,
       responseTime: 20 - timeLeft,
+      description_detaillee: newEvent.description_detaillee,
     };
 
     if (isAnswerCorrect) {
