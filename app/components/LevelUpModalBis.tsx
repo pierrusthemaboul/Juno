@@ -103,8 +103,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-    console.log('[LevelUpModalBis] visible:', visible);
-    console.log('[LevelUpModalBis] eventsSummary:', eventsSummary);
+  
 
     if (visible) {
       // Réinitialisation des animations
@@ -161,7 +160,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
       });
     } else {
       // Si besoin, ajouter un log ou autre chose
-      console.log('[LevelUpModalBis] Modal not visible, animations not started.');
+ 
     }
 
     return () => {
@@ -189,7 +188,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.4. Gestionnaire d'événement pour démarrer le niveau
   const handleStart = () => {
-    console.log('[LevelUpModalBis] handleStart called');
+
     onStart();
   };
 
@@ -230,7 +229,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummaryBis = () => {
     if (!eventsSummary || eventsSummary.length === 0) {
-      console.log('[renderEventsSummaryBis] Aucune donnée dans eventsSummary');
+     
       return null;
     }
 
@@ -239,12 +238,12 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
         <Text style={styles.sectionTitle}>Événements du niveau</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {eventsSummary.map((event, index) => {
-            console.log('[renderEventsSummaryBis] event:', event);
+   
             return (
               <TouchableOpacity
                 key={event.id ?? index}
                 onPress={() => {
-                  console.log('[renderEventsSummaryBis] onPress event:', event.id);
+          
                   setSelectedEvent(event);
                 }}
                 activeOpacity={0.7}
@@ -298,7 +297,7 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
       return null;
     }
 
-    console.log('[renderEventDetailsModal] selectedEvent:', selectedEvent);
+   
 
     return (
       <Modal
