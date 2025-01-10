@@ -397,89 +397,125 @@ const [initialJumpEventCount, setInitialJumpEventCount] = useState<number>(() =>
     }
   }, [getPeriod]);
 
+ 
+ // 1.H.4.d.0 getNextForcedJumpIncrement
+/**
+ * 1.H.4.d.0 Détermine l'intervalle du prochain saut forcé en fonction de l'année d'atterrissage
+ * @function getNextForcedJumpIncrement
+ * @param {number} year - Année d'atterrissage
+ * @returns {number} - Incrément (nombre d'événements) avant le prochain saut forcé
+ */
+function getNextForcedJumpIncrement(year: number): number {
+  if (year < 500) {
+    // Période < 500 => +[1..5]
+    return Math.floor(Math.random() * (5 - 1 + 1)) + 1; 
+  } else if (year >= 500 && year < 700) {
+    // Période 500..699 => +[6..9]
+    return Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+  } else if (year >= 700 && year < 1000) {
+    // Période 700..999 => +[6..9]
+    return Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+  } else if (year >= 1000 && year < 1500) {
+    // Période 1000..1499 => +[6..9]
+    return Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+  } else if (year >= 1500 && year < 1800) {
+    // Période 1500..1799 => +[7..11]
+    return Math.floor(Math.random() * (11 - 7 + 1)) + 7;
+  } else if (year >= 1800 && year <= 2024) {
+    // Période 1800..2024 => +[12..19]
+    return Math.floor(Math.random() * (19 - 12 + 1)) + 12;
+  } else {
+    // Au-delà de 2024 => Incrément arbitraire
+    return 15;
+  }
+}
+
  // 1.H.4.d. selectNewEvent
 /**
- * 1.H.4.d. Sélectionne un nouvel événement en se basant sur la config de niveau
+ * 1.H.4.d. Sélectionne un nouvel événement en se basant sur la configuration de niveau
+ * et gère la logique des sauts forcés.
+ *
  * @async
  * @function selectNewEvent
- * @param {Event[]} events - Liste d'événements disponibles
- * @param {Event} referenceEvent - Événement de référence
- * @returns {Promise<Event|null>}
+ * @param {Event[]} events - Liste complète d'événements disponibles
+ * @param {Event} referenceEvent - Événement de référence pour calculer la période/année
+ * @returns {Promise<Event|null>} - L'événement sélectionné ou null si aucun événement n'est disponible
  */
 const selectNewEvent = useCallback(
   async (events: Event[], referenceEvent: Event) => {
-    // 1) Vérification basique
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1) Vérifications initiales
+    // ─────────────────────────────────────────────────────────────────────────
     if (!events || events.length === 0) {
       console.log("[selectNewEvent] Aucun événement disponible");
       return null;
     }
 
-    console.log(
-      "[selectNewEvent] Nouveau tirage. fallbackCountdown =",
-      fallbackCountdown
-    );
+    console.log("[selectNewEvent] → fallbackCountdown =", fallbackCountdown);
 
-    // 2) On incrémente le nombre d'événements joués
+    // ─────────────────────────────────────────────────────────────────────────
+    // 2) Incrémentation du compteur d'événements joués
+    // ─────────────────────────────────────────────────────────────────────────
     setEventCount((prev) => prev + 1);
-    const localEventCount = eventCount + 1;
+    const localEventCount = eventCount + 1; // Valeur mise à jour
+    console.log(`[selectNewEvent] → Nouveau localEventCount = ${localEventCount}`);
 
-    console.log(`[selectNewEvent] → localEventCount = ${localEventCount}`);
-
-    // 3) Récupération de l'année de référence
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3) Année de référence
+    // ─────────────────────────────────────────────────────────────────────────
     const referenceYear = new Date(referenceEvent.date).getFullYear();
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 4) checkTimeJump : détermine s'il y a un saut (et combien)
+    // 4) checkTimeJump : détermine s'il y a un saut forcé ou conditionnel
     // ─────────────────────────────────────────────────────────────────────────
     const checkTimeJump = (): number => {
       let jumpDistance = 0;
 
-      // A) Saut forcé si localEventCount == forcedJumpEventCount
+      // A) Saut forcé strict (si localEventCount == forcedJumpEventCount)
       if (localEventCount === forcedJumpEventCount) {
-        // Choix aléatoire : 500, 750 ou 1000
         const forcedDistances = [500, 750, 1000];
         jumpDistance =
           forcedDistances[Math.floor(Math.random() * forcedDistances.length)];
         console.log(
-          `[checkTimeJump] Saut forcé #${localEventCount}, ±${jumpDistance} ans`
+          `[selectNewEvent->checkTimeJump] Saut forcé déclenché (#${localEventCount}) : ±${jumpDistance} ans`
         );
       }
 
-      // B) Sauts conditionnels selon la période
-      //    (limités à 1000 ans max)
+      // B) Sauts conditionnels selon la période (limités à 1000 ans max)
+      //    - < 500          => localEventCount ∈ [1..5]    => +750 ou +1000
+      //    - 500..999       => localEventCount ∈ [7..12]   => +500 ou +1000
+      //    - 1000..1799     => localEventCount ∈ [7..12]   => +400 ou +750
+      //    - 1800..2024     => (logique spécial, possible saut forcé 12..19)
       if (referenceYear < 500) {
-        // localEventCount ∈ [1..5] => +750 ou +1000
         if (localEventCount >= 1 && localEventCount <= 5) {
           const arr = [750, 1000];
           const chosen = arr[Math.floor(Math.random() * arr.length)];
           jumpDistance = Math.max(jumpDistance, chosen);
           console.log(
-            `[checkTimeJump] Période <500, localEventCount=${localEventCount} => +${chosen} ans`
+            `[selectNewEvent->checkTimeJump] Période <500, localEventCount=${localEventCount} => +${chosen} ans`
           );
         }
       } else if (referenceYear >= 500 && referenceYear < 1000) {
-        // localEventCount ∈ [7..12] => +500 ou +1000
         if (localEventCount >= 7 && localEventCount <= 12) {
           const arr = [500, 1000];
           const chosen = arr[Math.random() < 0.5 ? 0 : 1];
           jumpDistance = Math.max(jumpDistance, chosen);
           console.log(
-            `[checkTimeJump] Période 500..1000, localEventCount=${localEventCount} => +${chosen} ans`
+            `[selectNewEvent->checkTimeJump] Période 500..1000, localEventCount=${localEventCount} => +${chosen} ans`
           );
         }
       } else if (referenceYear >= 1000 && referenceYear < 1800) {
-        // localEventCount ∈ [7..12] => +400 ou +750
         if (localEventCount >= 7 && localEventCount <= 12) {
           const arr = [400, 750];
           const chosen = arr[Math.random() < 0.5 ? 0 : 1];
           jumpDistance = Math.max(jumpDistance, chosen);
           console.log(
-            `[checkTimeJump] Période 1000..1800, localEventCount=${localEventCount} => +${chosen} ans`
+            `[selectNewEvent->checkTimeJump] Période 1000..1800, localEventCount=${localEventCount} => +${chosen} ans`
           );
         }
       } else if (referenceYear >= 1800 && referenceYear <= 2024) {
         console.log(
-          `[checkTimeJump] Période 1800..2024 => possible saut forcé (12..19).`
+          `[selectNewEvent->checkTimeJump] Période 1800..2024 => possible saut forcé (12..19).`
         );
       }
 
@@ -488,78 +524,72 @@ const selectNewEvent = useCallback(
 
     const timeJump = checkTimeJump();
 
-    // 5) Si on a timeJump > 0 => on cherche un événement "lointain"
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5) Si timeJump > 0 => on tente un “événement lointain”
+    // ─────────────────────────────────────────────────────────────────────────
     if (timeJump > 0) {
       const isForcedJump = localEventCount === forcedJumpEventCount;
 
-      // Premier saut forcé => passé
+      // Premier saut forcé ? => direction = "past"
+      // Sinon => "future" (ou conditions plus complexes si besoin)
       let mainDirection: "past" | "future" = "future";
       if (isForcedJump && !hasFirstForcedJumpHappened) {
         mainDirection = "past";
       }
 
-      // Helpers
+      /**
+       * Helpers pour récupérer des événements passés ou futurs
+       */
       const getPastEvents = (dist: number): Event[] => {
-        const target = referenceYear - dist;
+        const targetYear = referenceYear - dist;
         return events.filter((evt) => {
-          const yr = new Date(evt.date).getFullYear();
-          return yr <= target && !usedEvents.has(evt.id);
+          const y = new Date(evt.date).getFullYear();
+          return y <= targetYear && !usedEvents.has(evt.id);
         });
       };
       const getFutureEvents = (dist: number): Event[] => {
-        const target = referenceYear + dist;
+        const targetYear = referenceYear + dist;
         return events.filter((evt) => {
-          const yr = new Date(evt.date).getFullYear();
-          return yr >= target && !usedEvents.has(evt.id);
+          const y = new Date(evt.date).getFullYear();
+          return y >= targetYear && !usedEvents.has(evt.id);
         });
       };
 
-      // On tente le sens principal
-      let possibleEvents: Event[] = [];
-      if (mainDirection === "past") {
-        console.log(
-          `[selectNewEvent] Premier saut forcé => on tente -${timeJump} ans (<= ${
-            referenceYear - timeJump
-          })`
-        );
-        possibleEvents = getPastEvents(timeJump);
-      } else {
-        console.log(
-          `[selectNewEvent] => on tente +${timeJump} ans (>= ${
-            referenceYear + timeJump
-          })`
-        );
-        possibleEvents = getFutureEvents(timeJump);
-      }
+      // 5.1. On tente d'abord la direction principale
+      console.log(
+        `[selectNewEvent] On tente un saut ${mainDirection} de ${timeJump} ans`
+      );
+      let possibleEvents: Event[] =
+        mainDirection === "past"
+          ? getPastEvents(timeJump)
+          : getFutureEvents(timeJump);
 
+      // 5.2. Si rien dans ce sens, on tente l'autre sens
       if (possibleEvents.length === 0) {
-        console.log("[selectNewEvent] Échec. On tente l'autre sens...");
-        // Autre sens
-        if (mainDirection === "past") {
-          // on avait tenté past => future
-          possibleEvents = getFutureEvents(timeJump);
-        } else {
-          // on avait tenté future => past
-          possibleEvents = getPastEvents(timeJump);
-        }
+        console.log("[selectNewEvent] Aucun événement trouvé dans ce sens, on tente l'autre sens...");
+        possibleEvents =
+          mainDirection === "past"
+            ? getFutureEvents(timeJump)
+            : getPastEvents(timeJump);
 
-        if (possibleEvents.length === 0) {
-          console.log(
-            "[selectNewEvent] Rien trouvé non plus => on passe à la logique normale."
-          );
+        if (possibleEvents.length > 0) {
+          console.log("[selectNewEvent] Trouvé en sens opposé !");
         } else {
-          console.log("[selectNewEvent] Trouvé dans l'autre sens !");
+          console.log("[selectNewEvent] Toujours rien => on passe à la logique normale.");
         }
       }
 
+      // 5.3. Sélection finale s'il existe des événements possibles
       if (possibleEvents.length > 0) {
         const chosen =
           possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
-        console.log(`[selectNewEvent] Événement lointain : ${chosen.titre}`);
+        console.log(`[selectNewEvent] Événement lointain sélectionné : ${chosen.titre}`);
 
+        // Mise à jour du jeu
         await updateGameState(chosen);
         setIsCountdownActive(true);
 
+        // Incrément de frequency_score en base
         await supabase
           .from("evenements")
           .update({
@@ -568,42 +598,80 @@ const selectNewEvent = useCallback(
           })
           .eq("id", chosen.id);
 
-        // Si c'était un saut forcé
+        // 5.4. Gestion du recalcul du prochain saut forcé
         if (isForcedJump) {
-          // Premier ?
+          // Si c'était le tout premier saut forcé
           if (!hasFirstForcedJumpHappened) {
             setHasFirstForcedJumpHappened(true);
-            console.log(
-              `[selectNewEvent] Premier saut forcé => hasFirstForcedJumpHappened = true`
-            );
+            console.log("[selectNewEvent] → Premier saut forcé effectué !");
           }
-          // On recalcule le prochain forcedJumpEventCount
-          const newPalier = Math.floor(Math.random() * (19 - 12 + 1)) + 12;
-          setForcedJumpEventCount(localEventCount + newPalier);
-          console.log(
-            `[selectNewEvent] Nouveau forcedJumpEventCount = ${
-              localEventCount + newPalier
-            }`
-          );
+
+          // a) Déterminer la période d'atterrissage de l'événement choisi
+          const landingYear = new Date(chosen.date).getFullYear();
+
+          // b) Calculer l'incrément du prochain saut forcé selon la période d'atterrissage
+          let nextIncrement = 0;
+          if (landingYear < 500) {
+            // Sauts forcés suivants => +[1..5]
+            nextIncrement = Math.floor(Math.random() * (5 - 1 + 1)) + 1; 
+            console.log(`[selectNewEvent] Période <500 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else if (landingYear >= 500 && landingYear < 700) {
+            // +[6..9]
+            nextIncrement = Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+            console.log(`[selectNewEvent] Période 500..699 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else if (landingYear >= 700 && landingYear < 1000) {
+            // +[6..9]
+            nextIncrement = Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+            console.log(`[selectNewEvent] Période 700..999 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else if (landingYear >= 1000 && landingYear < 1500) {
+            // +[6..9]
+            nextIncrement = Math.floor(Math.random() * (9 - 6 + 1)) + 6;
+            console.log(`[selectNewEvent] Période 1000..1499 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else if (landingYear >= 1500 && landingYear < 1800) {
+            // +[7..11]
+            nextIncrement = Math.floor(Math.random() * (11 - 7 + 1)) + 7;
+            console.log(`[selectNewEvent] Période 1500..1799 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else if (landingYear >= 1800 && landingYear <= 2024) {
+            // +[12..19]
+            nextIncrement = Math.floor(Math.random() * (19 - 12 + 1)) + 12;
+            console.log(`[selectNewEvent] Période 1800..2024 => prochain forcedJumpEventCount dans ${nextIncrement} événements`);
+          } else {
+            // Au-delà de 2024 => à adapter selon vos besoins
+            nextIncrement = 15; // arbitraire
+            console.log(`[selectNewEvent] Période >2024 => prochain forcedJumpEventCount dans 15 événements (valeur arbitraire)`);
+          }
+
+          // c) Mise à jour de forcedJumpEventCount
+          const newForcedCount = localEventCount + nextIncrement;
+          setForcedJumpEventCount(newForcedCount);
+          console.log(`[selectNewEvent] forcedJumpEventCount = ${newForcedCount}`);
         }
 
+        // On retourne l'événement spécial sélectionné
         return chosen;
       }
-      // Sinon => on poursuit la sélection normale
-      console.log("[selectNewEvent] Pas d'événement lointain => sélection normale");
-    }
 
-    // 6) Logique normale
+      // Sinon, on poursuit en logique normale
+      console.log("[selectNewEvent] → Pas d'événement lointain, on bascule en logique normale");
+    } // fin if (timeJump > 0)
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 6) Logique normale (pas de saut forcé ou échec de recherche d'événements lointains)
+    // ─────────────────────────────────────────────────────────────────────────
     const config = LEVEL_CONFIGS[user.level];
     if (!config) {
-      console.error("Config de niveau manquante :", user.level);
+      console.error("[selectNewEvent] Config de niveau manquante :", user.level);
       return null;
     }
 
+    /**
+     * Calcule l'écart de temps dynamique (min / base / max) en fonction de la distance à l'année actuelle
+     */
     const calculateDynamicTimeGap = (referenceDate: string) => {
-      const now = new Date().getFullYear();
+      const nowY = new Date().getFullYear();
       const refY = new Date(referenceDate).getFullYear();
-      const yearsFromPresent = now - refY;
+      const yearsFromPresent = nowY - refY;
+      // proportionnel : plus on est loin de l'époque moderne, plus on élargit les gaps
       const proximityFactor = Math.max(0.2, Math.min(1, yearsFromPresent / 500));
 
       const baseGap = config.timeGap.base * proximityFactor;
@@ -615,26 +683,35 @@ const selectNewEvent = useCallback(
 
     const timeGap = calculateDynamicTimeGap(referenceEvent.date);
 
+    /**
+     * scoreEvent : calcule un score pour un événement donné
+     */
     const scoreEvent = (evt: Event, diff: number): number => {
       const randomFactor = 0.85 + Math.random() * 0.3;
       const idealGap = timeGap.base;
 
+      // Score basé sur l'écart par rapport à l'idealGap
       const gapScore =
         35 * (1 - Math.abs(diff - idealGap) / idealGap) * randomFactor;
 
+      // Score basé sur la difficulté (cible : difficulté ~2)
       const idealDifficulty = 2;
       const difficultyScore =
         25 *
         (1 - Math.abs(evt.niveau_difficulte - idealDifficulty) / 2) *
         randomFactor;
 
+      // Petit bonus aléatoire
       const variationBonus = Math.random() * 10;
+
       return gapScore + difficultyScore + variationBonus;
     };
 
-    const available = events.filter((e) => !usedEvents.has(e.id));
+    // 6.1. Filtrage des événements non utilisés
+    const availableEvents = events.filter((e) => !usedEvents.has(e.id));
 
-    const scored = available
+    // 6.2. Score et tri
+    const scoredEvents = availableEvents
       .map((e) => {
         const diff = getTimeDifference(e.date, referenceEvent.date);
         const s = scoreEvent(e, diff);
@@ -645,9 +722,11 @@ const selectNewEvent = useCallback(
       )
       .sort((a, b) => b.score - a.score);
 
-    if (scored.length === 0) {
-      // Recherche relaxée
-      const relaxed = available
+    // 6.3. Si aucun événement ne rentre dans la plage stricte => on fait une recherche relaxée
+    if (scoredEvents.length === 0) {
+      console.log("[selectNewEvent] → Aucune correspondance stricte, on tente la recherche relaxée.");
+
+      const relaxed = availableEvents
         .map((e) => {
           const diff = getTimeDifference(e.date, referenceEvent.date);
           const s = scoreEvent(e, diff);
@@ -660,26 +739,30 @@ const selectNewEvent = useCallback(
         .sort((a, b) => b.score - a.score);
 
       if (relaxed.length > 0) {
-        const selected = relaxed[0].event;
-        await updateGameState(selected);
+        const chosen = relaxed[0].event;
+        console.log(`[selectNewEvent] → Sélection relaxée : ${chosen.titre}`);
+
+        await updateGameState(chosen);
         setIsCountdownActive(true);
 
         await supabase
           .from("evenements")
           .update({
-            frequency_score: (selected as any).frequency_score + 1 || 1,
+            frequency_score: (chosen as any).frequency_score + 1 || 1,
             last_used: new Date().toISOString(),
           })
-          .eq("id", selected.id);
+          .eq("id", chosen.id);
 
         setFallbackCountdown((prev) => prev - 1);
-        return selected;
+        return chosen;
       }
 
-      // Aléatoire
+      // 6.4. Sinon => on prend un événement aléatoire
       const randomEvt =
-        available[Math.floor(Math.random() * available.length)];
+        availableEvents[Math.floor(Math.random() * availableEvents.length)];
       if (randomEvt) {
+        console.log(`[selectNewEvent] → Aucun résultat relaxé, on prend un événement aléatoire : ${randomEvt.titre}`);
+
         await updateGameState(randomEvt);
         setIsCountdownActive(true);
 
@@ -694,57 +777,64 @@ const selectNewEvent = useCallback(
         setFallbackCountdown((prev) => prev - 1);
         return randomEvt;
       }
+      console.log("[selectNewEvent] → Plus rien à sélectionner (retourne null)");
       return null;
-    } else {
-      // Difficulté [min..max]
-      const { minDifficulty, maxDifficulty } = config.eventSelection;
-      let selectedEvent: Event | null = null;
-      let attempts = 0;
-      const maxAttempts = 100;
-      let currentMin = minDifficulty;
-      let currentMax = maxDifficulty;
+    }
 
-      while (!selectedEvent && attempts < maxAttempts) {
-        attempts++;
+    // 6.5. S’il y a des événements dans la plage stricte => sélection par difficulté [min..max]
+    const { minDifficulty, maxDifficulty } = config.eventSelection;
+    let selectedEvent: Event | null = null;
+    let attempts = 0;
+    const maxAttempts = 100;
+    let currentMin = minDifficulty;
+    let currentMax = maxDifficulty;
 
-        const diffFiltered = scored.filter(
-          ({ event }) =>
-            event.niveau_difficulte >= currentMin &&
-            event.niveau_difficulte <= currentMax
-        );
+    // Boucle de recherche selon la difficulté (on élargit si on ne trouve rien)
+    while (!selectedEvent && attempts < maxAttempts) {
+      attempts++;
 
-        if (diffFiltered.length > 0) {
-          const rndIdx = Math.floor(Math.random() * diffFiltered.length);
-          selectedEvent = diffFiltered[rndIdx].event;
-        } else {
-          currentMin = Math.max(1, currentMin - 1);
-          currentMax = Math.min(3, currentMax + 1);
+      const filteredByDiff = scoredEvents.filter(
+        ({ event }) =>
+          event.niveau_difficulte >= currentMin &&
+          event.niveau_difficulte <= currentMax
+      );
 
-          if (currentMin === 1 && currentMax === 3) {
-            break;
-          }
+      if (filteredByDiff.length > 0) {
+        const rndIdx = Math.floor(Math.random() * filteredByDiff.length);
+        selectedEvent = filteredByDiff[rndIdx].event;
+      } else {
+        currentMin = Math.max(1, currentMin - 1);
+        currentMax = Math.min(3, currentMax + 1);
+
+        if (currentMin === 1 && currentMax === 3) {
+          break; // on arrête si tout est déjà élargi
         }
       }
-
-      if (!selectedEvent) {
-        selectedEvent =
-          scored[Math.floor(Math.random() * scored.length)].event;
-      }
-
-      await updateGameState(selectedEvent);
-      setIsCountdownActive(true);
-
-      await supabase
-        .from("evenements")
-        .update({
-          frequency_score: (selectedEvent as any).frequency_score + 1 || 1,
-          last_used: new Date().toISOString(),
-        })
-        .eq("id", selectedEvent.id);
-
-      setFallbackCountdown((prev) => prev - 1);
-      return selectedEvent;
     }
+
+    // Si toujours rien trouvé, on pioche au hasard dans la liste scoredEvents
+    if (!selectedEvent) {
+      selectedEvent =
+        scoredEvents[Math.floor(Math.random() * scoredEvents.length)].event;
+    }
+
+    // Mise à jour du jeu avec l’événement sélectionné
+    console.log(`[selectNewEvent] → Sélection finale : ${selectedEvent.titre}`);
+    await updateGameState(selectedEvent);
+    setIsCountdownActive(true);
+
+    await supabase
+      .from("evenements")
+      .update({
+        frequency_score: (selectedEvent as any).frequency_score + 1 || 1,
+        last_used: new Date().toISOString(),
+      })
+      .eq("id", selectedEvent.id);
+
+    // On décrémente le fallbackCountdown (mécanisme secondaire)
+    setFallbackCountdown((prev) => prev - 1);
+
+    return selectedEvent;
   },
   [
     user.level,
@@ -759,6 +849,7 @@ const selectNewEvent = useCallback(
     setHasFirstForcedJumpHappened
   ]
 );
+
 
 
 
