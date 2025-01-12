@@ -32,11 +32,8 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   // A. Sur clique => onChoice
   // ─────────────────────────────────────────────────────────────────
   const handlePress = (choice: string) => {
-    console.log('[OverlayChoiceButtonsA] handlePress =>', choice);
-
     // Vérifier si c'est cliquable
     if (!isLevelPaused && !transitioning && !isWaitingForCountdown && !buttonClicked && !justAnswered) {
-      console.log('[OverlayChoiceButtonsA] => OK => setButtonClicked(true) + setJustAnswered(true)');
       setButtonClicked(true);
       setJustAnswered(true);
       onChoice(choice);
@@ -44,23 +41,8 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
       // On prolonge le mini-verrou (justAnswered) un tout petit peu plus
       // que le reset du buttonClicked. (ex. 750ms)
       setTimeout(() => {
-        console.log('[OverlayChoiceButtonsA] setJustAnswered(false) après 750ms');
         setJustAnswered(false);
       }, 750);
-
-    } else {
-      console.log(
-        '[OverlayChoiceButtonsA] => CLIC IGNORÉ => conditions. isLevelPaused=',
-        isLevelPaused,
-        'transitioning=',
-        transitioning,
-        'isWaitingForCountdown=',
-        isWaitingForCountdown,
-        'buttonClicked=',
-        buttonClicked,
-        'justAnswered=',
-        justAnswered
-      );
     }
   };
 
@@ -69,9 +51,7 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   // ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (buttonClicked) {
-      console.log('[OverlayChoiceButtonsA] => buttonClicked=true => timer 500ms');
       const timer = setTimeout(() => {
-        console.log('[OverlayChoiceButtonsA] => setButtonClicked(false)');
         setButtonClicked(false);
       }, 500);
       return () => clearTimeout(timer);
@@ -82,20 +62,6 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   // C. Contrôle du fade : on fade OUT si l'une des conditions est vraie
   // ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    console.log(
-      '[OverlayChoiceButtonsA] useEffect => Checking fadeAnim conditions',
-      '| isLevelPaused=',
-      isLevelPaused,
-      '| isWaitingForCountdown=',
-      isWaitingForCountdown,
-      '| transitioning=',
-      transitioning,
-      '| buttonClicked=',
-      buttonClicked,
-      '| justAnswered=',
-      justAnswered
-    );
-
     // Condition pour "fadeOut"
     const shouldFadeOut =
       isLevelPaused ||
@@ -105,14 +71,12 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
       justAnswered; // ← on ajoute justAnswered ici
 
     if (shouldFadeOut) {
-      console.log('[OverlayChoiceButtonsA] => FADING OUT (0)');
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
     } else {
-      console.log('[OverlayChoiceButtonsA] => FADING IN (1)');
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
@@ -124,9 +88,10 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   // ─────────────────────────────────────────────────────────────────
   // D. pointerEvents
   // ─────────────────────────────────────────────────────────────────
-  const pointerEvents = (!isLevelPaused && !isWaitingForCountdown && !transitioning && !buttonClicked && !justAnswered)
-    ? 'auto'
-    : 'none';
+  const pointerEvents =
+    !isLevelPaused && !isWaitingForCountdown && !transitioning && !buttonClicked && !justAnswered
+      ? 'auto'
+      : 'none';
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]} pointerEvents={pointerEvents}>

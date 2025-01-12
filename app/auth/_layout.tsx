@@ -1,5 +1,6 @@
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 
 export default function AuthLayout() {
-  return <Stack />;
+  // Utiliser Slot au lieu de Stack pour éviter le header
+  return <Slot />;
 }

@@ -49,7 +49,8 @@ const AnimatedButton = React.memo(({
   label, 
   icon, 
   variant = 'primary',
-  disabled = false 
+  disabled = false,
+  style = {} 
 }) => {
   const scale = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
@@ -94,7 +95,8 @@ const AnimatedButton = React.memo(({
             { translateY }
           ],
           opacity: disabled ? 0.6 : 1
-        }
+        },
+        style
       ]}>
         <LinearGradient
           colors={getGradientColors()}
@@ -170,10 +172,11 @@ const SplashLogo = () => {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | {name: string} | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [showSplash, setShowSplash] = useState(true);
   const [guestDisplayName, setGuestDisplayName] = useState<string | null>(null);
+  const [showGuestSignupModal, setShowGuestSignupModal] = useState(false);
   const fontsLoaded = useFonts();
 
   // Animation refs
@@ -245,7 +248,6 @@ export default function HomeScreen() {
     ]).start();
   };
 
-  // Auth functions
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
@@ -282,6 +284,8 @@ export default function HomeScreen() {
     try {
       await supabase.auth.signOut();
       setGuestDisplayName(null);
+      setDisplayName('');
+      setUser(null);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de se déconnecter');
     }
@@ -290,8 +294,44 @@ export default function HomeScreen() {
   const handlePlayAsGuest = () => {
     const guestId = Math.floor(Math.random() * 10000);
     const name = `Voyageur-${guestId}`;
-    setGuestDisplayName(name);
-    Alert.alert('Mode Invité', `Bienvenue, ${name} !`);
+    
+    console.log('=== GUEST MODE ===');
+    console.log('Generated name:', name);
+    
+    // Mettre à jour tous les états dans une seule "batch"
+    Promise.resolve().then(() => {
+      setGuestDisplayName(name);
+      setDisplayName(name);
+      setUser({
+        name: name,
+        points: 0,
+        lives: 3, // ou la valeur MAX_LIVES de votre jeu
+        level: 1,
+        eventsCompletedInLevel: 0,
+        totalEventsCompleted: 0,
+        streak: 0,
+        maxStreak: 0,
+        performanceStats: {
+          typeSuccess: {},
+          periodSuccess: {},
+          overallAccuracy: 0,
+          averageResponseTime: 0
+        }
+      });
+    });
+  
+    Alert.alert(
+      'Mode Découverte', 
+      `Bienvenue, ${name} ! En mode découverte, votre progression ne sera pas sauvegardée. Créez un compte pour participer aux classements et garder vos scores !`,
+      [
+        { text: "Continuer en mode découverte" },
+        { 
+          text: "Créer un compte", 
+          onPress: () => router.push('/auth/signup'),
+          style: "default"
+        }
+      ]
+    );
   };
 
   if (!fontsLoaded) {
@@ -337,11 +377,17 @@ export default function HomeScreen() {
             }
           ]}>
             <View style={styles.headerContainer}>
-              <Text style={styles.welcomeTitle}>
-                {user || guestDisplayName
-                  ? `Bienvenue, ${user ? displayName : guestDisplayName}`
-                  : "L'Histoire vous Attend"}
-              </Text>
+            <Text style={styles.welcomeTitle}>
+  {(() => {
+    if (guestDisplayName) {
+      return `Bienvenue, ${guestDisplayName}`;
+    }
+    if (user?.name || displayName) {
+      return `Bienvenue, ${user?.name || displayName}`;
+    }
+    return "L'Histoire vous Attend";
+  })()}
+</Text>
               <Text style={styles.welcomeSubtitle}>
                 {user || guestDisplayName
                   ? "Prêt pour votre prochaine aventure ?"

@@ -81,11 +81,9 @@ const GameContentA: React.FC<GameContentAProps> = ({
   // 4.D.2. Position de la reward
   useEffect(() => {
     let mounted = true;
-    console.log('[GameContentA] useEffect => currentReward=', currentReward);
 
     const updateRewardPositionSafely = async () => {
       if (!currentReward || !userInfoRef.current || !mounted) {
-        console.log('[GameContentA] => Aucune reward ou userInfoRef non dispo');
         return;
       }
 
@@ -103,13 +101,11 @@ const GameContentA: React.FC<GameContentAProps> = ({
             currentReward.targetPosition.x !== position.x ||
             currentReward.targetPosition.y !== position.y
           ) {
-            console.log('[GameContentA] setRewardPosition =>', position);
             updateRewardPosition(position);
             setIsRewardPositionSet(true);
           }
         }
       } catch (err) {
-        console.warn('[GameContentA] Erreur updateRewardPositionSafely:', err);
         setIsRewardPositionSet(false);
       }
     };
@@ -124,7 +120,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
   // 4.D.3. Fade du contenu quand le LevelUpModal apparaît
   useEffect(() => {
     if (showLevelModal) {
-      console.log('[GameContentA] showLevelModal => on anime contentOpacity (fade out / fade in)');
       Animated.sequence([
         Animated.timing(contentOpacity, {
           toValue: 0.3,
@@ -138,21 +133,19 @@ const GameContentA: React.FC<GameContentAProps> = ({
           useNativeDriver: true,
         }),
       ]).start(() => {
-        console.log('[GameContentA] Fin de l’animation contentOpacity => 1');
+        // Fin de l’animation contentOpacity => 1
       });
     }
   }, [showLevelModal]);
 
   // 4.D.4. handleChoice (si vous avez envie de loguer aussi ici)
   const onChoiceWrapper = (choice: string) => {
-    console.log(`[GameContentA] onChoiceWrapper => Choice="${choice}"`);
     handleChoice(choice);
   };
 
   // 4.D.5. Rendu conditionnel
   const renderContent = () => {
     if (loading) {
-      console.log('[GameContentA] renderContent => LOADING');
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -162,7 +155,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (error) {
-      console.log('[GameContentA] renderContent => ERROR:', error);
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -171,7 +163,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (!previousEvent || !newEvent) {
-      console.log('[GameContentA] renderContent => Pas encore d’événements');
       return (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Préparation des événements...</Text>
@@ -179,7 +170,6 @@ const GameContentA: React.FC<GameContentAProps> = ({
       );
     }
 
-    console.log('[GameContentA] renderContent => OK, on affiche EventLayoutA');
     return (
       <>
         <EventLayoutA

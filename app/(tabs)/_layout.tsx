@@ -1,10 +1,20 @@
-import 'react-native-reanimated';  // Ajout de cet import uniquement
+import 'react-native-reanimated';
 import { Stack } from 'expo-router';
 
 export default function TabLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
+    <Stack 
+      screenOptions={{ 
+        headerShown: false,
+        animation: 'slide_from_right'  // Animation de droite à gauche
+      }}
+    >
+      <Stack.Screen 
+        name="index" 
+        options={{
+          animation: 'none'  // Pas d'animation pour l'index
+        }}
+      />
       <Stack.Screen name="explore" />
       <Stack.Screen name="vue1" />
       <Stack.Screen name="vue2a" />

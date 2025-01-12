@@ -947,28 +947,17 @@ const selectNewEvent = useCallback(
  */
 const handleChoice = useCallback(
   (choice: 'avant' | 'après') => {
-    console.log(`[useGameLogicA] handleChoice => démarrage, choice="${choice}"`);
 
     // 1) Vérifications préliminaires
     if (!previousEvent) {
-      console.log('[useGameLogicA] handleChoice => ABANDON : previousEvent est null');
       return;
     }
     if (!newEvent) {
-      console.log('[useGameLogicA] handleChoice => ABANDON : newEvent est null');
       return;
     }
     if (isLevelPaused) {
-      console.log('[useGameLogicA] handleChoice => ABANDON : le jeu est en pause (isLevelPaused=true)');
       return;
     }
-
-    console.log(
-      '[useGameLogicA] handleChoice => previousEvent.id=',
-      previousEvent.id,
-      '| newEvent.id=',
-      newEvent.id
-    );
 
     // 2) Déterminer si la réponse est correcte (avant ou après)
     const previousDate = new Date(previousEvent.date);
@@ -980,12 +969,9 @@ const handleChoice = useCallback(
       (choice === 'avant' && newIsBefore) ||
       (choice === 'après' && newIsAfter);
 
-    console.log('[useGameLogicA] handleChoice => isAnswerCorrect=', isAnswerCorrect);
-
     // 3) On met à jour l'affichage : la date et le statut correct/incorrect
     setIsCorrect(isAnswerCorrect);
     setShowDates(true);
-    console.log('[useGameLogicA] handleChoice => setIsCorrect & setShowDates (affichage)');
 
     // 4) Préparation de l'EventSummary
     const eventSummaryItem: LevelEventSummary = {
@@ -1000,14 +986,12 @@ const handleChoice = useCallback(
     };
 
     // 5) On bloque temporairement les boutons (isWaitingForCountdown)
-    console.log('[useGameLogicA] handleChoice => setIsWaitingForCountdown(true)');
     setIsWaitingForCountdown(true);
 
     // ─────────────────────────────────────────────────────────────────────
     // CAS A : Réponse correcte
     // ─────────────────────────────────────────────────────────────────────
     if (isAnswerCorrect) {
-      console.log('[useGameLogicA] handleChoice => Réponse CORRECTE');
 
       // a) Son, streak, animation
       playCorrectSound();
@@ -1019,11 +1003,10 @@ const handleChoice = useCallback(
         duration: 500,
         useNativeDriver: false,
       }).start(() => {
-        console.log('[useGameLogicA] handleChoice => barre de progression mise à jour (streak=', newStreak, ')');
+        // Barre de progression mise à jour
       });
 
       // b) Update performance stats
-      console.log('[useGameLogicA] handleChoice => updatePerformanceStats() (correct)');
       updatePerformanceStats(
         newEvent.types_evenement?.[0] || 'default',
         getPeriod(newEvent.date),
@@ -1037,15 +1020,12 @@ const handleChoice = useCallback(
         newStreak,
         'default'
       );
-      console.log('[useGameLogicA] handleChoice => pts calculés=', pts);
 
       // d) Check des rewards (streak)
-      console.log('[useGameLogicA] handleChoice => checkRewards (streak=', newStreak, ')');
       checkRewards({ type: 'streak', value: newStreak }, user);
 
       // e) Mise à jour du user avec les points (si >0)
       if (Number.isFinite(pts) && pts > 0) {
-        console.log('[useGameLogicA] handleChoice => on incrémente le score de', pts);
         setUser((prev) => {
           const currentPoints = Math.max(0, Number(prev.points) || 0);
           const newPoints = currentPoints + pts;
@@ -1061,7 +1041,6 @@ const handleChoice = useCallback(
 
           // Vérifier s'il faut monter de niveau
           if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
-            console.log('[useGameLogicA] handleChoice => nextLevel ! (eventsCompletedInLevel >= eventsNeeded)');
             const nextLevel = prev.level + 1;
             updatedUser.level = nextLevel;
             updatedUser.eventsCompletedInLevel = 0;
@@ -1083,7 +1062,6 @@ const handleChoice = useCallback(
             playLevelUpSound();
 
             // On check la reward (changement de level)
-            console.log('[useGameLogicA] handleChoice => checkRewards (type=level, value=', nextLevel, ')');
             checkRewards({ type: 'level', value: nextLevel }, updatedUser);
 
           } else {
@@ -1092,11 +1070,9 @@ const handleChoice = useCallback(
 
             // Au bout de 1.5s, on repasse isWaitingForCountdown à false, et on enchaîne
             setTimeout(() => {
-              console.log('[useGameLogicA] handleChoice (correct) => setTimeout => setIsWaitingForCountdown(false)');
               setIsWaitingForCountdown(false);
 
               if (!isGameOver && !showLevelModal) {
-                console.log('[useGameLogicA] handleChoice (correct) => selectNewEvent()');
                 setPreviousEvent(newEvent);
                 selectNewEvent(allEvents, newEvent);
               }
@@ -1110,7 +1086,6 @@ const handleChoice = useCallback(
     // CAS B : Réponse incorrecte
     // ─────────────────────────────────────────────────────────────────────
     } else {
-      console.log('[useGameLogicA] handleChoice => Réponse INCORRECTE');
 
       // a) Son, streak=0, animation
       playIncorrectSound();
@@ -1121,11 +1096,10 @@ const handleChoice = useCallback(
         duration: 500,
         useNativeDriver: false,
       }).start(() => {
-        console.log('[useGameLogicA] handleChoice => barre de progression remise à 0');
+        // Barre de progression remise à 0
       });
 
       // b) Stats
-      console.log('[useGameLogicA] handleChoice => updatePerformanceStats() (incorrect)');
       updatePerformanceStats(
         newEvent.types_evenement?.[0] || 'default',
         getPeriod(newEvent.date),
@@ -1135,10 +1109,8 @@ const handleChoice = useCallback(
       // c) On retire une vie
       setUser((prev) => {
         const updatedLives = prev.lives - 1;
-        console.log('[useGameLogicA] handleChoice => updatedLives=', updatedLives);
 
         if (updatedLives <= 0) {
-          console.log('[useGameLogicA] handleChoice => plus de vies => endGame()');
           endGame();
         }
         return {
@@ -1153,11 +1125,9 @@ const handleChoice = useCallback(
 
       // e) Au bout de 1.5s, on repasse isWaitingForCountdown à false et on enchaîne
       setTimeout(() => {
-        console.log('[useGameLogicA] handleChoice (incorrect) => setTimeout => setIsWaitingForCountdown(false)');
         setIsWaitingForCountdown(false);
 
         if (!isGameOver && !showLevelModal) {
-          console.log('[useGameLogicA] handleChoice (incorrect) => selectNewEvent()');
           setPreviousEvent(newEvent);
           selectNewEvent(allEvents, newEvent);
         }
@@ -1186,6 +1156,7 @@ const handleChoice = useCallback(
     user,
   ]
 );
+
 
 
   /* ******* MODIFICATION ******* */
@@ -1223,72 +1194,117 @@ const handleChoice = useCallback(
   }, [currentLevelEvents, applyReward, saveProgress]);
 
   // 1.H.11. endGame
-  /**
-   * 1.H.11. Termine la partie et sauvegarde le score (classements)
-   * @async
-   * @function endGame
-   * @returns {Promise<void>}
-   */
-  const endGame = useCallback(async () => {
-    setIsGameOver(true);
-    playGameOverSound();
-    setLeaderboardsReady(false);
+/**
+ * 1.H.11. Termine la partie et sauvegarde le score (classements)
+ * @async
+ * @function endGame
+ * @returns {Promise<void>}
+ */
+const endGame = useCallback(async () => {
+  setIsGameOver(true);
+  playGameOverSound();
+  setLeaderboardsReady(false);
 
-    try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser?.id) return;
-
-      const today = new Date().toISOString().split('T')[0];
-      const firstDayOfMonth = `${today.substring(0, 7)}-01`;
-
-      await supabase.from('game_scores').insert({
-        user_id: authUser.id,
-        display_name: user.name,
-        score: user.points,
-        created_at: new Date().toISOString()
-      });
-
-      const { data: dailyScores } = await supabase
-        .from('game_scores')
-        .select('display_name, score')
-        .gte('created_at', today)
-        .order('score', { ascending: false })
-        .limit(5);
-
-      const { data: monthlyScores } = await supabase
-        .from('game_scores')
-        .select('display_name, score')
-        .gte('created_at', firstDayOfMonth)
-        .order('score', { ascending: false })
-        .limit(5);
-
-      const { data: allTimeScores } = await supabase
-        .from('profiles')
-        .select('display_name, high_score')
-        .order('high_score', { ascending: false })
-        .limit(5);
-
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('high_score')
-        .eq('id', authUser.id)
-        .single();
-
-      if (currentProfile && user.points > currentProfile.high_score) {
-        await supabase
-          .from('profiles')
-          .update({ high_score: user.points })
-          .eq('id', authUser.id);
-      }
-
-      if (dailyScores && monthlyScores && allTimeScores) {
-        setScoresAndShow(dailyScores, monthlyScores, allTimeScores);
-      }
-      await saveProgress();
-    } catch (error) {
-      // Gestion des erreurs si nécessaire
+  try {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    
+    // Mode invité
+    if (!authUser?.id) {
+      const guestScores = {
+        daily: [{
+          name: user.name || 'Voyageur',
+          score: user.points,
+          rank: 1
+        }],
+        monthly: [{
+          name: "👑 Meilleur score",
+          score: 12500,
+          rank: 1
+        }],
+        allTime: [{
+          name: "🏆 Record",
+          score: 25000,
+          rank: 1
+        }]
+      };
+      
+      setLeaderboards(guestScores);
+      setLeaderboardsReady(true);
+      return;
     }
-  }, [user, playGameOverSound, saveProgress]);
+
+    // Mode utilisateur connecté
+    const today = new Date().toISOString().split('T')[0];
+    const firstDayOfMonth = `${today.substring(0, 7)}-01`;
+
+    await supabase.from('game_scores').insert({
+      user_id: authUser.id,
+      display_name: user.name,
+      score: user.points,
+      created_at: new Date().toISOString()
+    });
+
+    const { data: dailyScores } = await supabase
+      .from('game_scores')
+      .select('display_name, score')
+      .gte('created_at', today)
+      .order('score', { ascending: false })
+      .limit(5);
+
+    const { data: monthlyScores } = await supabase
+      .from('game_scores')
+      .select('display_name, score')
+      .gte('created_at', firstDayOfMonth)
+      .order('score', { ascending: false })
+      .limit(5);
+
+    const { data: allTimeScores } = await supabase
+      .from('profiles')
+      .select('display_name, high_score')
+      .order('high_score', { ascending: false })
+      .limit(5);
+
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('high_score')
+      .eq('id', authUser.id)
+      .single();
+
+    if (currentProfile && user.points > currentProfile.high_score) {
+      await supabase
+        .from('profiles')
+        .update({ high_score: user.points })
+        .eq('id', authUser.id);
+    }
+
+    if (dailyScores && monthlyScores && allTimeScores) {
+      setScoresAndShow(dailyScores, monthlyScores, allTimeScores);
+    }
+    await saveProgress();
+  } catch (error) {
+    // En cas d'erreur, afficher au moins les scores de l'invité
+    const fallbackScores = {
+      daily: [{
+        name: user.name || 'Voyageur',
+        score: user.points,
+        rank: 1
+      }],
+      monthly: [{
+        name: "👑 Meilleur score",
+        score: 12500,
+        rank: 1
+      }],
+      allTime: [{
+        name: "🏆 Record",
+        score: 25000,
+        rank: 1
+      }]
+    };
+    
+    setLeaderboards(fallbackScores);
+    setLeaderboardsReady(true);
+  }
+}, [user, playGameOverSound, saveProgress]);
 
   // 1.H.12. saveProgress
   /**

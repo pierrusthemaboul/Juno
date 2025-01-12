@@ -73,7 +73,7 @@ export const useAudio = () => {
 
         isInitialized.current = true;
       } catch (error) {
-        console.error('Failed to initialize audio system:', error);
+        // Handle initialization error if needed
       }
     };
 
@@ -88,7 +88,7 @@ export const useAudio = () => {
           try {
             await soundObj.sound.unloadAsync();
           } catch (error) {
-            console.error('Error unloading sound:', error);
+            // Handle unloading error if needed
           }
         }
       });
@@ -113,11 +113,10 @@ export const useAudio = () => {
 
         sound.setOnPlaybackStatusUpdate(status => {
           if (!status.isLoaded) {
-          
             reloadSound(soundKey);
           }
           if (status.didJustFinish) {
-            
+            // Handle sound finish if needed
           }
         });
 
@@ -134,7 +133,6 @@ export const useAudio = () => {
       }
       return sounds[soundKey]?.sound || null;
     } catch (error) {
-      console.error(`Error loading sound ${soundKey}:`, error);
       return null;
     }
   };
@@ -148,7 +146,7 @@ export const useAudio = () => {
       }
       await loadSound(soundKey);
     } catch (error) {
-      console.error(`Error reloading sound ${soundKey}:`, error);
+      // Handle reloading error if needed
     }
   };
 
@@ -163,7 +161,7 @@ export const useAudio = () => {
         try {
           await sounds[soundKey].sound.unloadAsync();
         } catch (err) {
-          console.error('Error unloading existing sound:', err);
+          // Handle unloading error if needed
         }
       }
 
@@ -186,21 +184,19 @@ export const useAudio = () => {
       // 5. Configuration du nettoyage après lecture
       sound.setOnPlaybackStatusUpdate(status => {
         if (status.didJustFinish) {
-          console.log(`Sound ${soundKey} finished playing`);
-          sound.unloadAsync().catch(err => 
-            console.error('Error unloading finished sound:', err)
-          );
+          sound.unloadAsync().catch(err => {
+            // Handle unloading error if needed
+          });
         }
       });
 
     } catch (error) {
-      console.error(`Error playing sound ${soundKey}:`, error);
       const soundToClean = sounds[soundKey]?.sound;
       if (soundToClean) {
         try {
           await soundToClean.unloadAsync();
         } catch (err) {
-          console.error('Error cleaning up sound after error:', err);
+          // Handle unloading error if needed
         }
       }
     }
@@ -246,7 +242,7 @@ export const useAudio = () => {
               try {
                 await soundObj.sound.setVolumeAsync(safeVolume);
               } catch (error) {
-                console.error('Error setting sound volume:', error);
+                // Handle setting volume error if needed
               }
             }
           })
@@ -256,7 +252,7 @@ export const useAudio = () => {
         setMusicVolume(safeVolume);
       }
     } catch (error) {
-      console.error(`Error setting ${type} volume:`, error);
+      // Handle setting volume error if needed
     }
   };
 

@@ -44,12 +44,10 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!newEvent) {
-      console.log('[EventLayoutA] newEvent est null => pas d’animation');
       return;
     }
 
     if (!currentBottom || newEvent.id !== currentBottom.id) {
-      console.log('[EventLayoutA] newEvent détecté => newEvent.id=', newEvent.id);
       setHasNewEventArrived(true);
       animateCards();
     }
@@ -59,14 +57,11 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   // 5) Fonction d'animation des cartes (si un nouvel event est arrivé)
   // ──────────────────────────────────────────────────────────────────────────
   const animateCards = () => {
-    console.log('[EventLayoutA] animateCards => début de transition');
     if (!transitioning) {
-      console.log('[EventLayoutA] => setTransitioning(true)');
       setTransitioning(true);
     }
 
     const moveDistance = -(height * 0.42);
-    console.log('[EventLayoutA] moveDistance=', moveDistance);
 
     Animated.parallel([
       Animated.timing(topCardTranslateY, {
@@ -85,7 +80,6 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
         useNativeDriver: true,
       }),
     ]).start(() => {
-      console.log('[EventLayoutA] Animation terminée => permutation des cartes');
       // On swap : la carte du haut devient la carte du bas, etc.
       setCurrentTop(currentBottom);
       setCurrentBottom(newEvent);
@@ -96,7 +90,6 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
       topCardScale.setValue(1);
 
       // Fin de transition
-      console.log('[EventLayoutA] => Fin transition => setTransitioning(false)');
       setTransitioning(false);
       setHasNewEventArrived(false);
     });
@@ -106,7 +99,6 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   // 6) handleChoice => clic sur "avant" / "après"
   // ──────────────────────────────────────────────────────────────────────────
   const handleChoice = (choice: string) => {
-    console.log(`[EventLayoutA] handleChoice("${choice}") => onChoice + setTransitioning(true)`);
     // On force transitioning = true
     setTransitioning(true);
     setHasNewEventArrived(false);
@@ -116,10 +108,7 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
     // Après 600ms, si hasNewEventArrived est resté false => aucun newEvent
     setTimeout(() => {
       if (!hasNewEventArrived) {
-        console.log('[EventLayoutA] handleChoice => Timeout => pas de newEvent => setTransitioning(false)');
         setTransitioning(false);
-      } else {
-        console.log('[EventLayoutA] handleChoice => Timeout => newEventArrived => rien à faire, animation en cours');
       }
     }, 600);
   };

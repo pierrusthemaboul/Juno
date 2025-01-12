@@ -18,7 +18,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useGameLogicA } from '../hooks/useGameLogicA';
 import GameContentA from '../components/GameContentA';
 import { Event } from '../hooks/types';
-import { gameLogger } from '../utils/gameLogger';
 
 export default function Vue2a() {
   // 1.A. Hook de navigation (expo-router)
@@ -100,7 +99,6 @@ export default function Vue2a() {
 
   // 2.B. Animation de sortie de la vue (quand on veut quitter)
   const handleExit = () => {
-    gameLogger.info('Exiting game view');
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 300,
@@ -128,7 +126,7 @@ export default function Vue2a() {
     ]).start();
 
     return () => {
-      gameLogger.info('Cleaning up game view');
+      // Cleanup sans log
     };
   }, []);
 
