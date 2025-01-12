@@ -3,16 +3,18 @@
  *
  * 5.A. Description
  *     Affiche deux boutons "avant"/"après" superposés. Gère leur opacité en fonction
- *     du statut "isLevelPaused".
+ *     du statut "isLevelPaused", de l'état "buttonClicked" et de "isWaitingForCountdown"
  *
  * 5.B. Props
  *     @interface OverlayChoiceButtonsAProps
  *     @property {(choice: string) => void} onChoice
  *     @property {boolean} isLevelPaused
+ *     @property {boolean} isWaitingForCountdown
  ************************************************************************************/
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 /**
  * 5.C. Composant principal OverlayChoiceButtonsA
@@ -22,105 +24,118 @@ import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native
  */
 const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   onChoice,
-  isLevelPaused
+  isLevelPaused,
+  isWaitingForCountdown,
 }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const [buttonClicked, setButtonClicked] = useState(false);
 
-  // 5.C.1. useEffect => Animation d’opacité
+  // Animation d'opacité (Correction de l'ordre des conditions)
   useEffect(() => {
-    if (isLevelPaused) {
+    if (isWaitingForCountdown || isLevelPaused || buttonClicked) {
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
     } else {
-      fadeAnim.setValue(1);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [isLevelPaused]);
+  }, [isLevelPaused, buttonClicked, isWaitingForCountdown]);
 
-  // 5.C.2. handlePress
+  // Réinitialiser buttonClicked après un certain délai
+  useEffect(() => {
+    if (buttonClicked) {
+      const timer = setTimeout(() => {
+        setButtonClicked(false);
+      }, 500); // Réinitialise buttonClicked après 500ms
+
+      return () => clearTimeout(timer);
+    }
+  }, [buttonClicked]);
+
   const handlePress = (choice: string) => {
     if (!isLevelPaused) {
+      setButtonClicked(true); // Déclenche l'animation de disparition
       onChoice(choice);
     }
   };
 
-  // 5.C.3. Rendu
   return (
     <Animated.View
       style={[styles.container, { opacity: fadeAnim }]}
-      pointerEvents={!isLevelPaused ? 'auto' : 'none'}
+      pointerEvents={
+        !isLevelPaused && !buttonClicked && !isWaitingForCountdown
+          ? 'auto'
+          : 'none'
+      }
     >
       <TouchableOpacity
-        style={[styles.button, styles.buttonLeft]}
         onPress={() => handlePress('avant')}
-        // disabled est supprimé ici aussi
-        activeOpacity={0.7}
-        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        activeOpacity={0.8}
+        style={styles.button}
       >
-        <View style={styles.buttonInner}>
+        <LinearGradient
+          colors={['#4c669f', '#3b5998', '#192f6a']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.buttonGradient}
+        >
           <Text style={styles.buttonText}>AVANT</Text>
-        </View>
+        </LinearGradient>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, styles.buttonRight]}
         onPress={() => handlePress('après')}
-        // disabled est supprimé ici aussi
-        activeOpacity={0.7}
-        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        activeOpacity={0.8}
+        style={styles.button}
       >
-        <View style={styles.buttonInner}>
+        <LinearGradient
+          colors={['#4c669f', '#3b5998', '#192f6a']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.buttonGradient}
+        >
           <Text style={styles.buttonText}>APRÈS</Text>
-        </View>
+        </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
-// 5.D. Styles
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     paddingHorizontal: 15,
     width: '100%',
+    marginBottom: 20, // Ajout d'un espacement en bas des boutons
+    marginTop: 30, // Marge ajoutée au-dessus des boutons
   },
   button: {
-    width: '45%',
-    maxWidth: 180,
-  },
-  buttonInner: {
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
     borderRadius: 25,
+    overflow: 'hidden', // Assure que le dégradé ne dépasse pas du border radius
+    width: '40%', // Ajustement de la largeur des boutons
+  },
+  buttonGradient: {
+    padding: 12, // Réduction du padding pour un aspect moins large
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  buttonLeft: {
-    transform: [{ rotate: '-1deg' }],
-  },
-  buttonRight: {
-    transform: [{ rotate: '1deg' }],
+    borderRadius: 25,
   },
   buttonText: {
-    color: 'rgba(255, 255, 255, 0.95)',
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
+    backgroundColor: 'transparent', // Fond transparent pour le texte
   },
 });
-
 
 export default OverlayChoiceButtonsA;

@@ -132,6 +132,7 @@ export function useGameLogicA(initialEvent: string) {
     eventsSummary: []     // Initialisation de eventsSummary comme un tableau vide
   });
   const [leaderboardsReady, setLeaderboardsReady] = useState(false);
+  const [isWaitingForCountdown, setIsWaitingForCountdown] = useState(false);
 
   /* 1.E.11. (Classement) */
   const [leaderboards, setLeaderboards] = useState({ daily: [], monthly: [], allTime: [] });
@@ -938,11 +939,12 @@ const selectNewEvent = useCallback(
   }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
 
 /**
-   * Gère la réponse de l’utilisateur : "avant" ou "après"
-   * @function handleChoice
-   * @param {'avant' | 'après'} choice
-   * @returns {void}
-   */
+    * 1.H.9. handleChoice
+    * Gère la réponse de l’utilisateur : "avant" ou "après"
+    * @function handleChoice
+    * @param {'avant' | 'après'} choice
+    * @returns {void}
+    */
 const handleChoice = useCallback(
   (choice: 'avant' | 'après') => {
     if (!previousEvent || !newEvent || isLevelPaused) {
@@ -970,6 +972,9 @@ const handleChoice = useCallback(
       responseTime: 20 - timeLeft,
       description_detaillee: newEvent.description_detaillee,
     };
+
+    // Définir isWaitingForCountdown à true juste après que l'utilisateur a fait un choix
+    setIsWaitingForCountdown(true);
 
     if (isAnswerCorrect) {
       playCorrectSound();
@@ -1037,12 +1042,15 @@ const handleChoice = useCallback(
               ...prevEvents,
               eventSummaryItem,
             ]);
+
+            // Définir un délai pour réinitialiser isWaitingForCountdown à false juste avant que le compte à rebours ne recommence
             setTimeout(() => {
+              setIsWaitingForCountdown(false); // Réinitialiser l'état pour permettre la réapparition des boutons
               if (!isGameOver && !showLevelModal) {
                 setPreviousEvent(newEvent);
                 selectNewEvent(allEvents, newEvent);
               }
-            }, 2000);
+            }, 1500); // Réinitialiser juste avant le compte à rebours (ajustez le délai si nécessaire)
           }
           return updatedUser;
         });
@@ -1077,12 +1085,14 @@ const handleChoice = useCallback(
 
       setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
 
+      // Définir un délai pour réinitialiser isWaitingForCountdown à false juste avant que le compte à rebours ne recommence
       setTimeout(() => {
+        setIsWaitingForCountdown(false); // Réinitialiser l'état pour permettre la réapparition des boutons
         if (!isGameOver && !showLevelModal) {
           setPreviousEvent(newEvent);
           selectNewEvent(allEvents, newEvent);
         }
-      }, 2000);
+      }, 1500); // Réinitialiser juste avant le compte à rebours (ajustez le délai si nécessaire)
     }
   },
   [
@@ -1105,6 +1115,7 @@ const handleChoice = useCallback(
     allEvents,
     progressAnim,
     user,
+    isWaitingForCountdown, // S'assurer que isWaitingForCountdown est dans les dépendances
   ]
 );
 
@@ -1269,122 +1280,8 @@ const handleChoice = useCallback(
     setLeaderboardsReady(true);
   };
 
-  // 1.H.14. restartGame
-/**
- * 1.H.14. Redémarre complètement la partie, réinitialisant :
- *  - Le profil utilisateur (points, vies, niveau, etc.)
- *  - Le streak, le nombre d'événements, et les compteurs de jumps forcés
- *  - La configuration et l'état du jeu (usedEvents, etc.)
- *
- * Le but est de proposer une nouvelle partie 100% vierge, sans tenir compte
- * des événements de la partie précédente.
- *
- * @function restartGame
- * @returns {void}
- */
-const restartGame = () => {
-  // 1) Remet à zéro les stats du user
-  setUser((prev) => ({
-    ...prev,
-    points: 0,                // score
-    lives: MAX_LIVES,         // vies
-    level: 1,                 // on repart du niveau 1
-    streak: 0,                // combo
-    eventsCompletedInLevel: 0,
-    totalEventsCompleted: 0
-  }));
 
-  // 2) Streak local remis à zéro + réinitialisation de la barre d’animation
-  setStreak(0);
-  Animated.timing(progressAnim, {
-    toValue: 0,
-    duration: 500,
-    useNativeDriver: false
-  }).start();
-
-  // 3) Reset des événements déjà utilisés et du flag de "fin de partie"
-  setUsedEvents(new Set());
-  setIsGameOver(false);
-  setError(null);
-
-  // 4) Ferme la modale de niveau et relance le jeu
-  setShowLevelModal(false);
-  setIsLevelPaused(false);
-  setIsCountdownActive(true);
-
-  // 5) Remet la config au niveau 1 et vide le résumé du niveau précédent
-  setCurrentLevelConfig(LEVEL_CONFIGS[1]);
-  setCurrentLevelEvents([]);
-  setLevelCompletedEvents([]); // On vide la liste des événements terminés
-
-  // 6) Timer de départ
-  setTimeLeft(20);
-
-  // 7) Réinitialise le fallbackCountdown à une valeur aléatoire [12..25]
-  setFallbackCountdown(
-    () => Math.floor(Math.random() * (25 - 12 + 1)) + 12
-  );
-
-  // 8) Réinitialise le compteur d’événements et la logique de saut initial
-  setEventCount(0);
-  setHasInitialJumped(false);
-
-  // Distances possibles pour le saut initial
-  const distances = [500, 750, 1000];
-  setInitialJumpDistance(
-    distances[Math.floor(Math.random() * distances.length)]
-  );
-  setInitialJumpEventCount(
-    Math.floor(Math.random() * (19 - 12 + 1)) + 12
-  );
-
-  // 9) Prépare deux événements de départ (si on a suffisamment d'événements)
-  if (allEvents.length > 0) {
-    // On se limite aux événements de difficulté <= 2 pour un début "facile"
-    const level1Events = allEvents.filter(
-      (evt) => evt.niveau_difficulte <= 2
-    );
-
-    if (level1Events.length >= 2) {
-      const firstIndex = Math.floor(Math.random() * level1Events.length);
-      const firstEvent = level1Events[firstIndex];
-
-      // Retire ce premierEvent de la liste pour le second tirage
-      const filteredForSecond = level1Events.filter(
-        (e) => e.id !== firstEvent.id
-      );
-      const secondIndex = Math.floor(Math.random() * filteredForSecond.length);
-      const secondEvent = filteredForSecond[secondIndex];
-
-      setPreviousEvent(firstEvent);
-      setNewEvent(secondEvent);
-
-      // On crée un nouveau set contenant ces 2 événements
-      setUsedEvents(new Set([firstEvent.id, secondEvent.id]));
-
-      // Par sécurité, on réinitialise ces flags d’UI
-      setShowDates(false);
-      setIsImageLoaded(false);
-      setIsCorrect(undefined);
-    }
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // REMARQUE SUR LE BUG D'INVERSION "AVANT/APRÈS" :
-  // ──────────────────────────────────────────────────────────────────────────
-  // Ce bug ne semble pas provenir de la fonction restartGame() elle-même.
-  // En effet, "restartGame" se contente de réinitialiser les états du jeu,
-  // sans toucher à la logique "avant"/"après".
-  //
-  // Il est possible qu'une condition asynchrone (par ex. un setState mal
-  // synchronisé) ou un "localEventCount" modifié à un instant T
-  // provoque ce comportement aléatoire. Pour corriger cela, on devrait
-  // inspecter plus précisément la fonction "handleChoice" ou la synchro
-  // des variables "previousEvent"/"newEvent". 
-  //
-  // Dans tous les cas, pour redémarrer le jeu, cette fonction
-  // assure déjà un reset complet de l'état.
-};
+  
 
 
   /* ******* MODIFICATION ******* */
@@ -1439,7 +1336,6 @@ const restartGame = () => {
 
     handleChoice,
     startLevel,
-    restartGame,
     handleLevelUp,
 
     remainingEvents: allEvents.length - usedEvents.size,

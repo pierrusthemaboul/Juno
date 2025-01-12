@@ -1,7 +1,9 @@
+// =======================================
+// vue2a.tsx : Vue principale du jeu
+// =======================================
+
 // 1. Configuration et initialisation
 // ==================================
-// Vue principale du jeu avec gestion des animations et des états
-
 import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
@@ -15,27 +17,30 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useGameLogicA } from '../hooks/useGameLogicA';
 import GameContentA from '../components/GameContentA';
-import { Event } from '../hooks/types'; // Assurez-vous que le chemin est correct
+import { Event } from '../hooks/types';
 import { gameLogger } from '../utils/gameLogger';
 
 export default function Vue2a() {
-  // 1.A. Initialisation des états et animations
-  // -----------------------------------------
-  // 1.A.a. Configuration des animations de base
-  const [fadeAnim] = useState(new Animated.Value(1));
-  const [isExiting, setIsExiting] = useState(false);
+  // 1.A. Hook de navigation (expo-router)
   const router = useRouter();
 
-  // 1.B. Gestion des paramètres
-  // --------------------------
-  // 1.B.a. Sécurisation et parsing des paramètres d'entrée
+  // 1.B. Fonction de redirection vers vue1
+  const handleRestartGame = () => {
+    // On retourne sur vue1 comme si on venait d’ouvrir l’app
+    router.replace('/vue1');
+  };
+
+  // 1.C. États locaux pour l’animation de sortie
+  const [fadeAnim] = useState(new Animated.Value(1));
+  const [isExiting, setIsExiting] = useState(false);
+
+  // 1.D. Récupération du paramètre initialEvent (si fourni)
   const params = useLocalSearchParams();
   const initialEvent = typeof params.initialEvent === 'string'
     ? params.initialEvent
     : JSON.stringify({} as Event);
 
-  // 1.C. Configuration de la logique de jeu
-  // -------------------------------------
+  // 1.E. Récupération de la logique de jeu via useGameLogicA
   const {
     user,
     previousEvent,
@@ -61,30 +66,22 @@ export default function Vue2a() {
     completeRewardAnimation,
     updateRewardPosition,
     handleChoice,
-    handleImageLoad,
+    onImageLoad: handleImageLoad, // (renommage s’il faut)
     startLevel,
-    restartGame,
-    levelCompletedEvents // Récupération de levelCompletedEvents
+    levelCompletedEvents
   } = useGameLogicA(initialEvent);
 
   // 2. Gestion des interactions utilisateur
-  // =====================================
-  // 2.A. Navigation système
-  // ---------------------
-  // 2.A.a. Gestion du bouton retour Android
+  // =======================================
+  // 2.A. Bloquer le bouton retour Android pour confirmer la sortie
   useEffect(() => {
     const backAction = () => {
-      if (isExiting) return true;
-
+      if (isExiting) return true; // Évite double-clic
       Alert.alert(
         "Quitter la partie",
         "Voulez-vous vraiment quitter ? Votre progression sera perdue.",
         [
-          {
-            text: "Annuler",
-            onPress: () => null,
-            style: "cancel"
-          },
+          { text: "Annuler", onPress: () => null, style: "cancel" },
           {
             text: "Quitter",
             onPress: () => {
@@ -97,29 +94,25 @@ export default function Vue2a() {
       return true;
     };
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
     return () => backHandler.remove();
   }, [isExiting]);
 
-  // 2.B. Gestion des transitions
-  // --------------------------
-  // 2.B.a. Animation de sortie de la vue
+  // 2.B. Animation de sortie de la vue (quand on veut quitter)
   const handleExit = () => {
     gameLogger.info('Exiting game view');
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 300,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start(() => {
-      router.push('/vue1');
+      // Une fois l’animation de fade out terminée,
+      // on revient sur vue1 (par exemple le menu)
+      router.replace('/vue1');
     });
   };
 
-  // 2.B.b. Animation d'entrée et nettoyage
+  // 2.C. Animation d’entrée de la vue
   useEffect(() => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
@@ -139,8 +132,8 @@ export default function Vue2a() {
     };
   }, []);
 
-  // 3. Rendu de l'interface
-  // =====================
+  // 3. Rendu principal de la vue
+  // ============================
   return (
     <ImageBackground
       source={require('../../assets/images/bgvue2.webp')}
@@ -149,33 +142,37 @@ export default function Vue2a() {
     >
       <StatusBar
         translucent
-        backgroundColor="transparent"
+        backgroundColor="darkgray"
         barStyle="light-content"
       />
 
       <SafeAreaView style={styles.container}>
         <GameContentA
+          // -- Props obligatoires ou usuelles
           user={user}
+          previousEvent={previousEvent}
+          newEvent={newEvent}
           timeLeft={timeLeft}
           loading={loading}
           error={error}
-          previousEvent={previousEvent}
-          newEvent={newEvent}
           isGameOver={isGameOver}
           showDates={showDates}
           isCorrect={isCorrect}
           isImageLoaded={isImageLoaded}
           handleChoice={handleChoice}
           handleImageLoad={handleImageLoad}
-          handleRestart={restartGame}
           streak={streak}
           highScore={highScore}
           level={user.level}
+
+          // -- Animations et modales
           fadeAnim={fadeAnim}
           showLevelModal={showLevelModal}
           isLevelPaused={isLevelPaused}
           startLevel={startLevel}
           currentLevelConfig={currentLevelConfig}
+
+          // -- Récompenses et stats
           currentReward={currentReward}
           completeRewardAnimation={completeRewardAnimation}
           updateRewardPosition={updateRewardPosition}
@@ -184,7 +181,12 @@ export default function Vue2a() {
           periodStats={periodStats}
           activeBonus={activeBonus}
           leaderboards={leaderboards}
-          levelCompletedEvents={levelCompletedEvents} // Passage de levelCompletedEvents à GameContentA
+
+          // -- Historique
+          levelCompletedEvents={levelCompletedEvents}
+
+          // -- NOUVEAU : on passe la fonction qui renvoie sur vue1
+          handleRestart={handleRestartGame}
         />
       </SafeAreaView>
     </ImageBackground>
@@ -192,7 +194,7 @@ export default function Vue2a() {
 }
 
 // 4. Styles
-// ========
+// =========
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
@@ -202,5 +204,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
-  }
+  },
 });
