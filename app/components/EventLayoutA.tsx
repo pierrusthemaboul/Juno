@@ -1,22 +1,8 @@
 /************************************************************************************
- * 3. COMPOSANT : EventLayoutA
+ * EventLayoutA.tsx
  *
- * 3.A. Description
- *     Gère l’affichage superposé de deux cartes d’événements (previousEvent, newEvent).
- *     Anime la transition lorsque "newEvent" change.
- *
- * 3.B. Props
- *     @interface EventLayoutAProps
- *     @property {any} previousEvent
- *     @property {any} newEvent
- *     @property {() => void} [onImageLoad]
- *     @property {(choice: string) => void} onChoice
- *     @property {boolean} [showDate]
- *     @property {boolean} [isCorrect]
- *     @property {boolean} isImageLoaded
- *     @property {number} streak
- *     @property {number} level
- *     @property {boolean} isLevelPaused
+ * Gère l’affichage superposé de deux cartes (previousEvent, newEvent) et anime
+ * la transition lorsque "newEvent" change.
  ************************************************************************************/
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -27,12 +13,6 @@ import OverlayChoiceButtonsA from './OverlayChoiceButtonsA';
 const { height } = Dimensions.get('window');
 const ANIMATION_DURATION = 800;
 
-/**
- * 3.C. Composant principal EventLayoutA
- * @function EventLayoutA
- * @param {EventLayoutAProps} props
- * @returns {JSX.Element}
- */
 const EventLayoutA: React.FC<EventLayoutAProps> = ({
   previousEvent,
   newEvent,
@@ -43,38 +23,50 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   isImageLoaded,
   streak,
   level,
-  isLevelPaused
+  isLevelPaused,
+  // onTimeBlocked => si vous avez besoin de bloquer le temps
 }) => {
- 
-
-  // 3.C.1. États locaux
+  // 1) État local
   const [transitioning, setTransitioning] = useState(false);
+  const [hasNewEventArrived, setHasNewEventArrived] = useState(false);
+
+  // 2) Références aux cartes actuelles
   const [currentTop, setCurrentTop] = useState(previousEvent);
   const [currentBottom, setCurrentBottom] = useState(newEvent);
 
-  // 3.C.2. Animations
+  // 3) Animations
   const topCardTranslateY = useRef(new Animated.Value(0)).current;
   const bottomCardTranslateY = useRef(new Animated.Value(0)).current;
   const topCardScale = useRef(new Animated.Value(1)).current;
 
-  // 3.C.3. useEffect => Sur changement de newEvent
+  // ──────────────────────────────────────────────────────────────────────────
+  // 4) Sur changement de newEvent => lancer l'animation
+  // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (newEvent && (!currentBottom || newEvent.id !== currentBottom.id)) {
-   
-      startTransition();
+    if (!newEvent) {
+      console.log('[EventLayoutA] newEvent est null => pas d’animation');
+      return;
+    }
+
+    if (!currentBottom || newEvent.id !== currentBottom.id) {
+      console.log('[EventLayoutA] newEvent détecté => newEvent.id=', newEvent.id);
+      setHasNewEventArrived(true);
+      animateCards();
     }
   }, [newEvent]);
 
-  // 3.C.4. startTransition
-  const startTransition = () => {
-    if (transitioning) {
-      
-      return;
+  // ──────────────────────────────────────────────────────────────────────────
+  // 5) Fonction d'animation des cartes (si un nouvel event est arrivé)
+  // ──────────────────────────────────────────────────────────────────────────
+  const animateCards = () => {
+    console.log('[EventLayoutA] animateCards => début de transition');
+    if (!transitioning) {
+      console.log('[EventLayoutA] => setTransitioning(true)');
+      setTransitioning(true);
     }
-    
-    setTransitioning(true);
 
     const moveDistance = -(height * 0.42);
+    console.log('[EventLayoutA] moveDistance=', moveDistance);
 
     Animated.parallel([
       Animated.timing(topCardTranslateY, {
@@ -91,46 +83,63 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
         toValue: moveDistance,
         duration: ANIMATION_DURATION,
         useNativeDriver: true,
-      })
+      }),
     ]).start(() => {
-      
-
+      console.log('[EventLayoutA] Animation terminée => permutation des cartes');
+      // On swap : la carte du haut devient la carte du bas, etc.
       setCurrentTop(currentBottom);
       setCurrentBottom(newEvent);
 
+      // Reset des valeurs
       topCardTranslateY.setValue(0);
       bottomCardTranslateY.setValue(0);
       topCardScale.setValue(1);
 
+      // Fin de transition
+      console.log('[EventLayoutA] => Fin transition => setTransitioning(false)');
       setTransitioning(false);
+      setHasNewEventArrived(false);
     });
   };
 
-  // 3.C.5. handleChoice
+  // ──────────────────────────────────────────────────────────────────────────
+  // 6) handleChoice => clic sur "avant" / "après"
+  // ──────────────────────────────────────────────────────────────────────────
   const handleChoice = (choice: string) => {
+    console.log(`[EventLayoutA] handleChoice("${choice}") => onChoice + setTransitioning(true)`);
+    // On force transitioning = true
+    setTransitioning(true);
+    setHasNewEventArrived(false);
 
-    if (!transitioning) {
+    onChoice(choice);
 
-      onChoice(choice);
-    } else {
-   
-    }
+    // Après 600ms, si hasNewEventArrived est resté false => aucun newEvent
+    setTimeout(() => {
+      if (!hasNewEventArrived) {
+        console.log('[EventLayoutA] handleChoice => Timeout => pas de newEvent => setTransitioning(false)');
+        setTransitioning(false);
+      } else {
+        console.log('[EventLayoutA] handleChoice => Timeout => newEventArrived => rien à faire, animation en cours');
+      }
+    }, 600);
   };
 
-  // 3.C.6. Render
+  // ──────────────────────────────────────────────────────────────────────────
+  // 7) Rendu
+  // ──────────────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      {/* Carte du haut (previousEvent) */}
-      <Animated.View 
+      {/* Carte du haut */}
+      <Animated.View
         style={[
           styles.cardContainer,
           styles.topCard,
           {
             transform: [
               { translateY: topCardTranslateY },
-              { scale: topCardScale }
-            ]
-          }
+              { scale: topCardScale },
+            ],
+          },
         ]}
       >
         <AnimatedEventCardA
@@ -142,14 +151,12 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
         />
       </Animated.View>
 
-      {/* Carte du bas (newEvent) */}
+      {/* Carte du bas */}
       <Animated.View
         style={[
           styles.cardContainer,
           styles.bottomCard,
-          {
-            transform: [{ translateY: bottomCardTranslateY }]
-          }
+          { transform: [{ translateY: bottomCardTranslateY }] },
         ]}
       >
         <View style={styles.bottomCardContent}>
@@ -162,11 +169,14 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
             streak={streak}
             level={level}
           />
+
           <View style={styles.buttonsContainer}>
-          <OverlayChoiceButtonsA
-  onChoice={handleChoice}
-  isLevelPaused={isLevelPaused}
-/>
+            <OverlayChoiceButtonsA
+              onChoice={handleChoice}
+              isLevelPaused={isLevelPaused}
+              // isWaitingForCountdown={false} // si vous voulez le passer
+              transitioning={transitioning}
+            />
           </View>
         </View>
       </Animated.View>
@@ -174,7 +184,11 @@ const EventLayoutA: React.FC<EventLayoutAProps> = ({
   );
 };
 
-// 3.D. Styles
+export default EventLayoutA;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Styles
+// ──────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -208,5 +222,3 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
 });
-
-export default EventLayoutA;

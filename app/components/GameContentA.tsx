@@ -1,12 +1,30 @@
 /************************************************************************************
  * 4. COMPOSANT : GameContentA
  *
- * ... (Description, Props - inchangés)
+ * 4.A. Description
+ *     Enveloppe générale de l’interface de jeu :
+ *       - Header (UserInfo, Countdown)
+ *       - Zone centrale (EventLayoutA)
+ *       - Modales (LevelUpModalBis, ScoreboardModal)
+ *       - Gestion des récompenses (RewardAnimation)
+ *
+ * 4.B. Props
+ *     @interface GameContentAProps
+ *     ...
  ************************************************************************************/
 
-// 4.C. Imports (inchangés)
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Animated, StyleSheet, Platform, StatusBar, SafeAreaView, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Animated,
+  StyleSheet,
+  Platform,
+  StatusBar,
+  SafeAreaView,
+  Dimensions
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import UserInfo, { UserInfoHandle } from './UserInfo';
 import Countdown from './Countdown';
@@ -15,18 +33,16 @@ import LevelUpModalBis from './LevelUpModalBis';
 import ScoreboardModal from './ScoreboardModal';
 import RewardAnimation from './RewardAnimation';
 import { colors } from '../styles/colors';
-import { User, Event, ExtendedLevelConfig, RewardType, LevelEventSummary } from '../hooks/types';
-import { gameLogger } from '../utils/gameLogger';
+import {
+  User,
+  Event,
+  ExtendedLevelConfig,
+  RewardType,
+  LevelEventSummary
+} from '../hooks/types';
 
-// 4.C.1. Dimensions de l'écran
 const { width, height } = Dimensions.get('window');
 
-/**
- * 4.D. Composant principal GameContentA
- * @function GameContentA
- * @param {GameContentAProps} props
- * @returns {JSX.Element}
- */
 const GameContentA: React.FC<GameContentAProps> = ({
   user,
   timeLeft,
@@ -55,39 +71,45 @@ const GameContentA: React.FC<GameContentAProps> = ({
   leaderboards,
   levelCompletedEvents
 }) => {
-
-  // 4.D.1. Hooks et Refs
+  // 4.D.1. Hooks & states
   const router = useRouter();
   const userInfoRef = useRef<UserInfoHandle>(null);
+
   const contentOpacity = useRef(new Animated.Value(1)).current;
   const [isRewardPositionSet, setIsRewardPositionSet] = useState(false);
 
-  // 4.D.2. Effet : gestion de la position de la récompense
+  // 4.D.2. Position de la reward
   useEffect(() => {
     let mounted = true;
+    console.log('[GameContentA] useEffect => currentReward=', currentReward);
 
     const updateRewardPositionSafely = async () => {
-      if (!currentReward || !userInfoRef.current || !mounted) return;
+      if (!currentReward || !userInfoRef.current || !mounted) {
+        console.log('[GameContentA] => Aucune reward ou userInfoRef non dispo');
+        return;
+      }
 
       try {
-        // Obtention de la position une seule fois
         const position = await (currentReward.type === RewardType.EXTRA_LIFE 
           ? userInfoRef.current.getLifePosition()
-          : userInfoRef.current.getPointsPosition());
+          : userInfoRef.current.getPointsPosition()
+        );
 
         if (!mounted) return;
 
         if (position && typeof position.x === 'number' && typeof position.y === 'number') {
-          // Mise à jour une seule fois si la position a changé
-          if (!currentReward.targetPosition || 
-              currentReward.targetPosition.x !== position.x || 
-              currentReward.targetPosition.y !== position.y) {
+          if (
+            !currentReward.targetPosition ||
+            currentReward.targetPosition.x !== position.x ||
+            currentReward.targetPosition.y !== position.y
+          ) {
+            console.log('[GameContentA] setRewardPosition =>', position);
             updateRewardPosition(position);
             setIsRewardPositionSet(true);
           }
         }
-      } catch (error) {
-        // Ne pas mettre de position par défaut en cas d'erreur
+      } catch (err) {
+        console.warn('[GameContentA] Erreur updateRewardPositionSafely:', err);
         setIsRewardPositionSet(false);
       }
     };
@@ -97,31 +119,40 @@ const GameContentA: React.FC<GameContentAProps> = ({
     return () => {
       mounted = false;
     };
-  }, [currentReward?.type]); // Ne dépend que du type de récompense
+  }, [currentReward?.type]);
 
-  // 4.D.3. Effet : animation quand le level modal apparaît
+  // 4.D.3. Fade du contenu quand le LevelUpModal apparaît
   useEffect(() => {
     if (showLevelModal) {
+      console.log('[GameContentA] showLevelModal => on anime contentOpacity (fade out / fade in)');
       Animated.sequence([
         Animated.timing(contentOpacity, {
           toValue: 0.3,
           duration: 300,
-          useNativeDriver: true
+          useNativeDriver: true,
         }),
         Animated.timing(contentOpacity, {
           toValue: 1,
           duration: 300,
           delay: 1000,
-          useNativeDriver: true
-        })
-      ]).start();
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        console.log('[GameContentA] Fin de l’animation contentOpacity => 1');
+      });
     }
-  }, [showLevelModal, contentOpacity]);
+  }, [showLevelModal]);
 
-  // 4.D.4. Rendu conditionnel
+  // 4.D.4. handleChoice (si vous avez envie de loguer aussi ici)
+  const onChoiceWrapper = (choice: string) => {
+    console.log(`[GameContentA] onChoiceWrapper => Choice="${choice}"`);
+    handleChoice(choice);
+  };
+
+  // 4.D.5. Rendu conditionnel
   const renderContent = () => {
-
     if (loading) {
+      console.log('[GameContentA] renderContent => LOADING');
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -131,6 +162,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (error) {
+      console.log('[GameContentA] renderContent => ERROR:', error);
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -139,6 +171,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     }
 
     if (!previousEvent || !newEvent) {
+      console.log('[GameContentA] renderContent => Pas encore d’événements');
       return (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Préparation des événements...</Text>
@@ -146,13 +179,14 @@ const GameContentA: React.FC<GameContentAProps> = ({
       );
     }
 
+    console.log('[GameContentA] renderContent => OK, on affiche EventLayoutA');
     return (
       <>
         <EventLayoutA
           previousEvent={previousEvent}
           newEvent={newEvent}
           onImageLoad={handleImageLoad}
-          onChoice={handleChoice}
+          onChoice={onChoiceWrapper}
           showDate={showDates}
           isCorrect={isCorrect}
           isImageLoaded={isImageLoaded}
@@ -189,7 +223,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
     );
   };
 
-  // 4.D.5. Rendu principal
+  // 4.D.6. Rendu principal
   return (
     <SafeAreaView style={styles.safeArea}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -202,6 +236,7 @@ const GameContentA: React.FC<GameContentAProps> = ({
             level={level}
             streak={streak}
           />
+
           <View style={styles.countdownContainer}>
             <Countdown
               timeLeft={timeLeft}
@@ -246,10 +281,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     zIndex: 1000,
@@ -288,7 +320,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 20,
     borderRadius: 10,
-  }
+  },
 });
 
 export default GameContentA;

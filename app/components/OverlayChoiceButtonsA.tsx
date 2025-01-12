@@ -1,86 +1,142 @@
 /************************************************************************************
- * 5. COMPOSANT : OverlayChoiceButtonsA
+ * OverlayChoiceButtonsA.tsx
  *
- * 5.A. Description
- *     Affiche deux boutons "avant"/"après" superposés. Gère leur opacité en fonction
- *     du statut "isLevelPaused", de l'état "buttonClicked" et de "isWaitingForCountdown"
- *
- * 5.B. Props
- *     @interface OverlayChoiceButtonsAProps
- *     @property {(choice: string) => void} onChoice
- *     @property {boolean} isLevelPaused
- *     @property {boolean} isWaitingForCountdown
+ *  - Affiche deux boutons "avant" / "après".
+ *  - Contrôle l'animation d'opacité selon isLevelPaused, isWaitingForCountdown,
+ *    transitioning, etc.
+ *  - Ajout d'un état `justAnswered` pour retarder le fade-in d'un petit surplus.
  ************************************************************************************/
 
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-/**
- * 5.C. Composant principal OverlayChoiceButtonsA
- * @function OverlayChoiceButtonsA
- * @param {OverlayChoiceButtonsAProps} props
- * @returns {JSX.Element}
- */
+interface OverlayChoiceButtonsAProps {
+  onChoice: (choice: string) => void;
+  isLevelPaused: boolean;
+  isWaitingForCountdown?: boolean;
+  transitioning?: boolean;
+}
+
 const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   onChoice,
   isLevelPaused,
-  isWaitingForCountdown,
+  isWaitingForCountdown = false,
+  transitioning = false,
 }) => {
-  const fadeAnim = useRef(new Animated.Value(1)).current;
   const [buttonClicked, setButtonClicked] = useState(false);
+  const [justAnswered, setJustAnswered] = useState(false); // ← nouveau mini-verrou
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Animation d'opacité (Correction de l'ordre des conditions)
+  // ─────────────────────────────────────────────────────────────────
+  // A. Sur clique => onChoice
+  // ─────────────────────────────────────────────────────────────────
+  const handlePress = (choice: string) => {
+    console.log('[OverlayChoiceButtonsA] handlePress =>', choice);
+
+    // Vérifier si c'est cliquable
+    if (!isLevelPaused && !transitioning && !isWaitingForCountdown && !buttonClicked && !justAnswered) {
+      console.log('[OverlayChoiceButtonsA] => OK => setButtonClicked(true) + setJustAnswered(true)');
+      setButtonClicked(true);
+      setJustAnswered(true);
+      onChoice(choice);
+
+      // On prolonge le mini-verrou (justAnswered) un tout petit peu plus
+      // que le reset du buttonClicked. (ex. 750ms)
+      setTimeout(() => {
+        console.log('[OverlayChoiceButtonsA] setJustAnswered(false) après 750ms');
+        setJustAnswered(false);
+      }, 750);
+
+    } else {
+      console.log(
+        '[OverlayChoiceButtonsA] => CLIC IGNORÉ => conditions. isLevelPaused=',
+        isLevelPaused,
+        'transitioning=',
+        transitioning,
+        'isWaitingForCountdown=',
+        isWaitingForCountdown,
+        'buttonClicked=',
+        buttonClicked,
+        'justAnswered=',
+        justAnswered
+      );
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────
+  // B. Après un clic, on remet buttonClicked à false au bout de 500ms
+  // ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isWaitingForCountdown || isLevelPaused || buttonClicked) {
+    if (buttonClicked) {
+      console.log('[OverlayChoiceButtonsA] => buttonClicked=true => timer 500ms');
+      const timer = setTimeout(() => {
+        console.log('[OverlayChoiceButtonsA] => setButtonClicked(false)');
+        setButtonClicked(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [buttonClicked]);
+
+  // ─────────────────────────────────────────────────────────────────
+  // C. Contrôle du fade : on fade OUT si l'une des conditions est vraie
+  // ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    console.log(
+      '[OverlayChoiceButtonsA] useEffect => Checking fadeAnim conditions',
+      '| isLevelPaused=',
+      isLevelPaused,
+      '| isWaitingForCountdown=',
+      isWaitingForCountdown,
+      '| transitioning=',
+      transitioning,
+      '| buttonClicked=',
+      buttonClicked,
+      '| justAnswered=',
+      justAnswered
+    );
+
+    // Condition pour "fadeOut"
+    const shouldFadeOut =
+      isLevelPaused ||
+      isWaitingForCountdown ||
+      transitioning ||
+      buttonClicked ||
+      justAnswered; // ← on ajoute justAnswered ici
+
+    if (shouldFadeOut) {
+      console.log('[OverlayChoiceButtonsA] => FADING OUT (0)');
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
     } else {
+      console.log('[OverlayChoiceButtonsA] => FADING IN (1)');
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }).start();
     }
-  }, [isLevelPaused, buttonClicked, isWaitingForCountdown]);
+  }, [isLevelPaused, isWaitingForCountdown, transitioning, buttonClicked, justAnswered]);
 
-  // Réinitialiser buttonClicked après un certain délai
-  useEffect(() => {
-    if (buttonClicked) {
-      const timer = setTimeout(() => {
-        setButtonClicked(false);
-      }, 500); // Réinitialise buttonClicked après 500ms
-
-      return () => clearTimeout(timer);
-    }
-  }, [buttonClicked]);
-
-  const handlePress = (choice: string) => {
-    if (!isLevelPaused) {
-      setButtonClicked(true); // Déclenche l'animation de disparition
-      onChoice(choice);
-    }
-  };
+  // ─────────────────────────────────────────────────────────────────
+  // D. pointerEvents
+  // ─────────────────────────────────────────────────────────────────
+  const pointerEvents = (!isLevelPaused && !isWaitingForCountdown && !transitioning && !buttonClicked && !justAnswered)
+    ? 'auto'
+    : 'none';
 
   return (
-    <Animated.View
-      style={[styles.container, { opacity: fadeAnim }]}
-      pointerEvents={
-        !isLevelPaused && !buttonClicked && !isWaitingForCountdown
-          ? 'auto'
-          : 'none'
-      }
-    >
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]} pointerEvents={pointerEvents}>
       <TouchableOpacity
         onPress={() => handlePress('avant')}
         activeOpacity={0.8}
         style={styles.button}
       >
         <LinearGradient
-          colors={['#4c669f', '#3b5998', '#192f6a']}
+          colors={['#6e6e6e', '#5a5a5a', '#4a4a4a']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.buttonGradient}
@@ -95,7 +151,7 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
         style={styles.button}
       >
         <LinearGradient
-          colors={['#4c669f', '#3b5998', '#192f6a']}
+          colors={['#6e6e6e', '#5a5a5a', '#4a4a4a']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.buttonGradient}
@@ -107,23 +163,24 @@ const OverlayChoiceButtonsA: React.FC<OverlayChoiceButtonsAProps> = ({
   );
 };
 
+export default OverlayChoiceButtonsA;
+
+// Styles
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    marginVertical: 10,
     width: '100%',
-    marginBottom: 20, // Ajout d'un espacement en bas des boutons
-    marginTop: 30, // Marge ajoutée au-dessus des boutons
   },
   button: {
     borderRadius: 25,
-    overflow: 'hidden', // Assure que le dégradé ne dépasse pas du border radius
-    width: '40%', // Ajustement de la largeur des boutons
+    overflow: 'hidden',
+    width: '40%',
   },
   buttonGradient: {
-    padding: 12, // Réduction du padding pour un aspect moins large
+    padding: 12,
     alignItems: 'center',
     borderRadius: 25,
   },
@@ -134,8 +191,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    backgroundColor: 'transparent', // Fond transparent pour le texte
   },
 });
-
-export default OverlayChoiceButtonsA;

@@ -939,29 +939,55 @@ const selectNewEvent = useCallback(
   }, [newEvent, allEvents, isLevelPaused, selectNewEvent, endGame, progressAnim]);
 
 /**
-    * 1.H.9. handleChoice
-    * Gère la réponse de l’utilisateur : "avant" ou "après"
-    * @function handleChoice
-    * @param {'avant' | 'après'} choice
-    * @returns {void}
-    */
+ * 1.H.9. handleChoice
+ * Gère la réponse de l’utilisateur : "avant" ou "après"
+ * @function handleChoice
+ * @param {'avant' | 'après'} choice
+ * @returns {void}
+ */
 const handleChoice = useCallback(
   (choice: 'avant' | 'après') => {
-    if (!previousEvent || !newEvent || isLevelPaused) {
+    console.log(`[useGameLogicA] handleChoice => démarrage, choice="${choice}"`);
+
+    // 1) Vérifications préliminaires
+    if (!previousEvent) {
+      console.log('[useGameLogicA] handleChoice => ABANDON : previousEvent est null');
+      return;
+    }
+    if (!newEvent) {
+      console.log('[useGameLogicA] handleChoice => ABANDON : newEvent est null');
+      return;
+    }
+    if (isLevelPaused) {
+      console.log('[useGameLogicA] handleChoice => ABANDON : le jeu est en pause (isLevelPaused=true)');
       return;
     }
 
+    console.log(
+      '[useGameLogicA] handleChoice => previousEvent.id=',
+      previousEvent.id,
+      '| newEvent.id=',
+      newEvent.id
+    );
+
+    // 2) Déterminer si la réponse est correcte (avant ou après)
     const previousDate = new Date(previousEvent.date);
     const newDate = new Date(newEvent.date);
-    const newBeforePrevious = newDate < previousDate;
-    const newAfterPrevious = newDate > previousDate;
-    const isAnswerCorrect =
-      (choice === 'avant' && newBeforePrevious) ||
-      (choice === 'après' && newAfterPrevious);
+    const newIsBefore = newDate < previousDate;  // "nouvel événement avant l'ancien ?"
+    const newIsAfter = newDate > previousDate;   // "nouvel événement après l'ancien ?"
 
+    const isAnswerCorrect =
+      (choice === 'avant' && newIsBefore) ||
+      (choice === 'après' && newIsAfter);
+
+    console.log('[useGameLogicA] handleChoice => isAnswerCorrect=', isAnswerCorrect);
+
+    // 3) On met à jour l'affichage : la date et le statut correct/incorrect
     setIsCorrect(isAnswerCorrect);
     setShowDates(true);
+    console.log('[useGameLogicA] handleChoice => setIsCorrect & setShowDates (affichage)');
 
+    // 4) Préparation de l'EventSummary
     const eventSummaryItem: LevelEventSummary = {
       id: newEvent.id,
       titre: newEvent.titre,
@@ -973,10 +999,17 @@ const handleChoice = useCallback(
       description_detaillee: newEvent.description_detaillee,
     };
 
-    // Définir isWaitingForCountdown à true juste après que l'utilisateur a fait un choix
+    // 5) On bloque temporairement les boutons (isWaitingForCountdown)
+    console.log('[useGameLogicA] handleChoice => setIsWaitingForCountdown(true)');
     setIsWaitingForCountdown(true);
 
+    // ─────────────────────────────────────────────────────────────────────
+    // CAS A : Réponse correcte
+    // ─────────────────────────────────────────────────────────────────────
     if (isAnswerCorrect) {
+      console.log('[useGameLogicA] handleChoice => Réponse CORRECTE');
+
+      // a) Son, streak, animation
       playCorrectSound();
       const newStreak = streak + 1;
       setStreak(newStreak);
@@ -985,28 +1018,39 @@ const handleChoice = useCallback(
         toValue: newStreak,
         duration: 500,
         useNativeDriver: false,
-      }).start();
+      }).start(() => {
+        console.log('[useGameLogicA] handleChoice => barre de progression mise à jour (streak=', newStreak, ')');
+      });
 
+      // b) Update performance stats
+      console.log('[useGameLogicA] handleChoice => updatePerformanceStats() (correct)');
       updatePerformanceStats(
         newEvent.types_evenement?.[0] || 'default',
         getPeriod(newEvent.date),
         true
       );
 
+      // c) Calcul des points
       const pts = calculatePoints(
         timeLeft,
         newEvent.niveau_difficulte || 1,
         newStreak,
         'default'
       );
+      console.log('[useGameLogicA] handleChoice => pts calculés=', pts);
 
+      // d) Check des rewards (streak)
+      console.log('[useGameLogicA] handleChoice => checkRewards (streak=', newStreak, ')');
       checkRewards({ type: 'streak', value: newStreak }, user);
 
+      // e) Mise à jour du user avec les points (si >0)
       if (Number.isFinite(pts) && pts > 0) {
+        console.log('[useGameLogicA] handleChoice => on incrémente le score de', pts);
         setUser((prev) => {
           const currentPoints = Math.max(0, Number(prev.points) || 0);
           const newPoints = currentPoints + pts;
 
+          // On build un nouvel "user" local
           const updatedUser = {
             ...prev,
             points: newPoints,
@@ -1015,19 +1059,20 @@ const handleChoice = useCallback(
             eventsCompletedInLevel: prev.eventsCompletedInLevel + 1,
           };
 
-          if (
-            updatedUser.eventsCompletedInLevel >=
-            LEVEL_CONFIGS[prev.level].eventsNeeded
-          ) {
+          // Vérifier s'il faut monter de niveau
+          if (updatedUser.eventsCompletedInLevel >= LEVEL_CONFIGS[prev.level].eventsNeeded) {
+            console.log('[useGameLogicA] handleChoice => nextLevel ! (eventsCompletedInLevel >= eventsNeeded)');
             const nextLevel = prev.level + 1;
             updatedUser.level = nextLevel;
             updatedUser.eventsCompletedInLevel = 0;
 
+            // On marque la progression du niveau courant
             setPreviousEvent(newEvent);
             setLevelCompletedEvents((prevEvents) => [
               ...prevEvents,
               ...currentLevelEvents,
             ]);
+            // On bascule sur la config du nouveau niveau
             setCurrentLevelConfig((prevConf) => ({
               ...LEVEL_CONFIGS[nextLevel],
               eventsSummary: [],
@@ -1036,26 +1081,38 @@ const handleChoice = useCallback(
             setShowLevelModal(true);
             setIsLevelPaused(true);
             playLevelUpSound();
-            checkRewards({ type: 'level', value: nextLevel }, updatedUser);
-          } else {
-            setCurrentLevelEvents((prevEvents) => [
-              ...prevEvents,
-              eventSummaryItem,
-            ]);
 
-            // Définir un délai pour réinitialiser isWaitingForCountdown à false juste avant que le compte à rebours ne recommence
+            // On check la reward (changement de level)
+            console.log('[useGameLogicA] handleChoice => checkRewards (type=level, value=', nextLevel, ')');
+            checkRewards({ type: 'level', value: nextLevel }, updatedUser);
+
+          } else {
+            // Sinon, on stocke l'eventSummaryItem
+            setCurrentLevelEvents((prevEvents) => [...prevEvents, eventSummaryItem]);
+
+            // Au bout de 1.5s, on repasse isWaitingForCountdown à false, et on enchaîne
             setTimeout(() => {
-              setIsWaitingForCountdown(false); // Réinitialiser l'état pour permettre la réapparition des boutons
+              console.log('[useGameLogicA] handleChoice (correct) => setTimeout => setIsWaitingForCountdown(false)');
+              setIsWaitingForCountdown(false);
+
               if (!isGameOver && !showLevelModal) {
+                console.log('[useGameLogicA] handleChoice (correct) => selectNewEvent()');
                 setPreviousEvent(newEvent);
                 selectNewEvent(allEvents, newEvent);
               }
-            }, 1500); // Réinitialiser juste avant le compte à rebours (ajustez le délai si nécessaire)
+            }, 750);
           }
           return updatedUser;
         });
       }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // CAS B : Réponse incorrecte
+    // ─────────────────────────────────────────────────────────────────────
     } else {
+      console.log('[useGameLogicA] handleChoice => Réponse INCORRECTE');
+
+      // a) Son, streak=0, animation
       playIncorrectSound();
       setStreak(0);
 
@@ -1063,17 +1120,25 @@ const handleChoice = useCallback(
         toValue: 0,
         duration: 500,
         useNativeDriver: false,
-      }).start();
+      }).start(() => {
+        console.log('[useGameLogicA] handleChoice => barre de progression remise à 0');
+      });
 
+      // b) Stats
+      console.log('[useGameLogicA] handleChoice => updatePerformanceStats() (incorrect)');
       updatePerformanceStats(
         newEvent.types_evenement?.[0] || 'default',
         getPeriod(newEvent.date),
         false
       );
 
+      // c) On retire une vie
       setUser((prev) => {
         const updatedLives = prev.lives - 1;
+        console.log('[useGameLogicA] handleChoice => updatedLives=', updatedLives);
+
         if (updatedLives <= 0) {
+          console.log('[useGameLogicA] handleChoice => plus de vies => endGame()');
           endGame();
         }
         return {
@@ -1083,16 +1148,20 @@ const handleChoice = useCallback(
         };
       });
 
+      // d) On stocke l'eventSummaryItem
       setCurrentLevelEvents((prev) => [...prev, eventSummaryItem]);
 
-      // Définir un délai pour réinitialiser isWaitingForCountdown à false juste avant que le compte à rebours ne recommence
+      // e) Au bout de 1.5s, on repasse isWaitingForCountdown à false et on enchaîne
       setTimeout(() => {
-        setIsWaitingForCountdown(false); // Réinitialiser l'état pour permettre la réapparition des boutons
+        console.log('[useGameLogicA] handleChoice (incorrect) => setTimeout => setIsWaitingForCountdown(false)');
+        setIsWaitingForCountdown(false);
+
         if (!isGameOver && !showLevelModal) {
+          console.log('[useGameLogicA] handleChoice (incorrect) => selectNewEvent()');
           setPreviousEvent(newEvent);
           selectNewEvent(allEvents, newEvent);
         }
-      }, 1500); // Réinitialiser juste avant le compte à rebours (ajustez le délai si nécessaire)
+      }, 1500);
     }
   },
   [
@@ -1115,9 +1184,9 @@ const handleChoice = useCallback(
     allEvents,
     progressAnim,
     user,
-    isWaitingForCountdown, // S'assurer que isWaitingForCountdown est dans les dépendances
   ]
 );
+
 
   /* ******* MODIFICATION ******* */
   // 1.H.10. handleLevelUp (correction du bug de type)
