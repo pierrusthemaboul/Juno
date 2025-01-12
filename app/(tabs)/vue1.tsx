@@ -1,24 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  SafeAreaView, 
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
   StatusBar,
   Animated,
+  StyleSheet,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import useAdminStatus from '../hooks/useAdminStatus';
-import GeometricBackground from '../components/GeometricBackground';
-import styles from '../styles/vue1styles';
+import { useFonts } from '../../hooks/useFonts';
 
-const AnimatedVisual = ({ type, selected }) => {
-  const pulseAnim = React.useRef(new Animated.Value(1)).current;
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+const { width } = Dimensions.get('window');
+
+// Theme qui correspond à l'index
+const THEME = {
+  primary: '#050B1F',    // Très sombre Navy Blue
+  secondary: '#0A173D',  // Navy Blue profond
+  accent: '#FFCC00',     // Or Métallique
+  text: '#FFFFFF',
+  background: {
+    dark: '#020817',     // Presque noir avec une teinte bleue
+    medium: '#050B1F',   // Très sombre
+    light: '#0A173D'     // Navy Blue profond
+  },
+  button: {
+    primary: ['#1D5F9E', '#0A173D'],    // Gradient Blue to Dark
+    secondary: ['#FFBF00', '#CC9900'],   // Gradient Gold to Dark Gold
+    tertiary: ['#0A173D', '#1D5F9E']     // Dark to Blue
+  }
+};
+
+// Composant du timeline animé
+const AnimatedTimeline = () => {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Fade in initial
+    Animated.timing(opacityAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
+    // Animation de pulsation continue
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -34,6 +66,7 @@ const AnimatedVisual = ({ type, selected }) => {
       ])
     ).start();
 
+    // Animation de la flèche
     Animated.loop(
       Animated.sequence([
         Animated.timing(rotateAnim, {
@@ -50,294 +83,338 @@ const AnimatedVisual = ({ type, selected }) => {
     ).start();
   }, []);
 
-  const visualColor = selected ? '#FFFFFF' : '#FF4B2B';
-
-  if (type === 'chronological') {
-    return (
-      <View style={styles.modeVisual}>
-        <Animated.View style={[
-          styles.timelineDot,
-          { backgroundColor: visualColor },
-          { transform: [{ scale: pulseAnim }] }
-        ]} />
-        <Animated.View style={[
-          styles.timelineArrow,
-          { backgroundColor: visualColor },
-          {
-            transform: [{
-              scaleX: rotateAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 1.2]
-              })
-            }]
-          }
-        ]} />
-        <Animated.View style={[
-          styles.timelineDot,
-          { backgroundColor: visualColor },
-          { transform: [{ scale: pulseAnim }] }
-        ]} />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.comparisonCircles}>
-      <Animated.View style={[
-        styles.circle,
-        { borderColor: visualColor },
-        { transform: [{ scale: pulseAnim }] }
-      ]}>
-        <Text style={[styles.circleText, { color: visualColor }]}>1</Text>
+    <Animated.View style={[styles.timelineContainer, { opacity: opacityAnim }]}>
+      <View style={styles.timelineLine} />
+      
+      {/* Événement de référence */}
+      <Animated.View style={[styles.eventContainer, { transform: [{ scale: pulseAnim }] }]}>
+        <View style={styles.eventIcon}>
+          <Ionicons name="flag" size={24} color={THEME.accent} />
+        </View>
+        <Text style={styles.eventText}>Événement de référence</Text>
       </Animated.View>
-      <Animated.View style={{
-        transform: [{
-          rotate: rotateAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0deg', '180deg']
-          })
-        }]
-      }}>
-        <Ionicons name="swap-horizontal" size={28} color={visualColor} />
+
+      {/* Choix et nouvel événement */}
+      <Animated.View style={[styles.eventContainer, { transform: [{ scale: pulseAnim }] }]}>
+        <View style={styles.choiceButtons}>
+          <TouchableOpacity style={styles.choiceButton}>
+            <Ionicons name="arrow-back" size={20} color={THEME.accent} />
+            <Text style={styles.choiceText}>AVANT</Text>
+          </TouchableOpacity>
+
+          <View style={styles.eventIcon}>
+            <Ionicons name="help" size={24} color={THEME.accent} />
+          </View>
+
+          <TouchableOpacity style={styles.choiceButton}>
+            <Text style={styles.choiceText}>APRÈS</Text>
+            <Ionicons name="arrow-forward" size={20} color={THEME.accent} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.eventText}>Nouvel événement</Text>
       </Animated.View>
-      <Animated.View style={[
-        styles.circle,
-        { borderColor: visualColor },
-        { transform: [{ scale: pulseAnim }] }
-      ]}>
-        <Text style={[styles.circleText, { color: visualColor }]}>2</Text>
-      </Animated.View>
-    </View>
-  );
-};
-
-const GameModeCard = ({ type, title, description, selected, onSelect, isFirst }) => {
-  const scaleAnim = React.useRef(new Animated.Value(0.95)).current;
-  const opacityAnim = React.useRef(new Animated.Value(0)).current;
-  const rotateAnim = React.useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.delay(isFirst ? 100 : 300),
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 20,
-          friction: 7,
-          useNativeDriver: true
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true
-        })
-      ])
-    ]).start();
-  }, []);
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.spring(rotateAnim, {
-        toValue: 1,
-        tension: 100,
-        friction: 5,
-        useNativeDriver: true
-      }),
-      Animated.spring(rotateAnim, {
-        toValue: 0,
-        tension: 100,
-        friction: 5,
-        useNativeDriver: true
-      })
-    ]).start();
-
-    onSelect();
-  };
-
-  return (
-    <Animated.View style={[
-      styles.cardContainer,
-      {
-        opacity: opacityAnim,
-        transform: [
-          { scale: scaleAnim },
-          {
-            rotate: rotateAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: ['0deg', '3deg']
-            })
-          }
-        ]
-      }
-    ]}>
-      <TouchableOpacity
-        style={[styles.card, selected && styles.selectedCard]}
-        onPress={handlePress}
-        activeOpacity={0.9}
-      >
-        <LinearGradient
-          colors={selected ? ['#FF4B2B', '#FF416C'] : ['#FFFFFF', '#FFFFFF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.cardGradient}
-        >
-          <Text style={[
-            styles.cardTitle,
-            selected && styles.selectedText
-          ]}>{title}</Text>
-          <Text style={[
-            styles.cardDescription,
-            selected && styles.selectedText
-          ]}>{description}</Text>
-          <AnimatedVisual type={type} selected={selected} />
-        </LinearGradient>
-      </TouchableOpacity>
     </Animated.View>
   );
 };
 
-export default function Vue1() {
-  const [selectedMode, setSelectedMode] = useState(null);
-  const buttonAnim = React.useRef(new Animated.Value(0)).current;
-  const titleAnim = React.useRef(new Animated.Value(0)).current;
-  const router = useRouter();
-  const { isAdmin } = useAdminStatus();
+// Composant du bouton animé
+const AnimatedButton = ({ 
+  onPress, 
+  label, 
+  icon, 
+  variant = "primary",
+  disabled = false 
+}) => {
+  const scale = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    Animated.spring(titleAnim, {
+  const handlePressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.95,
+      useNativeDriver: true
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scale, {
       toValue: 1,
-      tension: 20,
-      friction: 7,
+      friction: 3,
       useNativeDriver: true
     }).start();
-  }, []);
+  };
 
-  useEffect(() => {
-    Animated.spring(buttonAnim, {
-      toValue: selectedMode ? 1 : 0,
-      tension: 50,
-      friction: 7,
-      useNativeDriver: true
-    }).start();
-  }, [selectedMode]);
-
-  const handleStartGame = () => {
-    if (!selectedMode) return;
-    
-    Animated.parallel([
-      Animated.timing(titleAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true
-      }),
-      Animated.timing(buttonAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true
-      })
-    ]).start(() => {
-      router.push(selectedMode === 'chronological' ? '/vue2a' : '/vue2b');
-    });
+  const getGradientColors = () => {
+    switch(variant) {
+      case "secondary":
+        return THEME.button.secondary;
+      case "tertiary":
+        return THEME.button.tertiary;
+      default:
+        return THEME.button.primary;
+    }
   };
 
   return (
+    <TouchableOpacity
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={onPress}
+      disabled={disabled}
+      style={styles.buttonWrapper}
+    >
+      <Animated.View style={[
+        styles.buttonContainer,
+        { transform: [{ scale }] }
+      ]}>
+        <LinearGradient
+          colors={getGradientColors()}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.buttonGradient}
+        >
+          {icon && <Ionicons name={icon} size={24} color={THEME.accent} style={styles.buttonIcon} />}
+          <Text style={styles.buttonText}>{label}</Text>
+        </LinearGradient>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+export default function Vue1() {
+  const router = useRouter();
+  const { isAdmin } = useAdminStatus();
+  const fontsLoaded = useFonts();
+  
+  // Animations d'entrée
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          friction: 8,
+          useNativeDriver: true
+        })
+      ]).start();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      
       <LinearGradient
-        colors={['#FFE4D6', '#FFF5E6']}
+        colors={[THEME.background.dark, THEME.background.medium, THEME.background.light]}
         style={styles.container}
       >
-        <GeometricBackground />
+        {/* Header avec boutons admin */}
+        {isAdmin && (
+          <View style={styles.header}>
+            <AnimatedButton
+              icon="images-outline"
+              label="Images"
+              onPress={() => router.push('/vue4')}
+              variant="tertiary"
+            />
+            <AnimatedButton
+              icon="settings-outline"
+              label="Admin"
+              onPress={() => router.push('/vue5')}
+              variant="tertiary"
+            />
+          </View>
+        )}
 
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.headerButton}
-            onPress={() => router.push('/vue6')}
+        <Animated.View style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}>
+          <Text style={styles.title}>Comment jouer ?</Text>
+          <Text style={styles.subtitle}>
+            Testez vos connaissances historiques en replaçant les événements dans leur contexte temporel
+          </Text>
+
+          {/* Timeline explicative */}
+          <AnimatedTimeline />
+
+          {/* Bouton de démarrage */}
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={() => router.push('/vue2a')}
           >
-            <Ionicons name="time-outline" size={24} color="#FF4B2B" />
-            <Text style={styles.headerButtonText}>Histoire</Text>
-          </TouchableOpacity>
-
-          {isAdmin && (
-            <>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => router.push('/vue4')}
-              >
-                <Ionicons name="images-outline" size={24} color="#FF4B2B" />
-                <Text style={styles.headerButtonText}>Images</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => router.push('/vue5')}
-              >
-                <Ionicons name="settings-outline" size={24} color="#FF4B2B" />
-                <Text style={styles.headerButtonText}>Admin</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        <View style={styles.content}>
-          <Animated.View style={[
-            styles.cardsContainer,
-            {
-              transform: [{
-                translateY: titleAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [50, 0]
-                })
-              }]
-            }
-          ]}>
-            <GameModeCard
-              type="chronological"
-              title="Mode Avant/Après"
-              description="Voyagez dans le temps ! Un événement référence vous est donné, devinez si le nouvel événement s'est passé avant ou après."
-              selected={selectedMode === 'chronological'}
-              onSelect={() => setSelectedMode('chronological')}
-              isFirst
-            />
-
-            <GameModeCard
-              type="comparison"
-              title="Mode Comparaison"
-              description="Défiez votre instinct ! Entre deux événements historiques, identifiez celui qui s'est déroulé le plus récemment."
-              selected={selectedMode === 'comparison'}
-              onSelect={() => setSelectedMode('comparison')}
-            />
-          </Animated.View>
-
-          <Animated.View style={[
-            styles.startButtonContainer,
-            {
-              opacity: buttonAnim,
-              transform: [{
-                translateY: buttonAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [50, 0]
-                })
-              }]
-            }
-          ]}>
-            <TouchableOpacity
-              style={[styles.startButton, !selectedMode && styles.startButtonDisabled]}
-              onPress={handleStartGame}
-              disabled={!selectedMode}
+            <LinearGradient
+              colors={THEME.button.secondary}
+              style={styles.startButtonGradient}
             >
-              <LinearGradient
-                colors={selectedMode ? ['#FF4B2B', '#FF416C'] : ['#CCCCCC', '#BBBBBB']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.startButtonGradient}
-              >
-                <Text style={styles.startButtonText}>Commencer l'aventure</Text>
-                <Ionicons name="arrow-forward" size={24} color="white" />
-              </LinearGradient>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+              <Text style={styles.startButtonText}>COMMENCER</Text>
+              <Ionicons name="arrow-forward" size={24} color={THEME.text} />
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </LinearGradient>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: THEME.background.dark,
+  },
+  container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    justifyContent: 'center', // Centrer verticalement le contenu restant
+  },
+  title: {
+    fontSize: 32,
+    fontFamily: 'Montserrat-Bold',
+    color: THEME.accent,
+    textAlign: 'center',
+    marginBottom: 10,
+    textShadowColor: `${THEME.accent}40`,
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    color: THEME.text,
+    textAlign: 'center',
+    opacity: 0.8,
+    marginBottom: 40,
+  },
+  timelineContainer: {
+    width: '100%',
+    paddingVertical: 40,
+    position: 'relative',
+  },
+  timelineLine: {
+    position: 'absolute',
+    top: '50%',
+    left: 40,
+    right: 40,
+    height: 2,
+    backgroundColor: THEME.accent,
+    opacity: 0.3,
+  },
+  eventContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  eventIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: `${THEME.accent}20`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: `${THEME.accent}50`,
+    marginBottom: 10,
+  },
+  eventText: {
+    color: THEME.text,
+    fontSize: 16,
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+  },
+  choiceButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  choiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${THEME.accent}10`,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: `${THEME.accent}30`,
+  },
+  choiceText: {
+    color: THEME.accent,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Bold',
+    marginHorizontal: 5,
+  },
+  startButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    borderRadius: 25,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: THEME.accent,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  startButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    gap: 10,
+  },
+  startButtonText: {
+    color: THEME.text,
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+  },
+  buttonWrapper: {
+    marginVertical: 10,
+  },
+  buttonContainer: {
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+  buttonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+  },
+  buttonIcon: {
+    marginRight: 10,
+  },
+  buttonText: {
+    color: THEME.text,
+    fontSize: 16,
+    fontFamily: 'Montserrat-Bold',
+  },
+});
