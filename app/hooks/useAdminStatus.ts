@@ -5,39 +5,52 @@ const useAdminStatus = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, []);
-
   const checkAdminStatus = async () => {
     try {
+      // 1. Récupérer l'utilisateur courant
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         setIsAdmin(false);
         setLoading(false);
         return;
       }
 
-      // Vérifier si l'utilisateur est dans la table admin_users
-      const { data: adminUser, error } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', user.id)
+      // 2. Vérifier le statut admin dans la table profiles
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
         .single();
 
       if (error) {
-        console.error('Erreur lors de la vérification du statut admin:', error);
+        console.error('Erreur lors de la vérification du statut admin:', error.message);
         setIsAdmin(false);
       } else {
-        setIsAdmin(!!adminUser);
+        setIsAdmin(!!profile?.is_admin);
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur inattendue:', error);
       setIsAdmin(false);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Vérifier le statut initial
+    checkAdminStatus();
+
+    // S'abonner aux changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdminStatus();
+    });
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return { isAdmin, loading };
 };

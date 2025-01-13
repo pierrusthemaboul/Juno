@@ -43,7 +43,6 @@ export default function Login() {
   const [stayConnected, setStayConnected] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // useLayoutEffect pour la configuration de la navigation
   useLayoutEffect(() => {
     const options = {
       headerShown: false,
@@ -54,29 +53,40 @@ export default function Login() {
     navigation.setOptions(options);
   }, [navigation]);
 
-  // useEffect pour le cycle de vie
   useEffect(() => {
     StatusBar.setBarStyle('light-content');
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor(THEME.background.dark);
     }
+    console.log('🔍 Login Screen Mounted');
+    console.log('📍 Current pathname:', pathname);
+    console.log('🔀 Current segments:', segments);
 
     return () => {
-      // Cleanup si nécessaire
+      console.log('🔍 Login Screen Unmounted');
     };
   }, []);
 
   const handleLogin = async () => {
+    console.log('🔐 Starting login process...');
     setIsLoggingIn(true);
     setErrorMessage('');
-
+  
     try {
-      const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
+      console.log('📧 Attempting login with email:', email.trim());
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
       });
-
+  
+      console.log('📊 Login response:', { 
+        user: !!data?.user, 
+        session: !!data?.session, 
+        error: !!error 
+      });
+  
       if (error) {
+        console.error('❌ Login error:', error.message);
         if (error.message.toLowerCase().includes('invalid login credentials')) {
           setErrorMessage(
             "Identifiants incorrects ou compte inexistant.\nVeuillez vérifier vos informations ou créer un compte."
@@ -86,18 +96,55 @@ export default function Login() {
         }
         return;
       }
-
-      if (session) {
+  
+      if (data?.session) {
+        console.log('✅ Session created successfully');
+        
         if (stayConnected) {
-          await supabase.auth.setSession(session);
+          console.log('🔄 Setting persistent session');
+          await supabase.auth.setSession(data.session);
         }
-        router.replace('/(tabs)');
+  
+        // Essayons différentes approches de navigation
+        console.log('🚀 Attempting navigation...');
+        
+        try {
+          // Approche 1: Navigation directe
+          router.push('/(tabs)');
+          console.log('✅ Navigation approach 1 completed');
+        } catch (e1) {
+          console.error('❌ Navigation approach 1 failed:', e1);
+          
+          try {
+            // Approche 2: Navigation avec délai
+            setTimeout(() => {
+              router.replace('/(tabs)');
+              console.log('✅ Navigation approach 2 completed');
+            }, 100);
+          } catch (e2) {
+            console.error('❌ Navigation approach 2 failed:', e2);
+            
+            try {
+              // Approche 3: Navigation absolue
+              navigation.navigate('(tabs)');
+              console.log('✅ Navigation approach 3 completed');
+            } catch (e3) {
+              console.error('❌ All navigation approaches failed');
+              console.error(e3);
+              setErrorMessage("Erreur lors de la redirection. Veuillez réessayer.");
+            }
+          }
+        }
+  
       } else {
+        console.error('❌ No session created');
         setErrorMessage("Erreur lors de la connexion. Veuillez réessayer.");
       }
     } catch (err) {
+      console.error('❌ Unexpected error:', err);
       setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
     } finally {
+      console.log('🏁 Login process completed');
       setIsLoggingIn(false);
     }
   };

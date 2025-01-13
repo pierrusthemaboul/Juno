@@ -7,11 +7,11 @@
  * 4.B. Props
  *     @interface LevelModalProps
  *     @property {boolean} visible - Contrôle la visibilité du modal.
- *     @property {number} level - Niveau actuel.
+ *     @property {number} level - Niveau actuel (qui vient d'être débloqué).
  *     @property {() => void} onStart - Fonction appelée pour démarrer le niveau.
- *     @property {string} name - Nom du niveau.
- *     @property {string} description - Description du niveau.
- *     @property {number} requiredEvents - Nombre d'événements requis pour le niveau.
+ *     @property {string} name - Nom du niveau (non affiché désormais).
+ *     @property {string} description - Description du niveau (non affichée désormais).
+ *     @property {number} requiredEvents - Nombre d'événements requis pour le niveau en cours.
  *     @property {SpecialRules[]} [specialRules] - Règles spéciales du niveau.
  *     @property {number} [previousLevel] - Niveau précédent (si applicable).
  *     @property {boolean} isNewLevel - Indique si c'est un nouveau niveau.
@@ -45,10 +45,10 @@ interface LevelModalProps {
   visible: boolean;
   level: number;
   onStart: () => void;
-  name: string;
-  description: string;
+  name: string;           // On ne l'affiche plus
+  description: string;    // On ne l'affiche plus
   requiredEvents: number;
-  specialRules?: any[]; // Vous pouvez remplacer 'any' par le type approprié si vous l'avez défini
+  specialRules?: any[]; 
   previousLevel?: number;
   isNewLevel: boolean;
   eventsSummary: LevelEventSummary[] | undefined;
@@ -103,8 +103,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-  
-
     if (visible) {
       // Réinitialisation des animations
       const resetAnimations = () => {
@@ -158,9 +156,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
           startButtonAnimation();
         }
       });
-    } else {
-      // Si besoin, ajouter un log ou autre chose
- 
     }
 
     return () => {
@@ -188,11 +183,10 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
 
   // 4.F.4. Gestionnaire d'événement pour démarrer le niveau
   const handleStart = () => {
-
     onStart();
   };
 
-  // 4.F.5. Rendu du bandeau de fin de niveau
+  // 4.F.5. Rendu du bandeau de fin de niveau (modifié pour afficher "Bravo ! Niveau X terminé")
   const renderLevelUpBannerBis = () => {
     if (!previousLevel || !isNewLevel) {
       return null;
@@ -217,9 +211,8 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
           style={styles.bannerGradient}
         >
           <Ionicons name="trophy" size={32} color="white" />
-          <Text style={styles.levelUpText}>NIVEAU TERMINÉ</Text>
-          <Text style={styles.previousLevel}>
-            {previousLevel} → {level}
+          <Text style={styles.levelUpText}>
+            Bravo ! Niveau {previousLevel} terminé
           </Text>
         </LinearGradient>
       </Animated.View>
@@ -229,7 +222,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   // 4.F.6. Rendu du récapitulatif des événements
   const renderEventsSummaryBis = () => {
     if (!eventsSummary || eventsSummary.length === 0) {
-     
       return null;
     }
 
@@ -238,12 +230,10 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
         <Text style={styles.sectionTitle}>Événements du niveau</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {eventsSummary.map((event, index) => {
-   
             return (
               <TouchableOpacity
                 key={event.id ?? index}
                 onPress={() => {
-          
                   setSelectedEvent(event);
                 }}
                 activeOpacity={0.7}
@@ -258,7 +248,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
                     colors={['transparent', 'rgba(0,0,0,0.8)']}
                     style={styles.eventGradient}
                   >
-                    {/* On n'affiche que l'année à partir de event.date_formatee */}
                     <Text style={styles.eventDate}>
                       {extractYearFromDateString(event.date_formatee)}
                     </Text>
@@ -297,8 +286,6 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
       return null;
     }
 
-   
-
     return (
       <Modal
         transparent={true}
@@ -312,13 +299,9 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
               <Text style={styles.eventDetailsTitle}>
                 {selectedEvent.titre}
               </Text>
-
-              {/* Ici, on n'affiche que l'année */}
               <Text style={styles.eventDetailsDate}>
                 {extractYearFromDateString(selectedEvent.date_formatee)}
               </Text>
-
-              {/* Vérifier si selectedEvent.description_detaillee est bien défini */}
               <Text style={styles.eventDetailsDescription}>
                 {selectedEvent.description_detaillee
                   ? selectedEvent.description_detaillee
@@ -342,25 +325,37 @@ const LevelUpModalBis: React.FC<LevelModalProps> = ({
   const renderModalContentBis = () => {
     return (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        
         {renderLevelUpBannerBis()}
-        <View style={styles.levelContainer}>
-          <Animated.Text
-            style={[
-              styles.levelLabel,
-              {
-                transform: [{ scale: levelNumberAnimBis }]
-              }
-            ]}
-          >
-            NIVEAU {level}
-          </Animated.Text>
-          <Text style={styles.levelName}>{name}</Text>
-        </View>
+
+        {/** 
+         * On enlève l'affichage du niveau en clair ("NIVEAU 3", "Initié", etc.).
+         * Le code suivant est commenté/supprimé pour répondre au besoin :
+         *
+         * <View style={styles.levelContainer}>
+         *   <Animated.Text
+         *     style={[
+         *       styles.levelLabel,
+         *       {
+         *         transform: [{ scale: levelNumberAnimBis }]
+         *       }
+         *     ]}
+         *   >
+         *     NIVEAU {level}
+         *   </Animated.Text>
+         *   <Text style={styles.levelName}>{name}</Text>
+         * </View>
+         */}
 
         {renderEventsSummaryBis()}
 
+        {/**
+         * À la place du "Objectif : 7 événements",
+         * on annonce le niveau suivant dans la même police :
+         * "Niveau {level} : objectif {requiredEvents} événements"
+         */}
         <Text style={styles.eventsInfo}>
-          Objectif : {requiredEvents} événements
+          Niveau {level} : objectif {requiredEvents} événements
         </Text>
 
         <Animated.View
@@ -485,7 +480,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // 5.C. Container de niveau
+  // 5.C. Container de niveau (non utilisé désormais)
   levelContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -619,15 +614,13 @@ const styles = StyleSheet.create({
   },
 
   // 5.H. Styles pour le modal de détails d'événement
-  // Remarque : attention à la duplication de modalOverlay (déjà défini plus haut)
-  // On peut renommer ici pour éviter les conflits.
   eventDetailsModal: {
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
     width: '80%',
     maxWidth: 400,
-    maxHeight: '70%', // Hauteur maximale du modal
+    maxHeight: '70%',
   },
   eventDetailsTitle: {
     fontSize: 18,

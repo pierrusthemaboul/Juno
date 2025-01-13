@@ -1,45 +1,35 @@
 {
   "expo": {
-    "name": "Juno2",
+    "owner": "pierretulle",
+    "name": "TimeHop",
     "slug": "Juno2",
     "version": "1.0.0",
-    "sdkVersion": "52.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/logom.png",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.pierretulle.juno2",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logom.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pierretulle.Juno2"
+      "versionCode": 3
     },
     "web": {
-      "bundler": "metro",
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "newArchEnabled": true,
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
         "projectId": "23007c87-3064-4ef6-81f2-91686d30a169"
       }

@@ -37,18 +37,72 @@ export default function SignUp() {
   const [isSigningUp, setIsSigningUp] = useState(false);
 
   const handleSignUp = async () => {
+    if (isSigningUp) return;
+
+    console.log('🔐 Starting signup process...');
     setIsSigningUp(true);
     setErrorMessage('');
     setSuccessMessage('');
 
+    // 1. Validation de base des champs
     if (!nickname.trim()) {
       setErrorMessage('Le pseudonyme est obligatoire.');
       setIsSigningUp(false);
       return;
     }
 
+    // 2. Vérification de la longueur du pseudonyme (max 12 caractères)
+    if (nickname.trim().length > 12) {
+      setErrorMessage('Le pseudonyme ne peut pas dépasser 12 caractères.');
+      setIsSigningUp(false);
+      return;
+    }
+
+    // (Optionnel) Vérification de certains caractères spéciaux interdits
+    const forbiddenChars = /[\\\/]/g;
+    if (forbiddenChars.test(nickname)) {
+      setErrorMessage('Le pseudonyme contient des caractères interdits (\\ ou /).');
+      setIsSigningUp(false);
+      return;
+    }
+
+    if (!email.trim()) {
+      setErrorMessage("L'email est obligatoire.");
+      setIsSigningUp(false);
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setErrorMessage('Le mot de passe doit contenir au moins 6 caractères.');
+      setIsSigningUp(false);
+      return;
+    }
+
     try {
-      // 1. Inscription de l'utilisateur
+      // 3. Vérification si le pseudo est déjà utilisé en base
+      //    (Requiert que ta table "profiles" ait une colonne "display_name".)
+      const { data: existingProfile, error: checkProfileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('display_name', nickname.trim())
+        .single();
+
+      // Erreur inattendue lors de la vérification du pseudo
+      if (checkProfileError && checkProfileError.code !== 'PGRST116') {
+        console.error('❌ Check nickname error:', checkProfileError.message);
+        setErrorMessage('Erreur lors de la vérification du pseudonyme.');
+        setIsSigningUp(false);
+        return;
+      }
+
+      // Si un profil existe déjà avec ce pseudo
+      if (existingProfile) {
+        setErrorMessage('Ce pseudonyme est déjà utilisé. Veuillez en choisir un autre.');
+        setIsSigningUp(false);
+        return;
+      }
+
+      // 4. Inscription de l'utilisateur (Supabase se charge de vérifier l’unicité de l’email)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password,
@@ -60,7 +114,13 @@ export default function SignUp() {
       });
 
       if (signUpError) {
-        setErrorMessage(signUpError.message);
+        console.error('❌ Signup error:', signUpError.message);
+        // Supabase renvoie une erreur si l'email est déjà utilisée
+        if (signUpError.message.includes('Email')) {
+          setErrorMessage('Cet email est invalide ou déjà utilisé.');
+        } else {
+          setErrorMessage(signUpError.message);
+        }
         return;
       }
 
@@ -69,31 +129,43 @@ export default function SignUp() {
         return;
       }
 
-      // 2. Création du profil
+      // 5. Création du profil utilisateur avec des valeurs par défaut
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
           {
             id: data.user.id,
             display_name: nickname.trim(),
-            created_at: new Date().toISOString(),
+            high_score: 0,
+            games_played: 0,
+            current_level: 1,
+            events_completed: 0,
+            mastery_levels: {},
+            is_admin: false
           }
         ]);
 
       if (profileError) {
-        setErrorMessage('Erreur lors de la création du profil.');
+        console.error('❌ Profile creation error:', profileError.message);
+        setErrorMessage('Erreur lors de la création du profil. Veuillez réessayer.');
         return;
       }
 
-      // 3. Succès
+      // 6. Succès et navigation
       setSuccessMessage('Compte créé avec succès!');
 
-      // 4. Redirection après un court délai
+      // Attendre un peu pour que l'utilisateur voie le message de succès
       setTimeout(() => {
-        router.replace('/(tabs)');
+        try {
+          router.push('/(tabs)');
+        } catch (navError) {
+          console.error('❌ Navigation error:', navError);
+          // Le compte est créé, on ne montre pas d'erreur supplémentaire
+        }
       }, 1500);
 
     } catch (error) {
+      console.error('❌ Unexpected error:', error);
       setErrorMessage('Une erreur inattendue est survenue.');
     } finally {
       setIsSigningUp(false);
@@ -101,7 +173,7 @@ export default function SignUp() {
   };
 
   return (
-    <ScrollView 
+    <ScrollView
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
@@ -147,7 +219,7 @@ export default function SignUp() {
       ) : null}
 
       <TouchableOpacity
-        style={[styles.button, isSigningUp && { opacity: 0.7 }]}
+        style={[styles.button, isSigningUp && styles.buttonDisabled]}
         onPress={handleSignUp}
         disabled={isSigningUp}
       >
@@ -190,6 +262,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 15,
     width: '100%',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: THEME.text,
