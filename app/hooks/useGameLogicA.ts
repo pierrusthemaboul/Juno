@@ -205,75 +205,98 @@ const [initialJumpEventCount, setInitialJumpEventCount] = useState<number>(() =>
 
   // 1.H.1. initGame
   /**
-   * 1.H.1. Initialisation du jeu (fetch user, config niveau 1, etc.)
-   * @async
-   * @function initGame
-   * @returns {void}
-   */
-  const initGame = async () => {
-    try {
-      setLoading(true);
-      await fetchUserData();
+   // 1.H.1. initGame
+/**
+ * 1.H.1. Initialisation du jeu (fetch user, config niveau 1, etc.)
+ * @async
+ * @function initGame
+ * @returns {void}
+ */
+const initGame = async () => {
+  try {
+    setLoading(true);
+    await fetchUserData();
 
-      const initialConfig = LEVEL_CONFIGS[1];
-      if (!initialConfig) {
-        throw new Error('Configuration du niveau 1 manquante');
-      }
-      setCurrentLevelConfig(initialConfig);
-
-      const { data: events, error: eventsError } = await supabase
-        .from('evenements')
-        .select('*')
-        .order('date', { ascending: true });
-
-      if (eventsError) throw eventsError;
-      if (!events?.length) {
-        throw new Error('Aucun événement disponible');
-      }
-
-      const validEvents = events.filter(
-        (event) =>
-          event.date &&
-          event.titre &&
-          event.illustration_url &&
-          event.niveau_difficulte &&
-          event.types_evenement
-      );
-      setAllEvents(validEvents);
-
-      if (validEvents.length < 2) {
-        throw new Error("Pas assez d'événements disponibles");
-      }
-
-      // --- MODIFICATION ICI : Sélection des événements de niveau 1 uniquement ---
-      const level1Events = validEvents.filter((e) => e.niveau_difficulte === 1);
-
-      if (level1Events.length < 2) {
-        throw new Error("Pas d'événements adaptés au niveau 1 disponibles");
-      }
-      // --- FIN DE LA MODIFICATION ---
-
-      const firstIndex = Math.floor(Math.random() * level1Events.length);
-      const firstEvent = level1Events[firstIndex];
-      const filteredForSecond = level1Events.filter((e) => e.id !== firstEvent.id);
-      const secondIndex = Math.floor(Math.random() * filteredForSecond.length);
-      const secondEvent = filteredForSecond[secondIndex];
-
-      setPreviousEvent(firstEvent);
-      setNewEvent(secondEvent);
-      setUsedEvents(new Set([firstEvent.id, secondEvent.id]));
-
-      setIsLevelPaused(false);
-      setIsCountdownActive(true);
-      setTimeLeft(20);
-
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Erreur d'initialisation";
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
+    const initialConfig = LEVEL_CONFIGS[1];
+    if (!initialConfig) {
+      throw new Error('Configuration du niveau 1 manquante');
     }
-  };
+    setCurrentLevelConfig(initialConfig);
+
+    const { data: events, error: eventsError } = await supabase
+      .from('evenements')
+      .select('*')
+      .order('date', { ascending: true });
+
+    if (eventsError) throw eventsError;
+    if (!events?.length) {
+      throw new Error('Aucun événement disponible');
+    }
+
+    const validEvents = events.filter(
+      (event) =>
+        event.date &&
+        event.titre &&
+        event.illustration_url &&
+        event.niveau_difficulte &&
+        event.types_evenement
+    );
+    setAllEvents(validEvents);
+
+    if (validEvents.length < 2) {
+      throw new Error("Pas assez d'événements disponibles");
+    }
+
+    // --- MODIFICATION ICI : Sélection des événements de niveau 1 uniquement ---
+    const level1Events = validEvents.filter((e) => e.niveau_difficulte === 1);
+
+    if (level1Events.length < 2) {
+      throw new Error("Pas d'événements adaptés au niveau 1 disponibles");
+    }
+    // --- FIN DE LA MODIFICATION ---
+
+    // Sélection du premier événement
+    const firstIndex = Math.floor(Math.random() * level1Events.length);
+    const firstEvent = level1Events[firstIndex];
+
+    // Calcul de l'année de référence pour le 1er événement
+    function yearFromDate(dateString: string): number {
+      return new Date(dateString).getFullYear();
+    }
+    const referenceYear = yearFromDate(firstEvent.date);
+
+    // On filtre les autres événements
+    const filteredForSecond = level1Events.filter((e) => e.id !== firstEvent.id);
+
+    // Filtrage pour avoir au moins 500 ans d'écart
+    const validSecondEvents = filteredForSecond.filter(
+      (e) => Math.abs(yearFromDate(e.date) - referenceYear) >= 500
+    );
+
+    if (validSecondEvents.length === 0) {
+      throw new Error('Aucun second événement ne répond à l’écart minimal de 500 ans');
+    }
+
+    // Sélection du second événement dans ce sous-ensemble
+    const secondIndex = Math.floor(Math.random() * validSecondEvents.length);
+    const secondEvent = validSecondEvents[secondIndex];
+
+    setPreviousEvent(firstEvent);
+    setNewEvent(secondEvent);
+    setUsedEvents(new Set([firstEvent.id, secondEvent.id]));
+
+    setIsLevelPaused(false);
+    setIsCountdownActive(true);
+    setTimeLeft(20);
+
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Erreur d'initialisation";
+    setError(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 1.H.2. fetchUserData
   /**

@@ -355,7 +355,7 @@ export const LEVEL_CONFIGS: Record<number, LevelConfig> = {
     level: 15,
     name: "Dieu",
     description: "Le boss final",
-    eventsNeeded: 19,
+    eventsNeeded: 10000,
     timeGap: {
       base: 1,
       variance: 1,
