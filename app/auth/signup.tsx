@@ -37,7 +37,6 @@ export default function SignUp() {
   const [isSigningUp, setIsSigningUp] = useState(false);
 
   const handleSignUp = async () => {
-    console.log('--- handleSignUp START ---');
     setIsSigningUp(true);
     setErrorMessage('');
     setSuccessMessage('');
@@ -61,7 +60,6 @@ export default function SignUp() {
       });
 
       if (signUpError) {
-        console.error('Erreur signup:', signUpError);
         setErrorMessage(signUpError.message);
         return;
       }
@@ -83,26 +81,22 @@ export default function SignUp() {
         ]);
 
       if (profileError) {
-        console.error('Erreur création profil:', profileError);
         setErrorMessage('Erreur lors de la création du profil.');
         return;
       }
 
       // 3. Succès
       setSuccessMessage('Compte créé avec succès!');
-      console.log('Compte créé avec succès, redirection...');
-      
+
       // 4. Redirection après un court délai
       setTimeout(() => {
         router.replace('/(tabs)');
       }, 1500);
 
     } catch (error) {
-      console.error('Erreur générale:', error);
       setErrorMessage('Une erreur inattendue est survenue.');
     } finally {
       setIsSigningUp(false);
-      console.log('--- handleSignUp END ---');
     }
   };
 

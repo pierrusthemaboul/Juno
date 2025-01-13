@@ -55,7 +55,7 @@ const AnimatedButton = React.memo(({
   const scale = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
 
-  const animatePress = (pressed: boolean) => {
+  const animatePress = (pressed) => {
     Animated.parallel([
       Animated.spring(scale, {
         toValue: pressed ? 0.95 : 1,
@@ -210,7 +210,7 @@ export default function HomeScreen() {
       );
       await sound.playAsync();
     } catch (error) {
-      console.warn('Audio error:', error);
+      // Gestion des erreurs audio si nécessaire
     }
 
     setTimeout(() => {
@@ -277,7 +277,6 @@ export default function HomeScreen() {
       .single();
       
     if (data) setDisplayName(data.display_name);
-    if (error) console.error('Error fetching profile:', error);
   };
 
   const handleLogout = async () => {
@@ -294,9 +293,6 @@ export default function HomeScreen() {
   const handlePlayAsGuest = () => {
     const guestId = Math.floor(Math.random() * 10000);
     const name = `Voyageur-${guestId}`;
-    
-    console.log('=== GUEST MODE ===');
-    console.log('Generated name:', name);
     
     // Mettre à jour tous les états dans une seule "batch"
     Promise.resolve().then(() => {
@@ -377,17 +373,17 @@ export default function HomeScreen() {
             }
           ]}>
             <View style={styles.headerContainer}>
-            <Text style={styles.welcomeTitle}>
-  {(() => {
-    if (guestDisplayName) {
-      return `Bienvenue, ${guestDisplayName}`;
-    }
-    if (user?.name || displayName) {
-      return `Bienvenue, ${user?.name || displayName}`;
-    }
-    return "L'Histoire vous Attend";
-  })()}
-</Text>
+              <Text style={styles.welcomeTitle}>
+                {(() => {
+                  if (guestDisplayName) {
+                    return `Bienvenue, ${guestDisplayName}`;
+                  }
+                  if (user?.name || displayName) {
+                    return `Bienvenue, ${user?.name || displayName}`;
+                  }
+                  return "L'Histoire vous Attend";
+                })()}
+              </Text>
               <Text style={styles.welcomeSubtitle}>
                 {user || guestDisplayName
                   ? "Prêt pour votre prochaine aventure ?"
