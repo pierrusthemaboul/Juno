@@ -20,6 +20,9 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from '../../hooks/useFonts';
 
+// Import MobileAds
+import { MobileAds } from 'react-native-google-mobile-ads';
+
 const { width, height } = Dimensions.get('window');
 
 // Theme configuration
@@ -197,6 +200,9 @@ export default function HomeScreen() {
   }, [fontsLoaded]);
 
   const initializeApp = async () => {
+    // Initialiser le SDK AdMob
+    MobileAds.initialize();
+
     await checkUser();
     setupAuthListener();
     startSplashSequence();
@@ -354,7 +360,7 @@ export default function HomeScreen() {
             <View style={styles.vignetteEffect}>
               <SplashLogo />
               <View style={styles.splashTextContainer}>
-                <Text style={styles.splashTitle}>TIMEHOP</Text>
+                <Text style={styles.splashTitle}>ChronoLeap</Text>
                 <Text style={styles.splashSubtitle}>Explorez le Temps</Text>
               </View>
             </View>
