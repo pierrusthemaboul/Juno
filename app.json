@@ -16,7 +16,9 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pierretulle.juno2",
+      "newArchEnabled": true
     },
     "android": {
       "package": "com.pierretulle.juno2",
@@ -24,7 +26,8 @@
         "foregroundImage": "./assets/images/logom.png",
         "backgroundColor": "#ffffff"
       },
-      "versionCode": 3
+      "versionCode": 3,
+      "newArchEnabled": true
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
