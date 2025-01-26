@@ -23,7 +23,7 @@
     "@types/node": "^22.10.1",
     "@types/react": "~18.3.12",
     "csv-writer": "^1.6.0",
-    "expo": "^52.0.7",
+    "expo": "^52.0.27",
     "expo-ads-admob": "^13.0.0",
     "expo-av": "~15.0.1",
     "expo-constants": "~17.0.3",
