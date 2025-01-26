@@ -1,33 +1,30 @@
 {
   "expo": {
     "owner": "pierretulle",
-    "name": "TimeHop",
+    "name": "ChronoLeap",
     "slug": "Juno2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logom.png",
-    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pierretulle.juno2",
-      "newArchEnabled": true
+      "bundleIdentifier": "com.pierretulle.chronoleap",
+      "newArchEnabled": false
     },
     "android": {
-      "package": "com.pierretulle.juno2",
+      "package": "com.pierretulle.chronoleap",
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logom.png",
         "backgroundColor": "#ffffff"
       },
-      "versionCode": 3,
-      "newArchEnabled": true
+      "newArchEnabled": false
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -36,6 +33,15 @@
       "eas": {
         "projectId": "23007c87-3064-4ef6-81f2-91686d30a169"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-ads-admob",
+        {
+          "androidAppId": "ca-app-pub-7809209690404525~1711130974",
+          "iosAppId": ""
+        }
+      ]
+    ]
   }
 }
